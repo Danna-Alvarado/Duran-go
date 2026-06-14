@@ -1,0 +1,64 @@
+.container{
+    min-height:100vh;
+    background-image:url("./assets/durango.jpg");
+    background-size:cover;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.top-banner{
+    margin-top:70px;
+    width:100%;
+    height:220px;
+
+    background:#75176E;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.logo-text{
+    color:white;
+    font-size:48px;
+}
+
+.login-box{
+    margin-top:100px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:15px;
+}
+
+.input{
+    width: 350px;
+    padding: 15px;
+    border:none;
+    border-radius:25px;
+    box-shadow:0 0 5px rgba(0,0,0,.2);
+}
+
+.btn-login{
+    transition: 0.3s;
+    width: 300px;
+    padding: 15px;
+
+    border:none;
+    border-radius:25px;
+
+    background:#75176E;
+    color:white;
+
+    cursor:pointer;
+}
+
+.btn-login:hover{
+    transform: scale(1.05);
+}
+.crear-cuenta{
+    color:#000000;
+    font-size: 20px;
+}

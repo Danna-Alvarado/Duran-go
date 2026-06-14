@@ -1,0 +1,36 @@
+.register-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #FFF;
+    gap: 15px;
+}
+
+.input-register{
+   width:280px;
+    padding:12px;
+
+    border:none;
+    border-radius:25px;
+
+    box-shadow:0 0 5px rgba(0,0,0,.2);
+}
+
+.btn-register{
+    transition: 0.3s;
+    width:280px;
+    padding:12px;
+
+    border:none;
+    border-radius:25px;
+
+    background:#75176E;
+    color:white;
+
+    cursor:pointer;
+}
+.btn-register:hover{
+    transform: scale(1.05);
+}
