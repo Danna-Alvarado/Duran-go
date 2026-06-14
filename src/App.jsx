@@ -7,7 +7,7 @@ import Guardados from "./Guardados";
 import Perfil from "./Perfil";
 function App() {
   return (
-    <BrowserRouter basename="/Duran-go">
+    <BrowserRouter basename="/Duran-go/">
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
