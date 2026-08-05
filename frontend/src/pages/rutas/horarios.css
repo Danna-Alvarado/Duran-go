@@ -1,209 +1,147 @@
 *{
+    margin:0;
+    padding:0;
     box-sizing:border-box;
 }
 
-
 body{
-
-    background:#f7f5fb;
-
-    margin:0;
-
-    font-family:'Poppins', sans-serif;
-
+    background:linear-gradient(to bottom,#f8f6fb,#f2edf7);
+    font-family:'Poppins',sans-serif;
 }
 
-
+/* CONTENEDOR */
 
 .horarios-container{
-
     width:100%;
-
     min-height:100vh;
-
     display:flex;
-
     flex-direction:column;
-
     align-items:center;
-
-    padding:120px 30px 50px;
-
+    padding:100px 20px 50px;
 }
 
-
-
+/* TITULO */
 
 h1{
-
-    color:#5b1e84;
-
+    color:#75176E;
     font-size:42px;
-
     margin-bottom:10px;
-
-    text-align:center;
-
+    font-weight:700;
 }
-
-
 
 .descripcion{
-
-    color:#777;
-
-    margin-bottom:35px;
-
+    color:#666;
     font-size:18px;
-
+    margin-bottom:35px;
     text-align:center;
-
 }
 
+/* AGRUPA LOS DOS SELECT */
 
+.filtros{
+    width:700px;
+    max-width:95%;
+    background:white;
+    border-radius:25px;
+    padding:25px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+    animation:fade .5s ease;
+}
 
+/* SELECT */
 
 .select-container{
-
-
-    width:650px;
-
-    max-width:90%;
-
+    width:100%;
     height:65px;
-
-    background:white;
-
+    background:#fafafa;
+    border:2px solid transparent;
     border-radius:18px;
-
     display:flex;
-
     align-items:center;
-
-    padding:0 25px;
-
-    box-shadow:
-    0 8px 20px rgba(0,0,0,.08);
-
+    padding:0 20px;
     transition:.3s;
-
 }
-
 
 .select-container:hover{
-
-    transform:translateY(-3px);
-
+    border-color:#75176E;
+    transform:translateY(-2px);
 }
 
-
-
+.select-container:focus-within{
+    border-color:#75176E;
+    box-shadow:0 0 0 4px rgba(117,23,110,.12);
+}
 
 .iconBus{
-
-
+    font-size:24px;
     color:#75176E;
-
-    font-size:25px;
-
     margin-right:15px;
-
-
 }
-
-
 
 select{
-
-
     width:100%;
-
     border:none;
-
     outline:none;
-
-    font-size:18px;
-
     background:none;
-
-    cursor:pointer;
-
+    font-size:17px;
     color:#444;
-
+    cursor:pointer;
 }
 
-
-
+/* CARD */
 
 .card{
 
+    margin-top:35px;
 
-    margin-top:55px;
-
-    width:850px;
-
+    width:900px;
     max-width:95%;
 
     background:white;
 
-    padding:35px;
+    border-radius:28px;
 
-    border-radius:25px;
+    padding:40px;
 
-    box-shadow:
-    0 10px 25px rgba(0,0,0,.08);
+    box-shadow:0 18px 40px rgba(0,0,0,.08);
 
+    animation:fade .6s ease;
 }
 
-
-
-
 .card h2{
-
 
     color:#75176E;
 
     text-align:center;
 
-    font-size:32px;
+    font-size:38px;
 
-    margin-bottom:30px;
-
-
+    margin-bottom:35px;
 }
 
-
-
-
+/* HORARIOS */
 
 .listaHoras{
 
+    display:grid;
 
-    display:flex;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
 
-    flex-wrap:wrap;
-
-    justify-content:center;
-
-    gap:18px;
-
-
+    gap:20px;
 }
-
-
-
-
 
 .hora{
 
+    background:#faf7fc;
 
-    min-width:190px;
+    border:2px solid #eddcf7;
 
-    background:#f3e3f7;
+    border-radius:18px;
 
-    padding:16px 22px;
-
-    border-radius:20px;
+    padding:18px;
 
     display:flex;
 
@@ -211,60 +149,39 @@ select{
 
     gap:15px;
 
-    color:#75176E;
-
-    font-weight:600;
+    cursor:pointer;
 
     transition:.3s;
 
-    cursor:pointer;
-
-
+    box-shadow:0 6px 18px rgba(0,0,0,.05);
 }
-
-
 
 .hora:hover{
 
-
     background:#75176E;
+
+    border-color:#75176E;
 
     color:white;
 
-    transform:translateY(-5px);
-
-
+    transform:translateY(-6px);
 }
-
-
-
-
 
 .clock{
 
-
-    font-size:22px;
-
+    font-size:25px;
 }
-
-
-
-
 
 .hora span{
 
-
     display:block;
 
-    font-size:23px;
+    font-size:24px;
 
-
+    font-weight:700;
 }
 
-
-
 .hora small{
-
 
     display:block;
 
@@ -273,41 +190,35 @@ select{
     font-size:13px;
 
     opacity:.8;
-
-
 }
-
-
-
-
 
 .sinHorarios{
 
+    text-align:center;
 
     color:#777;
 
-    text-align:center;
+    font-size:18px;
 
-    width:100%;
-
+    padding:30px 0;
 }
 
-
-
-
+/* INFO */
 
 .info{
 
-
-    width:600px;
-
-    max-width:90%;
-
     margin-top:35px;
 
-    background:#efe3fb;
+    width:700px;
+    max-width:95%;
+
+    background:#f4e9fb;
+
+    border-left:6px solid #75176E;
 
     border-radius:18px;
+
+    padding:22px;
 
     display:flex;
 
@@ -317,51 +228,78 @@ select{
 
     gap:15px;
 
-    padding:18px;
-
-    color:#75176E;
+    color:#5b1e84;
 
     font-size:16px;
 
+    box-shadow:0 10px 25px rgba(0,0,0,.05);
 
+    animation:fade .7s ease;
 }
 
+/* ANIMACION */
 
+@keyframes fade{
 
+    from{
 
+        opacity:0;
 
-@media(max-width:700px){
+        transform:translateY(20px);
+    }
 
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+    }
+}
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
 
     .horarios-container{
 
-        padding:100px 20px 40px;
-
+        padding:90px 15px 40px;
     }
 
+    h1{
 
+        font-size:32px;
+    }
+
+    .descripcion{
+
+        font-size:16px;
+    }
 
     .card{
 
         padding:25px;
-
     }
 
+    .card h2{
 
-
-    .listaHoras{
-
-        flex-direction:column;
-
+        font-size:30px;
     }
-
-
 
     .hora{
 
-        width:100%;
-
+        padding:16px;
     }
 
+    .hora span{
+
+        font-size:20px;
+    }
+
+    .info{
+
+        padding:18px;
+
+        font-size:15px;
+    }
 
 }

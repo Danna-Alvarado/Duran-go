@@ -2,6 +2,9 @@ import "./login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import logo from "../../assets/logo.png";
+const AUTH_URL = import.meta.env.VITE_AUTH_URL;
+
+console.log("AUTH:", AUTH_URL);
 
 function Login() {
 
@@ -11,6 +14,7 @@ function Login() {
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
+  
 
 
   const login = async () => {
@@ -34,7 +38,7 @@ function Login() {
     try {
 
       const respuesta = await fetch(
-        "http://localhost:3001/auth/login",
+        `${AUTH_URL}/auth/login`,
         {
           method: "POST",
 
@@ -49,7 +53,11 @@ function Login() {
         }
       );
 
-      const data = await respuesta.json();
+      const texto = await respuesta.text();
+
+console.log(texto);
+
+const data = JSON.parse(texto);
 
       if (!respuesta.ok) {
         setError(data.error);

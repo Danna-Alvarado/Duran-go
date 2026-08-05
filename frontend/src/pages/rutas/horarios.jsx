@@ -8,7 +8,7 @@ import {
     FaMapMarkerAlt,
     FaInfoCircle
 } from "react-icons/fa";
-
+    const RUTAS_URL = import.meta.env.VITE_RUTAS_URL;
 
 function Horarios() {
 
@@ -26,12 +26,7 @@ function Horarios() {
     const [paradaSeleccionada, setParadaSeleccionada] = useState("");
 
 
-
-
-
-    // ============================
     // Cargar rutas
-    // ============================
 
     useEffect(() => {
 
@@ -43,7 +38,7 @@ function Horarios() {
 
 
                 const respuesta = await fetch(
-                    "http://localhost:3003/rutas"
+                    `${RUTAS_URL}/rutas`
                 );
 
 
@@ -75,15 +70,8 @@ function Horarios() {
     }, []);
 
 
-
-
-
-
-
-
-    // ============================
     // Cargar paradas de una ruta
-    // ============================
+  
 
     useEffect(() => {
 
@@ -99,7 +87,7 @@ function Horarios() {
 
 
                 const respuesta = await fetch(
-                    `http://localhost:3003/paradas/ruta/${rutaSeleccionada}`
+                  `${RUTAS_URL}/paradas/ruta/${rutaSeleccionada}`
                 );
 
 
@@ -158,8 +146,8 @@ function Horarios() {
 
 
                 const respuesta = await fetch(
-                    `http://localhost:3002/horarios/buscar?ruta=${rutaSeleccionada}&parada=${paradaSeleccionada}`
-                );
+                    `${RUTAS_URL}/horarios/buscar?ruta=${rutaSeleccionada}&parada=${paradaSeleccionada}`,
+                                );
 
 
                 const data = await respuesta.json();

@@ -3,11 +3,12 @@ import Navar from "../../components/Navar";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { FaUserCircle, FaSignOutAlt, FaLock } from "react-icons/fa";
-
+const USUARIO_URL = import.meta.env.VITE_USUARIO_URL;
 
 function Perfil() {
 
   const navigate = useNavigate();
+  
 
   const [usuario, setUsuario] = useState({
     nombre_usuario: "",
@@ -36,7 +37,7 @@ function Perfil() {
       try {
 
         const respuesta = await fetch(
-          "http://localhost:3002/perfil",
+          `${USUARIO_URL}/perfil`,
           {
             method: "GET",
             headers: {
@@ -80,7 +81,7 @@ function Perfil() {
 
     cargarPerfil();
 
-  }, [navigate]);
+  }, [navigate ]);
 
 
 
@@ -102,7 +103,7 @@ function Perfil() {
     try {
 
       const respuesta = await fetch(
-        "http://localhost:3002/perfil",
+        `${USUARIO_URL}/perfil`,
         {
           method: "PUT",
           headers: {

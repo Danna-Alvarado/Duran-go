@@ -15,6 +15,24 @@ app.get("/", (req, res) => {
     });
 });
 
+app.post("/jornada", (req, res) => {
+
+    const { autobus_id } = req.body;
+
+    if (!autobus_id) {
+        return res.status(400).json({
+            error: "Falta el autobús"
+        });
+    }
+
+
+    res.json({
+        mensaje: "Jornada iniciada correctamente",
+        autobus_id
+    });
+
+});
+
 const PORT = process.env.PORT || 3003;
 
 app.listen(PORT, () => {

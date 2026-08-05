@@ -21,6 +21,7 @@ function CrearCuenta() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const AUTH_URL = import.meta.env.VITE_AUTH_URL;
 
   const registro = async () => {
     setError("");
@@ -54,7 +55,7 @@ function CrearCuenta() {
     try {
 
       const respuesta = await fetch(
-       "http://localhost:3001/auth/registro",
+       `${AUTH_URL}/auth/registro`,
         {
           method: "POST",
           headers: {

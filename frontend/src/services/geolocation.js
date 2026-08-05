@@ -7,22 +7,48 @@ export const obtenerUbicacion = () => {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
 
-        resolve({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
+      async (position) => {
+
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        try {
+
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+          );
+
+          const data = await response.json();
+
+          resolve({
+            lat,
+            lng,
+            direccion: data.display_name || "Ubicación actual"
+          });
+
+        } catch (error) {
+
+          resolve({
+            lat,
+            lng,
+            direccion: "Ubicación actual"
+          });
+
+        }
 
       },
+
       (error) => {
         reject(error);
       },
+
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 60000
       }
+
     );
 
   });

@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import "./jornadachofer.css";
 
+   const UBICACION_URL = import.meta.env.VITE_UBICACION_URL;
+
 export default function JornadaChofer() {
     const [rutas, setRutas] = useState([]);
     const [rutaSeleccionada, setRutaSeleccionada] = useState("");
     const [colorRuta, setColorRuta] = useState("");
     const [autobuses, setAutobuses] = useState([]);
     const [autobusSeleccionado, setAutobusSeleccionado] = useState("");
+    const RUTAS_URL = import.meta.env.VITE_RUTAS_URL;
+ 
 
     const token = localStorage.getItem("token");
 
@@ -14,7 +18,7 @@ export default function JornadaChofer() {
     useEffect(() => {
     async function cargarRutas() {
         try {
-            const respuesta = await fetch("http://localhost:3003/rutas");
+            const respuesta = await fetch( `${RUTAS_URL}/rutas`);
             const data = await respuesta.json();
             setRutas(data);
         } catch (error) {
@@ -42,7 +46,7 @@ export default function JornadaChofer() {
         try {
 
             const respuesta = await fetch(
-                `http://localhost:3003/autobuses/${rutaId}`
+                `${RUTAS_URL}/autobuses/${rutaId}`
             );
 
             const data = await respuesta.json();
@@ -70,7 +74,7 @@ export default function JornadaChofer() {
         try {
 
             const respuesta = await fetch(
-                "http://localhost:3003/jornadas/iniciar",
+                `${UBICACION_URL}/jornada`,
                 {
                     method: "POST",
                     headers: {

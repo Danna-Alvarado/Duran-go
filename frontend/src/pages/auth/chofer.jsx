@@ -1,6 +1,7 @@
 import "./chofer.css";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+const AUTH_URL = import.meta.env.VITE_AUTH_URL;
 
 function Choferes() {
 
@@ -9,6 +10,7 @@ function Choferes() {
     const [numeroUnico, setNumeroUnico] = useState("");
     const [contrasena, setContrasena] = useState("");
     const [mensaje, setMensaje] = useState("");
+    
 
     const iniciarSesion = async () => {
 
@@ -20,7 +22,7 @@ function Choferes() {
         try {
 
             const respuesta = await fetch(
-                "http://localhost:3003/login-chofer",
+                `${AUTH_URL}/auth/chofer/login`,
                 {
                     method: "POST",
                     headers: {

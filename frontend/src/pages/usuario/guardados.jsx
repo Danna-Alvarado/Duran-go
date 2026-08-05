@@ -7,11 +7,13 @@ import {
     FaTrash,
     FaBookmark
 } from "react-icons/fa";
+const USUARIO_URL = import.meta.env.VITE_USUARIO_URL;
 
 function Guardados() {
 
     const [guardados, setGuardados] = useState([]);
     const [cargando, setCargando] = useState(true);
+    
 
     useEffect(() => {
 
@@ -22,7 +24,7 @@ function Guardados() {
                 const token = localStorage.getItem("token");
 
                 const respuesta = await fetch(
-                    "http://localhost:3002/guardados",
+                     `${USUARIO_URL}/guardados`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -62,7 +64,7 @@ function Guardados() {
 
             const respuesta = await fetch(
 
-                `http://localhost:3002/guardados/${id}`,
+                `${USUARIO_URL}/guardados/${id}`,
 
                 {
 
