@@ -1,0 +1,156 @@
+.register-container{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background:#f6f7fb;
+    padding:40px 20px;
+}
+
+.register-container h1{
+    color:#6f2383;
+    font-size:52px;
+    margin-bottom:35px;
+    font-weight:700;
+}
+
+.register-card{
+    background:#fff;
+    width:420px;
+    padding:40px;
+    border-radius:24px;
+    box-shadow:0 15px 45px rgba(0,0,0,.12);
+}
+
+.input-register{
+    width:100%;
+    padding:15px 20px;
+    margin-bottom:18px;
+    border:2px solid #ececec;
+    border-radius:18px;
+    font-size:16px;
+    outline:none;
+    transition:.25s;
+    background:#fafafa;
+}
+
+.input-register:focus{
+    border-color:#75176E;
+    background:white;
+    box-shadow:0 0 0 4px rgba(117,23,110,.15);
+}
+
+.discapacidad-container{
+    margin-top:10px;
+    margin-bottom:30px;
+}
+
+.titulo-discapacidad{
+    display:block;
+    color:#75176E;
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:15px;
+}
+
+.radio-group{
+    display:flex;
+    gap:35px;
+}
+
+.radio-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:16px;
+    cursor:pointer;
+    color:#444;
+}
+
+.radio-label input{
+    accent-color:#75176E;
+    width:18px;
+    height:18px;
+}
+
+.btn-register,
+.btn-volver{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:18px;
+    font-size:17px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.btn-register{
+    background:#75176E;
+    color:white;
+    margin-bottom:15px;
+}
+
+.btn-register:hover{
+    background:#8f2487;
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(117,23,110,.35);
+}
+
+.btn-volver{
+    background:white;
+    color:#75176E;
+    border:2px solid #75176E;
+}
+
+.btn-volver:hover{
+    background:#75176E;
+    color:white;
+}
+
+.mensaje-error{
+    color:#e53935;
+    font-size:14px;
+    margin-bottom:15px;
+    text-align:center;
+}
+
+.mensaje-success{
+    color:#2e7d32;
+    font-size:14px;
+    margin-bottom:15px;
+    text-align:center;
+}
+
+.password-container{
+    position:relative;
+    width:100%;
+    margin-bottom:18px;
+}
+
+.password-container .input-register{
+    width:100%;
+    padding-right:55px;
+    margin-bottom:0;
+}
+
+.toggle-password{
+    position:absolute;
+    right:18px;
+    top:50%;
+    transform:translateY(-50%);
+    border:none;
+    background:transparent;
+    cursor:pointer;
+    color:#777;
+    font-size:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.2s;
+}
+
+.toggle-password:hover{
+    color:#75176E;
+}

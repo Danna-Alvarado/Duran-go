@@ -1,0 +1,219 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#F8F6FB;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+
+.guardados{
+    min-height:100vh;
+    padding:125px 20px;
+}
+
+/* TITULO */
+
+.titulo{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+
+.titulo h1{
+
+    font-size:40px;
+    color:#75176E;
+    font-weight:700;
+}
+
+.titulo p{
+    margin-top:15px;
+    color:#777;
+    font-size:17px;
+}
+
+
+
+
+/* CONTENEDOR */
+
+.contenedor{
+
+    width:100%;
+    max-width:700px;
+    margin:auto;
+}
+
+/* TARJETA */
+
+.ruta-card{
+    background:white;
+    border-radius:25px;
+    padding:25px;
+    margin-bottom:25px;
+    box-shadow:
+    0 8px 20px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+
+.ruta-card:hover{
+    transform:translateY(-5px);
+    box-shadow:
+    0 15px 30px rgba(117,23,110,.15);
+}
+
+
+/* PARTE SUPERIOR */
+.parteSuperior{
+    display:flex;
+    align-items:center;
+}
+
+.bus{
+    width:65px;
+    height:65px;
+    background:#F4E5F3;
+    color:#75176E;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    margin-right:20px;
+}
+
+
+
+.info{
+    flex:1;
+}
+
+.info h2{
+    color:#75176E;
+    font-size:22px;
+    margin-bottom:10px;
+}
+
+
+.info p{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#666;
+    font-size:15px;
+}
+
+
+
+/* BOTONES */
+
+.acciones{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+}
+
+
+
+.acciones button{
+    height:42px;
+    border:none;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:bold;
+    transition:.3s;
+}
+
+
+
+
+/* VER RUTA */
+
+.acciones button:first-child{
+    flex:1;
+    background:#75176E;
+    color:white;
+}
+
+
+.acciones button:first-child:hover{
+    background:#9b2a92;
+    transform:scale(1.03);
+}
+
+
+
+
+
+/* ELIMINAR */
+
+.acciones .eliminar{
+    width:50px;
+    background:#FCE7F3;
+    color:#75176E;
+}
+
+
+
+.acciones .eliminar:hover{
+    background:#75176E;
+    color:white;
+}
+
+
+
+
+/* SIN GUARDADOS */
+
+.sinGuardados{
+    text-align:center;
+    color:#777;
+    margin-top:40px;
+    font-size:18px;
+}
+
+
+
+/* RESPONSIVE */
+
+@media(max-width:600px){
+
+
+    .guardados{
+        padding:30px 15px;
+    }
+
+    .titulo h1{
+        font-size:32px;
+    }
+
+
+    .ruta-card{
+        padding:20px;
+    }
+
+
+    .info h2{
+        font-size:18px;
+    }
+
+
+    .bus{
+        width:55px;
+        height:55px;
+        font-size:23px;
+
+    }
+
+
+}
