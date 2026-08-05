@@ -12,6 +12,8 @@ app.use(express.json());
 app.use("/", usuarioRoutes);
 app.use("/", guardadosRoutes);
 
-app.listen(3002, () => {
-    console.log("Usuario Service iniciado en puerto 3002");
+const PORT = process.env.PORT || 3002;
+
+app.listen(PORT, () => {
+    console.log(`Usuario Service iniciado en puerto ${PORT}`);
 });
