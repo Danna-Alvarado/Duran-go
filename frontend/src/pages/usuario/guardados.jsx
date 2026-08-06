@@ -69,11 +69,8 @@ function Guardados() {
                 {
 
                     method: "DELETE",
-
                     headers: {
-
                         "Authorization": `Bearer ${token}`
-
                     }
 
                 }
@@ -101,15 +98,10 @@ function Guardados() {
     return (
 
         <>
-
             <Navar />
-
             <div className="guardados">
-
                 <div className="titulo">
-
                     <h1>Mis rutas guardadas</h1>
-
                     <p>
                         Tus rutas favoritas aparecerán aquí.
                     </p>

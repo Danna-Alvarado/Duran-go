@@ -56,7 +56,6 @@ router.get("/paradas/ruta/:ruta_id", async (req, res) => {
     try {
 
         const { ruta_id } = req.params;
-
         const resultado = await pool.query(
             `
             SELECT DISTINCT

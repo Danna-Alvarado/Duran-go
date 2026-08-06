@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const rutasRoutes = require("./rutas.route");
 const horariosRoutes = require("./horarios.route");
+const buscarRutaRoutes = require("./buscarruta.route");
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use(express.json());
 app.use("/", rutasRoutes);
 
 app.use("/", horariosRoutes);
+
+
+app.use("/", buscarRutaRoutes);
 
 
 const PORT = process.env.PORT || 3002;

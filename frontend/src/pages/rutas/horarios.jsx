@@ -110,7 +110,7 @@ function Horarios() {
                         value={rutaSeleccionada}
                         onChange={cambiarRuta}
                     >
-                        <option value="">
+                        <option value=""  disabled hidden>
                             Selecciona una ruta
                         </option>
                         {rutas.map((ruta) => (
@@ -133,7 +133,7 @@ function Horarios() {
                         onChange={cambiarParada}
                         disabled={!rutaSeleccionada}
                     >
-                        <option value="">
+                        <option value="" disabled hidden>
                             Selecciona una parada
                         </option>
                         { paradas.map((parada) => (

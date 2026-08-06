@@ -17,6 +17,66 @@ function Home() {
 
   const [sugerencias, setSugerencias] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [errorUbicacion, setErrorUbicacion] = useState("");
+
+  const buscarRuta = async () => {
+
+    try {
+
+        if(!coordenadas || !destinoCoords){
+            return;
+        }
+        const response = await fetch(
+            `${import.meta.env.VITE_RUTAS_URL}/buscar-ruta`,
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+
+                    origenLat: coordenadas.lat,
+                    origenLng: coordenadas.lng,
+
+                    destinoLat: destinoCoords.lat,
+                    destinoLng: destinoCoords.lng
+
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        console.log("Rutas encontradas:", data);
+
+
+        navigate("/guia_viaje",{
+
+            state:{
+                rutas:data,
+
+                origen:coordenadas,
+
+                destino:destinoCoords
+
+            }
+
+        });
+
+
+    }catch(error){
+
+        console.error(
+            "Error buscando ruta:",
+            error
+        );
+
+    }
+
+};
+
 
 
   useEffect(() => {
@@ -40,7 +100,7 @@ function Home() {
       } catch (error) {
 
         console.error(error);
-        alert("No se pudo obtener tu ubicación.");
+         setErrorUbicacion("Activa la ubicación de tu dispositivo."  );
 
       } finally {
         setCargando(false);
@@ -62,25 +122,17 @@ function Home() {
     }
 
 
-    const datosRuta = {
-
-        origen: coordenadas,
-
-        destino: destinoCoords
-
-    };
+    if(!coordenadas){
+        alert("Esperando ubicación...");
+        return;
+    }
 
 
-    console.log("Datos para calcular ruta:");
-    console.log(datosRuta);
+    console.log("Calculando ruta...");
 
+    buscarRuta();
 
-    navigate("/guia_viaje", {
-        state: datosRuta
-    });
-
-  };
-
+};
 
 
   return (
@@ -100,6 +152,14 @@ function Home() {
           className="input-home"
           placeholder="Obteniendo ubicación..."
         />
+
+        {
+          errorUbicacion && (
+            <p className="mensaje-error">
+              {errorUbicacion}
+            </p>
+          )
+        }
 
 
         <input
@@ -199,21 +259,14 @@ function Home() {
 
 
         <button
-
-          className="btn-confirmar"
-
-          disabled={cargando}
-
-          onClick={confirmarDestino}
-
-        >
-
-          {cargando 
-            ? "Obteniendo ubicación..." 
-            : "Buscar ruta"
-          }
-
-
+              className="btn-confirmar"
+              disabled={cargando || !coordenadas || !destinoCoords}
+              onClick={confirmarDestino}
+              >
+              {cargando 
+              ? "Obteniendo ubicación..."
+              : "Buscar ruta"
+              }
         </button>
 
 

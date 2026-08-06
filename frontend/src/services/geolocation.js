@@ -29,6 +29,8 @@ export const obtenerUbicacion = () => {
 
         } catch (error) {
 
+           console.error("Error obteniendo dirección:", error)
+
           resolve({
             lat,
             lng,
@@ -48,7 +50,7 @@ export const obtenerUbicacion = () => {
         timeout: 8000,
         maximumAge: 60000
       }
-
+      
     );
 
   });

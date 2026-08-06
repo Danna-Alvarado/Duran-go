@@ -54,9 +54,9 @@ h1{
 /* SELECT */
 
 .select-container{
-    width:100%;
+    width:95%;
     height:65px;
-    background:#fafafa;
+    background:#ffffffcd;
     border:2px solid transparent;
     border-radius:18px;
     display:flex;
@@ -73,7 +73,7 @@ h1{
 
 .select-container:focus-within{
     border-color:#75176E;
-    box-shadow:0 0 0 4px rgba(117,23,110,.12);
+    box-shadow:4 4 4 4px rgba(117,113,110,112);
 }
 
 .iconBus{
@@ -83,13 +83,12 @@ h1{
 }
 
 select{
-
     width:100%;
     border:none;
     outline:none;
     background:none;
     font-size:17px;
-    color:#444;
+    color:#302e2e;
     cursor:pointer;
 }
 
@@ -97,7 +96,7 @@ select{
 
 .card{
     margin-top:35px;
-    width:100%;
+    width:90%;
     max-width:95%;
     background:white;
     border-radius:28px;
@@ -168,7 +167,7 @@ select{
 /* INFO */
 
 .infohorarios{
-    margin-top:7%;
+    margin-top:5%;
     width:700px;
     max-width:95%;
     background:#f4e9fb;

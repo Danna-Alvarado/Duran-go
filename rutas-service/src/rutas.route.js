@@ -5,7 +5,6 @@ const pool = require("./db");
 
 
 // OBTENER RUTAS
-
 router.get("/rutas", async (req, res, next) => {
 
     try {
