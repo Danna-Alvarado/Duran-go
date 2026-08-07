@@ -1,8 +1,10 @@
+
 const express = require("express");
 const router = express.Router();
 const pool = require("./db");
 
-router.post("/buscar-ruta", async (req, res, next) => {
+router.post("/buscar-ruta", async (req, res) => {
+
     try {
 
         const {
@@ -11,6 +13,7 @@ router.post("/buscar-ruta", async (req, res, next) => {
             destinoLat,
             destinoLng
         } = req.body;
+
 
         // ============================================
         // VALIDACIÓN
@@ -22,43 +25,48 @@ router.post("/buscar-ruta", async (req, res, next) => {
             destinoLat == null ||
             destinoLng == null
         ) {
+
             return res.status(400).json({
                 error: "Se requieren las coordenadas de origen y destino"
             });
+
         }
+
 
         // ============================================
         // CONFIGURACIÓN
         // ============================================
 
-        // Máximo que el usuario puede caminar
-        // desde su origen hasta la primera parada
-        // y desde la última parada hasta el destino.
+        // Distancia máxima desde el origen
+        // hasta la primera parada.
         const radioOrigenDestino = 800;
 
-        // Máximo que puede haber entre:
-        // parada donde baja del primer camión
-        // y parada donde sube al segundo.
+        // Distancia máxima entre la parada
+        // donde bajas del primer camión y
+        // la parada donde subes al segundo.
         const radioTransbordo = 500;
 
 
         // ============================================
-        // BUSCAR RUTA DIRECTA O CON 1 TRANSBORDO
+        // CONSULTA
         // ============================================
 
         const resultado = await pool.query(
             `
+
             WITH paradas_distancias AS (
 
                 SELECT
+
                     p.id,
                     p.nombre_parada,
                     p.latitud,
                     p.longitud,
 
-                    -- =====================================
-                    -- DISTANCIA DE LA PARADA AL ORIGEN
-                    -- =====================================
+
+                    -- ========================================
+                    -- DISTANCIA AL ORIGEN
+                    -- ========================================
 
                     (
                         6371000 * acos(
@@ -66,23 +74,31 @@ router.post("/buscar-ruta", async (req, res, next) => {
                                 1,
                                 GREATEST(
                                     -1,
+
                                     cos(radians($1))
-                                    * cos(radians(p.latitud))
-                                    * cos(
+                                    *
+                                    cos(radians(p.latitud))
+                                    *
+                                    cos(
                                         radians(p.longitud)
-                                        - radians($2)
+                                        -
+                                        radians($2)
                                     )
+
                                     +
+
                                     sin(radians($1))
-                                    * sin(radians(p.latitud))
+                                    *
+                                    sin(radians(p.latitud))
                                 )
                             )
                         )
                     ) AS distancia_origen,
 
-                    -- =====================================
-                    -- DISTANCIA DE LA PARADA AL DESTINO
-                    -- =====================================
+
+                    -- ========================================
+                    -- DISTANCIA AL DESTINO
+                    -- ========================================
 
                     (
                         6371000 * acos(
@@ -90,51 +106,65 @@ router.post("/buscar-ruta", async (req, res, next) => {
                                 1,
                                 GREATEST(
                                     -1,
+
                                     cos(radians($3))
-                                    * cos(radians(p.latitud))
-                                    * cos(
+                                    *
+                                    cos(radians(p.latitud))
+                                    *
+                                    cos(
                                         radians(p.longitud)
-                                        - radians($4)
+                                        -
+                                        radians($4)
                                     )
+
                                     +
+
                                     sin(radians($3))
-                                    * sin(radians(p.latitud))
+                                    *
+                                    sin(radians(p.latitud))
                                 )
                             )
                         )
                     ) AS distancia_destino
 
                 FROM paradas p
+
             ),
 
 
-            -- =================================================
+            -- ============================================
             -- PARADAS CERCA DEL ORIGEN
-            -- =================================================
+            -- ============================================
 
             paradas_origen AS (
 
                 SELECT *
+
                 FROM paradas_distancias
+
                 WHERE distancia_origen <= $5
+
             ),
 
 
-            -- =================================================
+            -- ============================================
             -- PARADAS CERCA DEL DESTINO
-            -- =================================================
+            -- ============================================
 
             paradas_destino AS (
 
                 SELECT *
+
                 FROM paradas_distancias
+
                 WHERE distancia_destino <= $5
+
             ),
 
 
-            -- =================================================
+            -- ============================================
             -- RUTAS DIRECTAS
-            -- =================================================
+            -- ============================================
 
             rutas_directas AS (
 
@@ -144,67 +174,87 @@ router.post("/buscar-ruta", async (req, res, next) => {
                     r.nombre AS ruta_nombre,
                     r.color AS ruta_color,
 
+
+                    -- PARADA DONDE SUBE
+
                     po.id AS parada_subida_id,
                     po.nombre_parada AS parada_subida,
                     po.latitud AS parada_subida_latitud,
                     po.longitud AS parada_subida_longitud,
-                    po.distancia_origen,
+
+
+                    -- PARADA DONDE BAJA
 
                     pd.id AS parada_bajada_id,
                     pd.nombre_parada AS parada_bajada,
                     pd.latitud AS parada_bajada_latitud,
                     pd.longitud AS parada_bajada_longitud,
+
+
+                    po.distancia_origen,
                     pd.distancia_destino,
 
+
                     rp1.orden AS orden_subida,
-                    rp2.orden AS orden_bajada,
+                    rp2.orden AS orden_bajada
 
-                    1 AS cantidad_camiones,
-
-                    po.distancia_origen
-                    + pd.distancia_destino
-                    AS distancia_caminando_total
 
                 FROM rutas r
+
 
                 INNER JOIN ruta_paradas rp1
                     ON rp1.ruta_id = r.id
 
+
                 INNER JOIN ruta_paradas rp2
                     ON rp2.ruta_id = r.id
+
 
                 INNER JOIN paradas_origen po
                     ON po.id = rp1.parada_id
 
+
                 INNER JOIN paradas_destino pd
                     ON pd.id = rp2.parada_id
 
+
                 WHERE
+
                     rp1.orden < rp2.orden
+
                     AND rp1.parada_id <> rp2.parada_id
+
             ),
 
 
-            -- =================================================
+            -- ============================================
             -- MEJOR RUTA DIRECTA
-            -- =================================================
+            -- ============================================
 
             mejor_directa AS (
 
                 SELECT *
+
                 FROM rutas_directas
 
-                ORDER BY distancia_caminando_total
+                ORDER BY
+
+                    distancia_origen
+                    +
+                    distancia_destino
 
                 LIMIT 1
+
             ),
 
 
-            -- =================================================
+            -- ============================================
             -- PRIMER CAMIÓN
             --
-            -- Origen -> parada de transbordo
-            -- =================================================
+            -- ORIGEN
+            -- ↓
+            -- PARADA TRANSBORDO
+            -- ============================================
 
             primer_camion AS (
 
@@ -214,44 +264,67 @@ router.post("/buscar-ruta", async (req, res, next) => {
                     r1.nombre AS ruta1_nombre,
                     r1.color AS ruta1_color,
 
+
+                    -- PARADA DONDE SUBE
+
                     po.id AS parada_subida_id,
                     po.nombre_parada AS parada_subida,
                     po.latitud AS parada_subida_latitud,
                     po.longitud AS parada_subida_longitud,
-                    po.distancia_origen,
+
+
+                    -- PARADA DE TRANSBORDO
 
                     pt.id AS parada_transbordo_id,
                     pt.nombre_parada AS parada_transbordo,
                     pt.latitud AS parada_transbordo_latitud,
                     pt.longitud AS parada_transbordo_longitud,
 
+
+                    po.distancia_origen,
+
+
                     rp1.orden AS orden_subida,
                     rp_transbordo.orden AS orden_transbordo
 
+
                 FROM rutas r1
 
+
                 INNER JOIN ruta_paradas rp1
+
                     ON rp1.ruta_id = r1.id
 
+
                 INNER JOIN ruta_paradas rp_transbordo
+
                     ON rp_transbordo.ruta_id = r1.id
 
+
                 INNER JOIN paradas_origen po
+
                     ON po.id = rp1.parada_id
 
+
                 INNER JOIN paradas pt
+
                     ON pt.id = rp_transbordo.parada_id
 
+
                 WHERE
+
                     rp1.orden < rp_transbordo.orden
+
             ),
 
 
-            -- =================================================
+            -- ============================================
             -- SEGUNDO CAMIÓN
             --
-            -- parada de transbordo -> destino
-            -- =================================================
+            -- PARADA TRANSBORDO
+            -- ↓
+            -- DESTINO
+            -- ============================================
 
             segundo_camion AS (
 
@@ -261,42 +334,63 @@ router.post("/buscar-ruta", async (req, res, next) => {
                     r2.nombre AS ruta2_nombre,
                     r2.color AS ruta2_color,
 
+
+                    -- PARADA DONDE SUBE
+
                     pt2.id AS parada_subida_id,
                     pt2.nombre_parada AS parada_subida,
                     pt2.latitud AS parada_subida_latitud,
                     pt2.longitud AS parada_subida_longitud,
 
+
+                    -- PARADA DONDE BAJA
+
                     pd.id AS parada_bajada_id,
                     pd.nombre_parada AS parada_bajada,
                     pd.latitud AS parada_bajada_latitud,
                     pd.longitud AS parada_bajada_longitud,
+
+
                     pd.distancia_destino,
+
 
                     rp_transbordo2.orden AS orden_subida,
                     rp2.orden AS orden_bajada
 
+
                 FROM rutas r2
 
+
                 INNER JOIN ruta_paradas rp_transbordo2
+
                     ON rp_transbordo2.ruta_id = r2.id
 
+
                 INNER JOIN ruta_paradas rp2
+
                     ON rp2.ruta_id = r2.id
 
+
                 INNER JOIN paradas pt2
+
                     ON pt2.id = rp_transbordo2.parada_id
 
+
                 INNER JOIN paradas_destino pd
+
                     ON pd.id = rp2.parada_id
 
+
                 WHERE
+
                     rp_transbordo2.orden < rp2.orden
+
             ),
 
 
-            -- =================================================
+            -- ============================================
             -- COMBINAR LOS DOS CAMIONES
-            -- =================================================
+            -- ============================================
 
             rutas_dos_camiones AS (
 
@@ -306,36 +400,72 @@ router.post("/buscar-ruta", async (req, res, next) => {
                     p.ruta1_nombre,
                     p.ruta1_color,
 
+
+                    -- ================================
+                    -- PRIMERA PARADA
+                    -- ================================
+
                     p.parada_subida_id,
                     p.parada_subida,
                     p.parada_subida_latitud,
                     p.parada_subida_longitud,
+
+
+                    -- ================================
+                    -- TRANSBORDO
+                    -- ================================
 
                     p.parada_transbordo_id,
                     p.parada_transbordo,
                     p.parada_transbordo_latitud,
                     p.parada_transbordo_longitud,
 
+
+                    -- ================================
+                    -- SEGUNDA RUTA
+                    -- ================================
+
                     s.ruta2_id,
                     s.ruta2_nombre,
                     s.ruta2_color,
 
+
+                    -- ================================
+                    -- SEGUNDA PARADA DE SUBIDA
+                    -- ================================
+
                     s.parada_subida_id AS parada_subida_2_id,
+
                     s.parada_subida AS parada_subida_2,
-                    s.parada_subida_latitud AS parada_subida_2_latitud,
-                    s.parada_subida_longitud AS parada_subida_2_longitud,
+
+                    s.parada_subida_latitud
+                        AS parada_subida_2_latitud,
+
+                    s.parada_subida_longitud
+                        AS parada_subida_2_longitud,
+
+
+                    -- ================================
+                    -- DESTINO
+                    -- ================================
 
                     s.parada_bajada_id,
+
                     s.parada_bajada,
+
                     s.parada_bajada_latitud,
+
                     s.parada_bajada_longitud,
 
+
                     p.distancia_origen,
+
                     s.distancia_destino,
 
-                    -- =========================================
-                    -- DISTANCIA ENTRE LAS DOS PARADAS
-                    -- =========================================
+
+                    -- =================================
+                    -- DISTANCIA ENTRE TRANSBORDOS
+                    -- =================================
 
                     (
                         6371000 * acos(
@@ -345,41 +475,63 @@ router.post("/buscar-ruta", async (req, res, next) => {
                                     -1,
 
                                     cos(
-                                        radians(p.parada_transbordo_latitud)
+                                        radians(
+                                            p.parada_transbordo_latitud
+                                        )
                                     )
+
                                     *
+
                                     cos(
-                                        radians(s.parada_subida_2_latitud)
+                                        radians(
+                                            s.parada_subida_latitud
+                                        )
                                     )
+
                                     *
+
                                     cos(
-                                        radians(s.parada_subida_2_longitud)
+                                        radians(
+                                            s.parada_subida_longitud
+                                        )
                                         -
-                                        radians(p.parada_transbordo_longitud)
+                                        radians(
+                                            p.parada_transbordo_longitud
+                                        )
                                     )
+
                                     +
+
                                     sin(
-                                        radians(p.parada_transbordo_latitud)
+                                        radians(
+                                            p.parada_transbordo_latitud
+                                        )
                                     )
+
                                     *
+
                                     sin(
-                                        radians(s.parada_subida_2_latitud)
+                                        radians(
+                                            s.parada_subida_latitud
+                                        )
                                     )
                                 )
                             )
                         )
                     ) AS distancia_transbordo
 
+
                 FROM primer_camion p
 
+
                 INNER JOIN segundo_camion s
+
                     ON p.ruta1_id <> s.ruta2_id
 
-                    -- =========================================
-                    -- EL SEGUNDO CAMIÓN DEBE ESTAR CERCA
-                    -- =========================================
 
-                    AND (
+                WHERE
+
+                    (
                         6371000 * acos(
                             LEAST(
                                 1,
@@ -387,36 +539,57 @@ router.post("/buscar-ruta", async (req, res, next) => {
                                     -1,
 
                                     cos(
-                                        radians(p.parada_transbordo_latitud)
+                                        radians(
+                                            p.parada_transbordo_latitud
+                                        )
                                     )
+
                                     *
+
                                     cos(
-                                        radians(s.parada_subida_2_latitud)
+                                        radians(
+                                            s.parada_subida_latitud
+                                        )
                                     )
+
                                     *
+
                                     cos(
-                                        radians(s.parada_subida_2_longitud)
+                                        radians(
+                                            s.parada_subida_longitud
+                                        )
                                         -
-                                        radians(p.parada_transbordo_longitud)
+                                        radians(
+                                            p.parada_transbordo_longitud
+                                        )
                                     )
+
                                     +
+
                                     sin(
-                                        radians(p.parada_transbordo_latitud)
+                                        radians(
+                                            p.parada_transbordo_latitud
+                                        )
                                     )
+
                                     *
+
                                     sin(
-                                        radians(s.parada_subida_2_latitud)
+                                        radians(
+                                            s.parada_subida_latitud
+                                        )
                                     )
                                 )
                             )
                         )
                     ) <= $6
+
             ),
 
 
-            -- =================================================
-            -- MEJOR OPCIÓN DE DOS CAMIONES
-            -- =================================================
+            -- ============================================
+            -- MEJOR COMBINACIÓN DE 2 CAMIONES
+            -- ============================================
 
             mejor_dos_camiones AS (
 
@@ -425,6 +598,7 @@ router.post("/buscar-ruta", async (req, res, next) => {
                 FROM rutas_dos_camiones
 
                 ORDER BY
+
                     distancia_origen
                     +
                     distancia_transbordo
@@ -432,58 +606,55 @@ router.post("/buscar-ruta", async (req, res, next) => {
                     distancia_destino
 
                 LIMIT 1
+
             )
 
 
-            -- =================================================
+            -- ============================================
             -- RESULTADO
             --
-            -- PRIMERO INTENTAMOS RUTA DIRECTA.
-            -- SI EXISTE, DEVOLVEMOS SOLO ESA.
+            -- SI EXISTE DIRECTA:
+            -- DEVOLVEMOS 1
             --
-            -- SI NO EXISTE, DEVOLVEMOS LOS DOS CAMIONES.
-            -- =================================================
+            -- SI NO:
+            -- DEVOLVEMOS 2
+            -- ============================================
 
             SELECT
 
                 'DIRECTA' AS tipo,
 
+
                 ruta_id AS ruta1_id,
                 ruta_nombre AS ruta1_nombre,
                 ruta_color AS ruta1_color,
+
 
                 parada_subida_id,
                 parada_subida,
                 parada_subida_latitud,
                 parada_subida_longitud,
 
+
                 parada_bajada_id,
                 parada_bajada,
                 parada_bajada_latitud,
                 parada_bajada_longitud,
 
+
                 NULL::INTEGER AS ruta2_id,
                 NULL::VARCHAR AS ruta2_nombre,
                 NULL::VARCHAR AS ruta2_color,
+
 
                 NULL::INTEGER AS parada_subida_2_id,
                 NULL::VARCHAR AS parada_subida_2,
                 NULL::DOUBLE PRECISION AS parada_subida_2_latitud,
                 NULL::DOUBLE PRECISION AS parada_subida_2_longitud,
 
-                1 AS cantidad_camiones,
 
-                ROUND(
-                    distancia_origen::numeric,
-                    2
-                ) AS distancia_origen_metros,
+                1 AS cantidad_camiones
 
-                ROUND(
-                    distancia_destino::numeric,
-                    2
-                ) AS distancia_destino_metros,
-
-                NULL::NUMERIC AS distancia_transbordo_metros
 
             FROM mejor_directa
 
@@ -495,53 +666,51 @@ router.post("/buscar-ruta", async (req, res, next) => {
 
                 'TRANSBORDO' AS tipo,
 
+
                 ruta1_id,
                 ruta1_nombre,
                 ruta1_color,
+
 
                 parada_subida_id,
                 parada_subida,
                 parada_subida_latitud,
                 parada_subida_longitud,
 
+
                 parada_transbordo_id AS parada_bajada_id,
                 parada_transbordo AS parada_bajada,
                 parada_transbordo_latitud AS parada_bajada_latitud,
                 parada_transbordo_longitud AS parada_bajada_longitud,
 
+
                 ruta2_id,
                 ruta2_nombre,
                 ruta2_color,
+
 
                 parada_subida_2_id,
                 parada_subida_2,
                 parada_subida_2_latitud,
                 parada_subida_2_longitud,
 
-                2 AS cantidad_camiones,
 
-                ROUND(
-                    distancia_origen::numeric,
-                    2
-                ) AS distancia_origen_metros,
+                2 AS cantidad_camiones
 
-                ROUND(
-                    distancia_destino::numeric,
-                    2
-                ) AS distancia_destino_metros,
-
-                ROUND(
-                    distancia_transbordo::numeric,
-                    2
-                ) AS distancia_transbordo_metros
 
             FROM mejor_dos_camiones
 
+
             WHERE NOT EXISTS (
+
                 SELECT 1
+
                 FROM mejor_directa
+
             );
+
             `,
+
             [
                 origenLat,
                 origenLng,
@@ -550,33 +719,36 @@ router.post("/buscar-ruta", async (req, res, next) => {
                 radioOrigenDestino,
                 radioTransbordo
             ]
+
         );
 
 
         // ============================================
-        // SIN RUTA
+        // NO SE ENCONTRÓ NADA
         // ============================================
 
         if (resultado.rows.length === 0) {
 
             return res.status(404).json({
-                mensaje: "No se encontró una ruta directa ni una combinación de dos camiones",
+
+                mensaje:
+                    "No se encontró una ruta directa ni una combinación de dos camiones.",
+
                 rutas: []
+
             });
+
         }
 
 
-        // ============================================
-        // RESPUESTA
-        // ============================================
+        const resultadoRuta = resultado.rows[0];
 
-        const ruta = resultado.rows[0];
 
         // ============================================
         // RUTA DIRECTA
         // ============================================
 
-        if (ruta.tipo === "DIRECTA") {
+        if (resultadoRuta.tipo === "DIRECTA") {
 
             return res.json({
 
@@ -585,27 +757,58 @@ router.post("/buscar-ruta", async (req, res, next) => {
                 cantidad_camiones: 1,
 
                 rutas: [
+
                     {
-                        ruta_id: ruta.ruta1_id,
-                        ruta: ruta.ruta1_nombre,
-                        color: ruta.ruta1_color,
+
+                        ruta_id:
+                            resultadoRuta.ruta1_id,
+
+                        ruta:
+                            resultadoRuta.ruta1_nombre,
+
+                        color:
+                            resultadoRuta.ruta1_color,
+
 
                         parada_subida: {
-                            id: ruta.parada_subida_id,
-                            nombre: ruta.parada_subida,
-                            latitud: ruta.parada_subida_latitud,
-                            longitud: ruta.parada_subida_longitud
+
+                            id:
+                                resultadoRuta.parada_subida_id,
+
+                            nombre:
+                                resultadoRuta.parada_subida,
+
+                            latitud:
+                                resultadoRuta.parada_subida_latitud,
+
+                            longitud:
+                                resultadoRuta.parada_subida_longitud
+
                         },
 
+
                         parada_bajada: {
-                            id: ruta.parada_bajada_id,
-                            nombre: ruta.parada_bajada,
-                            latitud: ruta.parada_bajada_latitud,
-                            longitud: ruta.parada_bajada_longitud
+
+                            id:
+                                resultadoRuta.parada_bajada_id,
+
+                            nombre:
+                                resultadoRuta.parada_bajada,
+
+                            latitud:
+                                resultadoRuta.parada_bajada_latitud,
+
+                            longitud:
+                                resultadoRuta.parada_bajada_longitud
+
                         }
+
                     }
+
                 ]
+
             });
+
         }
 
 
@@ -622,61 +825,162 @@ router.post("/buscar-ruta", async (req, res, next) => {
             rutas: [
 
                 {
+
                     numero: 1,
 
-                    ruta_id: ruta.ruta1_id,
-                    ruta: ruta.ruta1_nombre,
-                    color: ruta.ruta1_color,
+                    ruta_id:
+                        resultadoRuta.ruta1_id,
+
+                    ruta:
+                        resultadoRuta.ruta1_nombre,
+
+                    color:
+                        resultadoRuta.ruta1_color,
+
 
                     parada_subida: {
-                        id: ruta.parada_subida_id,
-                        nombre: ruta.parada_subida,
-                        latitud: ruta.parada_subida_latitud,
-                        longitud: ruta.parada_subida_longitud
+
+                        id:
+                            resultadoRuta.parada_subida_id,
+
+                        nombre:
+                            resultadoRuta.parada_subida,
+
+                        latitud:
+                            resultadoRuta.parada_subida_latitud,
+
+                        longitud:
+                            resultadoRuta.parada_subida_longitud
+
                     },
 
+
                     parada_bajada: {
-                        id: ruta.parada_bajada_id,
-                        nombre: ruta.parada_bajada,
-                        latitud: ruta.parada_bajada_latitud,
-                        longitud: ruta.parada_bajada_longitud
+
+                        id:
+                            resultadoRuta.parada_bajada_id,
+
+                        nombre:
+                            resultadoRuta.parada_bajada,
+
+                        latitud:
+                            resultadoRuta.parada_bajada_latitud,
+
+                        longitud:
+                            resultadoRuta.parada_bajada_longitud
+
                     }
+
                 },
 
+
                 {
+
                     numero: 2,
 
-                    ruta_id: ruta.ruta2_id,
-                    ruta: ruta.ruta2_nombre,
-                    color: ruta.ruta2_color,
+                    ruta_id:
+                        resultadoRuta.ruta2_id,
+
+                    ruta:
+                        resultadoRuta.ruta2_nombre,
+
+                    color:
+                        resultadoRuta.ruta2_color,
+
 
                     parada_subida: {
-                        id: ruta.parada_subida_2_id,
-                        nombre: ruta.parada_subida_2,
-                        latitud: ruta.parada_subida_2_latitud,
-                        longitud: ruta.parada_subida_2_longitud
+
+                        id:
+                            resultadoRuta.parada_subida_2_id,
+
+                        nombre:
+                            resultadoRuta.parada_subida_2,
+
+                        latitud:
+                            resultadoRuta.parada_subida_2_latitud,
+
+                        longitud:
+                            resultadoRuta.parada_subida_2_longitud
+
                     },
 
+
                     parada_bajada: {
-                        id: ruta.parada_bajada_id,
-                        nombre: ruta.parada_bajada,
-                        latitud: ruta.parada_bajada_latitud,
-                        longitud: ruta.parada_bajada_longitud
+
+                        id:
+                            resultadoRuta.parada_bajada_id,
+
+                        nombre:
+                            resultadoRuta.parada_bajada,
+
+                        latitud:
+                            resultadoRuta.parada_bajada_latitud,
+
+                        longitud:
+                            resultadoRuta.parada_bajada_longitud
+
                     }
+
                 }
 
-            ],
+            ]
 
-            distancia_transbordo_metros:
-                ruta.distancia_transbordo_metros
         });
 
     } catch (err) {
 
-        console.error("Error buscando ruta:", err);
+        console.error(
+            "================================="
+        );
 
-        next(err);
+        console.error(
+            "ERROR BUSCANDO RUTA"
+        );
+
+        console.error(
+            "Mensaje:",
+            err.message
+        );
+
+        console.error(
+            "Código:",
+            err.code
+        );
+
+        console.error(
+            "Detalle:",
+            err.detail
+        );
+
+        console.error(
+            "Hint:",
+            err.hint
+        );
+
+        console.error(
+            "Stack:",
+            err.stack
+        );
+
+        console.error(
+            "================================="
+        );
+
+
+        return res.status(500).json({
+
+            error:
+                "Error interno al buscar la ruta.",
+
+            detalle:
+                err.message
+
+        });
+
     }
+
 });
 
+
 module.exports = router;
+
