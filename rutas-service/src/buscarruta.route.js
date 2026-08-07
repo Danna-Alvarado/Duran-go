@@ -28,18 +28,22 @@ router.post("/buscar-ruta", async (req, res, next) => {
         }
 
         // ============================================
-        // RADIO MÁXIMO PARA BUSCAR PARADAS
+        // CONFIGURACIÓN
         // ============================================
 
-        // 800 metros = máximo que consideraremos
-        // como distancia caminando aproximada.
-        //
-        // Puedes cambiarlo después a 500, 1000, etc.
+        // Máximo que el usuario puede caminar
+        // desde su origen hasta la primera parada
+        // y desde la última parada hasta el destino.
+        const radioOrigenDestino = 800;
 
-        const radioMaximo = 800;
+        // Máximo que puede haber entre:
+        // parada donde baja del primer camión
+        // y parada donde sube al segundo.
+        const radioTransbordo = 500;
+
 
         // ============================================
-        // BUSCAR RUTAS
+        // BUSCAR RUTA DIRECTA O CON 1 TRANSBORDO
         // ============================================
 
         const resultado = await pool.query(
@@ -52,9 +56,9 @@ router.post("/buscar-ruta", async (req, res, next) => {
                     p.latitud,
                     p.longitud,
 
-                    -- =================================
-                    -- DISTANCIA AL ORIGEN
-                    -- =================================
+                    -- =====================================
+                    -- DISTANCIA DE LA PARADA AL ORIGEN
+                    -- =====================================
 
                     (
                         6371000 * acos(
@@ -68,16 +72,17 @@ router.post("/buscar-ruta", async (req, res, next) => {
                                         radians(p.longitud)
                                         - radians($2)
                                     )
-                                    + sin(radians($1))
+                                    +
+                                    sin(radians($1))
                                     * sin(radians(p.latitud))
                                 )
                             )
                         )
                     ) AS distancia_origen,
 
-                    -- =================================
-                    -- DISTANCIA AL DESTINO
-                    -- =================================
+                    -- =====================================
+                    -- DISTANCIA DE LA PARADA AL DESTINO
+                    -- =====================================
 
                     (
                         6371000 * acos(
@@ -91,7 +96,8 @@ router.post("/buscar-ruta", async (req, res, next) => {
                                         radians(p.longitud)
                                         - radians($4)
                                     )
-                                    + sin(radians($3))
+                                    +
+                                    sin(radians($3))
                                     * sin(radians(p.latitud))
                                 )
                             )
@@ -101,9 +107,10 @@ router.post("/buscar-ruta", async (req, res, next) => {
                 FROM paradas p
             ),
 
-            -- ============================================
-            -- PARADAS CERCANAS AL ORIGEN
-            -- ============================================
+
+            -- =================================================
+            -- PARADAS CERCA DEL ORIGEN
+            -- =================================================
 
             paradas_origen AS (
 
@@ -112,9 +119,10 @@ router.post("/buscar-ruta", async (req, res, next) => {
                 WHERE distancia_origen <= $5
             ),
 
-            -- ============================================
-            -- PARADAS CERCANAS AL DESTINO
-            -- ============================================
+
+            -- =================================================
+            -- PARADAS CERCA DEL DESTINO
+            -- =================================================
 
             paradas_destino AS (
 
@@ -123,42 +131,39 @@ router.post("/buscar-ruta", async (req, res, next) => {
                 WHERE distancia_destino <= $5
             ),
 
-            -- ============================================
-            -- POSIBLES RUTAS
-            -- ============================================
 
-            rutas_posibles AS (
+            -- =================================================
+            -- RUTAS DIRECTAS
+            -- =================================================
+
+            rutas_directas AS (
 
                 SELECT
 
-                    r.id,
-                    r.nombre,
-                    r.color,
+                    r.id AS ruta_id,
+                    r.nombre AS ruta_nombre,
+                    r.color AS ruta_color,
 
-                    -- Parada donde sube
                     po.id AS parada_subida_id,
                     po.nombre_parada AS parada_subida,
                     po.latitud AS parada_subida_latitud,
                     po.longitud AS parada_subida_longitud,
                     po.distancia_origen,
 
-                    -- Parada donde baja
                     pd.id AS parada_bajada_id,
                     pd.nombre_parada AS parada_bajada,
                     pd.latitud AS parada_bajada_latitud,
                     pd.longitud AS parada_bajada_longitud,
                     pd.distancia_destino,
 
-                    -- Orden dentro de la ruta
                     rp1.orden AS orden_subida,
                     rp2.orden AS orden_bajada,
 
-                    -- Distancia total caminando aproximada
-                    (
-                        po.distancia_origen
-                        +
-                        pd.distancia_destino
-                    ) AS distancia_caminando_total
+                    1 AS cantidad_camiones,
+
+                    po.distancia_origen
+                    + pd.distancia_destino
+                    AS distancia_caminando_total
 
                 FROM rutas r
 
@@ -176,105 +181,494 @@ router.post("/buscar-ruta", async (req, res, next) => {
 
                 WHERE
                     rp1.orden < rp2.orden
-
-                    -- Evitamos que sea la misma parada
                     AND rp1.parada_id <> rp2.parada_id
             ),
 
-            -- ============================================
-            -- ELEGIR LA MEJOR OPCIÓN DE CADA RUTA
-            -- ============================================
 
-            mejores_rutas AS (
+            -- =================================================
+            -- MEJOR RUTA DIRECTA
+            -- =================================================
+
+            mejor_directa AS (
+
+                SELECT *
+                FROM rutas_directas
+
+                ORDER BY distancia_caminando_total
+
+                LIMIT 1
+            ),
+
+
+            -- =================================================
+            -- PRIMER CAMIÓN
+            --
+            -- Origen -> parada de transbordo
+            -- =================================================
+
+            primer_camion AS (
 
                 SELECT
-                    *,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY id
-                        ORDER BY distancia_caminando_total
-                    ) AS posicion
 
-                FROM rutas_posibles
+                    r1.id AS ruta1_id,
+                    r1.nombre AS ruta1_nombre,
+                    r1.color AS ruta1_color,
+
+                    po.id AS parada_subida_id,
+                    po.nombre_parada AS parada_subida,
+                    po.latitud AS parada_subida_latitud,
+                    po.longitud AS parada_subida_longitud,
+                    po.distancia_origen,
+
+                    pt.id AS parada_transbordo_id,
+                    pt.nombre_parada AS parada_transbordo,
+                    pt.latitud AS parada_transbordo_latitud,
+                    pt.longitud AS parada_transbordo_longitud,
+
+                    rp1.orden AS orden_subida,
+                    rp_transbordo.orden AS orden_transbordo
+
+                FROM rutas r1
+
+                INNER JOIN ruta_paradas rp1
+                    ON rp1.ruta_id = r1.id
+
+                INNER JOIN ruta_paradas rp_transbordo
+                    ON rp_transbordo.ruta_id = r1.id
+
+                INNER JOIN paradas_origen po
+                    ON po.id = rp1.parada_id
+
+                INNER JOIN paradas pt
+                    ON pt.id = rp_transbordo.parada_id
+
+                WHERE
+                    rp1.orden < rp_transbordo.orden
+            ),
+
+
+            -- =================================================
+            -- SEGUNDO CAMIÓN
+            --
+            -- parada de transbordo -> destino
+            -- =================================================
+
+            segundo_camion AS (
+
+                SELECT
+
+                    r2.id AS ruta2_id,
+                    r2.nombre AS ruta2_nombre,
+                    r2.color AS ruta2_color,
+
+                    pt2.id AS parada_subida_id,
+                    pt2.nombre_parada AS parada_subida,
+                    pt2.latitud AS parada_subida_latitud,
+                    pt2.longitud AS parada_subida_longitud,
+
+                    pd.id AS parada_bajada_id,
+                    pd.nombre_parada AS parada_bajada,
+                    pd.latitud AS parada_bajada_latitud,
+                    pd.longitud AS parada_bajada_longitud,
+                    pd.distancia_destino,
+
+                    rp_transbordo2.orden AS orden_subida,
+                    rp2.orden AS orden_bajada
+
+                FROM rutas r2
+
+                INNER JOIN ruta_paradas rp_transbordo2
+                    ON rp_transbordo2.ruta_id = r2.id
+
+                INNER JOIN ruta_paradas rp2
+                    ON rp2.ruta_id = r2.id
+
+                INNER JOIN paradas pt2
+                    ON pt2.id = rp_transbordo2.parada_id
+
+                INNER JOIN paradas_destino pd
+                    ON pd.id = rp2.parada_id
+
+                WHERE
+                    rp_transbordo2.orden < rp2.orden
+            ),
+
+
+            -- =================================================
+            -- COMBINAR LOS DOS CAMIONES
+            -- =================================================
+
+            rutas_dos_camiones AS (
+
+                SELECT
+
+                    p.ruta1_id,
+                    p.ruta1_nombre,
+                    p.ruta1_color,
+
+                    p.parada_subida_id,
+                    p.parada_subida,
+                    p.parada_subida_latitud,
+                    p.parada_subida_longitud,
+
+                    p.parada_transbordo_id,
+                    p.parada_transbordo,
+                    p.parada_transbordo_latitud,
+                    p.parada_transbordo_longitud,
+
+                    s.ruta2_id,
+                    s.ruta2_nombre,
+                    s.ruta2_color,
+
+                    s.parada_subida_id AS parada_subida_2_id,
+                    s.parada_subida AS parada_subida_2,
+                    s.parada_subida_latitud AS parada_subida_2_latitud,
+                    s.parada_subida_longitud AS parada_subida_2_longitud,
+
+                    s.parada_bajada_id,
+                    s.parada_bajada,
+                    s.parada_bajada_latitud,
+                    s.parada_bajada_longitud,
+
+                    p.distancia_origen,
+                    s.distancia_destino,
+
+                    -- =========================================
+                    -- DISTANCIA ENTRE LAS DOS PARADAS
+                    -- =========================================
+
+                    (
+                        6371000 * acos(
+                            LEAST(
+                                1,
+                                GREATEST(
+                                    -1,
+
+                                    cos(
+                                        radians(p.parada_transbordo_latitud)
+                                    )
+                                    *
+                                    cos(
+                                        radians(s.parada_subida_2_latitud)
+                                    )
+                                    *
+                                    cos(
+                                        radians(s.parada_subida_2_longitud)
+                                        -
+                                        radians(p.parada_transbordo_longitud)
+                                    )
+                                    +
+                                    sin(
+                                        radians(p.parada_transbordo_latitud)
+                                    )
+                                    *
+                                    sin(
+                                        radians(s.parada_subida_2_latitud)
+                                    )
+                                )
+                            )
+                        )
+                    ) AS distancia_transbordo
+
+                FROM primer_camion p
+
+                INNER JOIN segundo_camion s
+                    ON p.ruta1_id <> s.ruta2_id
+
+                    -- =========================================
+                    -- EL SEGUNDO CAMIÓN DEBE ESTAR CERCA
+                    -- =========================================
+
+                    AND (
+                        6371000 * acos(
+                            LEAST(
+                                1,
+                                GREATEST(
+                                    -1,
+
+                                    cos(
+                                        radians(p.parada_transbordo_latitud)
+                                    )
+                                    *
+                                    cos(
+                                        radians(s.parada_subida_2_latitud)
+                                    )
+                                    *
+                                    cos(
+                                        radians(s.parada_subida_2_longitud)
+                                        -
+                                        radians(p.parada_transbordo_longitud)
+                                    )
+                                    +
+                                    sin(
+                                        radians(p.parada_transbordo_latitud)
+                                    )
+                                    *
+                                    sin(
+                                        radians(s.parada_subida_2_latitud)
+                                    )
+                                )
+                            )
+                        )
+                    ) <= $6
+            ),
+
+
+            -- =================================================
+            -- MEJOR OPCIÓN DE DOS CAMIONES
+            -- =================================================
+
+            mejor_dos_camiones AS (
+
+                SELECT *
+
+                FROM rutas_dos_camiones
+
+                ORDER BY
+                    distancia_origen
+                    +
+                    distancia_transbordo
+                    +
+                    distancia_destino
+
+                LIMIT 1
             )
 
-            -- ============================================
-            -- RESULTADO FINAL
-            -- ============================================
+
+            -- =================================================
+            -- RESULTADO
+            --
+            -- PRIMERO INTENTAMOS RUTA DIRECTA.
+            -- SI EXISTE, DEVOLVEMOS SOLO ESA.
+            --
+            -- SI NO EXISTE, DEVOLVEMOS LOS DOS CAMIONES.
+            -- =================================================
 
             SELECT
 
-                id,
-                nombre,
-                color,
+                'DIRECTA' AS tipo,
+
+                ruta_id AS ruta1_id,
+                ruta_nombre AS ruta1_nombre,
+                ruta_color AS ruta1_color,
 
                 parada_subida_id,
                 parada_subida,
                 parada_subida_latitud,
                 parada_subida_longitud,
 
-                ROUND(
-                    distancia_origen::numeric,
-                    2
-                ) AS distancia_origen_metros,
-
                 parada_bajada_id,
                 parada_bajada,
                 parada_bajada_latitud,
                 parada_bajada_longitud,
+
+                NULL::INTEGER AS ruta2_id,
+                NULL::VARCHAR AS ruta2_nombre,
+                NULL::VARCHAR AS ruta2_color,
+
+                NULL::INTEGER AS parada_subida_2_id,
+                NULL::VARCHAR AS parada_subida_2,
+                NULL::DOUBLE PRECISION AS parada_subida_2_latitud,
+                NULL::DOUBLE PRECISION AS parada_subida_2_longitud,
+
+                1 AS cantidad_camiones,
+
+                ROUND(
+                    distancia_origen::numeric,
+                    2
+                ) AS distancia_origen_metros,
 
                 ROUND(
                     distancia_destino::numeric,
                     2
                 ) AS distancia_destino_metros,
 
-                orden_subida,
-                orden_bajada,
+                NULL::NUMERIC AS distancia_transbordo_metros
+
+            FROM mejor_directa
+
+
+            UNION ALL
+
+
+            SELECT
+
+                'TRANSBORDO' AS tipo,
+
+                ruta1_id,
+                ruta1_nombre,
+                ruta1_color,
+
+                parada_subida_id,
+                parada_subida,
+                parada_subida_latitud,
+                parada_subida_longitud,
+
+                parada_transbordo_id AS parada_bajada_id,
+                parada_transbordo AS parada_bajada,
+                parada_transbordo_latitud AS parada_bajada_latitud,
+                parada_transbordo_longitud AS parada_bajada_longitud,
+
+                ruta2_id,
+                ruta2_nombre,
+                ruta2_color,
+
+                parada_subida_2_id,
+                parada_subida_2,
+                parada_subida_2_latitud,
+                parada_subida_2_longitud,
+
+                2 AS cantidad_camiones,
 
                 ROUND(
-                    distancia_caminando_total::numeric,
+                    distancia_origen::numeric,
                     2
-                ) AS distancia_caminando_total_metros
+                ) AS distancia_origen_metros,
 
-            FROM mejores_rutas
+                ROUND(
+                    distancia_destino::numeric,
+                    2
+                ) AS distancia_destino_metros,
 
-            WHERE posicion = 1
+                ROUND(
+                    distancia_transbordo::numeric,
+                    2
+                ) AS distancia_transbordo_metros
 
-            ORDER BY distancia_caminando_total
+            FROM mejor_dos_camiones
 
-            LIMIT 5;
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM mejor_directa
+            );
             `,
-
             [
                 origenLat,
                 origenLng,
                 destinoLat,
                 destinoLng,
-                radioMaximo
+                radioOrigenDestino,
+                radioTransbordo
             ]
         );
 
+
         // ============================================
-        // SIN RUTAS
+        // SIN RUTA
         // ============================================
 
         if (resultado.rows.length === 0) {
 
             return res.status(404).json({
-                mensaje: "No se encontraron rutas cercanas",
-                radio_busqueda_metros: radioMaximo,
+                mensaje: "No se encontró una ruta directa ni una combinación de dos camiones",
                 rutas: []
             });
-
         }
+
 
         // ============================================
         // RESPUESTA
         // ============================================
 
-        res.json({
-            cantidad: resultado.rows.length,
-            radio_busqueda_metros: radioMaximo,
-            rutas: resultado.rows
+        const ruta = resultado.rows[0];
+
+        // ============================================
+        // RUTA DIRECTA
+        // ============================================
+
+        if (ruta.tipo === "DIRECTA") {
+
+            return res.json({
+
+                tipo: "DIRECTA",
+
+                cantidad_camiones: 1,
+
+                rutas: [
+                    {
+                        ruta_id: ruta.ruta1_id,
+                        ruta: ruta.ruta1_nombre,
+                        color: ruta.ruta1_color,
+
+                        parada_subida: {
+                            id: ruta.parada_subida_id,
+                            nombre: ruta.parada_subida,
+                            latitud: ruta.parada_subida_latitud,
+                            longitud: ruta.parada_subida_longitud
+                        },
+
+                        parada_bajada: {
+                            id: ruta.parada_bajada_id,
+                            nombre: ruta.parada_bajada,
+                            latitud: ruta.parada_bajada_latitud,
+                            longitud: ruta.parada_bajada_longitud
+                        }
+                    }
+                ]
+            });
+        }
+
+
+        // ============================================
+        // DOS CAMIONES
+        // ============================================
+
+        return res.json({
+
+            tipo: "TRANSBORDO",
+
+            cantidad_camiones: 2,
+
+            rutas: [
+
+                {
+                    numero: 1,
+
+                    ruta_id: ruta.ruta1_id,
+                    ruta: ruta.ruta1_nombre,
+                    color: ruta.ruta1_color,
+
+                    parada_subida: {
+                        id: ruta.parada_subida_id,
+                        nombre: ruta.parada_subida,
+                        latitud: ruta.parada_subida_latitud,
+                        longitud: ruta.parada_subida_longitud
+                    },
+
+                    parada_bajada: {
+                        id: ruta.parada_bajada_id,
+                        nombre: ruta.parada_bajada,
+                        latitud: ruta.parada_bajada_latitud,
+                        longitud: ruta.parada_bajada_longitud
+                    }
+                },
+
+                {
+                    numero: 2,
+
+                    ruta_id: ruta.ruta2_id,
+                    ruta: ruta.ruta2_nombre,
+                    color: ruta.ruta2_color,
+
+                    parada_subida: {
+                        id: ruta.parada_subida_2_id,
+                        nombre: ruta.parada_subida_2,
+                        latitud: ruta.parada_subida_2_latitud,
+                        longitud: ruta.parada_subida_2_longitud
+                    },
+
+                    parada_bajada: {
+                        id: ruta.parada_bajada_id,
+                        nombre: ruta.parada_bajada,
+                        latitud: ruta.parada_bajada_latitud,
+                        longitud: ruta.parada_bajada_longitud
+                    }
+                }
+
+            ],
+
+            distancia_transbordo_metros:
+                ruta.distancia_transbordo_metros
         });
 
     } catch (err) {
