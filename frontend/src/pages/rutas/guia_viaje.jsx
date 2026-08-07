@@ -1,3 +1,4 @@
+
 import "./guia_viaje.css";
 import Navar from "../../components/Navar";
 
@@ -5,150 +6,242 @@ import {
     FaBus,
     FaMapMarkerAlt,
     FaWalking,
-    FaFlagCheckered
+    FaFlagCheckered,
+    FaExchangeAlt
 } from "react-icons/fa";
 
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-
 
 const API_URL = import.meta.env.VITE_RUTAS_URL;
 
 
 function GuiaViaje() {
 
-
-    const location = useLocation();
-
-    const state = location.state;
-
+    const { state } = useLocation();
 
     const [rutas, setRutas] = useState([]);
 
-    const [cargando, setCargando] = useState(!!state);
+    const [cargando, setCargando] = useState(
+        Boolean(state)
+    );
 
     const [error, setError] = useState(
-        state ? "" : "No se recibió información del viaje."
+        state
+            ? ""
+            : "No se recibió la información del viaje."
     );
 
 
+    // =====================================================
+    // BUSCAR RUTAS
+    // =====================================================
 
     useEffect(() => {
 
+        if (!state) {
+            return;
+        }
 
-    if (!state) {
-        return;
-    }
-
-
-
-    const buscarRuta = async () => {
+        let cancelado = false;
 
 
-        try {
+        const buscarRuta = async () => {
+
+            try {
+
+                setCargando(true);
+                setError("");
 
 
-            setCargando(true);
+                // =========================================
+                // COORDENADAS
+                // =========================================
 
-            setError("");
+                const origenLat =
+                    state.origen?.lat ??
+                    state.origenLat;
+
+                const origenLng =
+                    state.origen?.lng ??
+                    state.origenLng;
+
+                const destinoLat =
+                    state.destino?.lat ??
+                    state.destinoLat;
+
+                const destinoLng =
+                    state.destino?.lng ??
+                    state.destinoLng;
 
 
+                console.log(
+                    "Coordenadas enviadas a buscar-ruta:",
+                    {
+                        origenLat,
+                        origenLng,
+                        destinoLat,
+                        destinoLng
+                    }
+                );
 
-            const respuesta = await fetch(
-                `${API_URL}/buscar-ruta`,
-                {
-                    method:"POST",
 
-                    headers:{
-                        "Content-Type":"application/json"
-                    },
+                // =========================================
+                // VALIDAR COORDENADAS
+                // =========================================
 
-                    body:JSON.stringify({
+                if (
+                    origenLat == null ||
+                    origenLng == null ||
+                    destinoLat == null ||
+                    destinoLng == null
+                ) {
 
-                        origenLat: state.origenLat,
+                    if (!cancelado) {
 
-                        origenLng: state.origenLng,
+                        setError(
+                            "No se encontraron las coordenadas de origen y destino."
+                        );
 
-                        destinoLat: state.destinoLat,
+                        setCargando(false);
 
-                        destinoLng: state.destinoLng
+                    }
 
-                    })
+                    return;
+                }
+
+
+                // =========================================
+                // PETICIÓN
+                // =========================================
+
+                const respuesta = await fetch(
+                    `${API_URL}/buscar-ruta`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            origenLat,
+                            origenLng,
+
+                            destinoLat,
+                            destinoLng
+
+                        })
+                    }
+                );
+
+
+                const datos = await respuesta.json();
+
+
+                console.log(
+                    "Respuesta buscar-ruta:",
+                    datos
+                );
+
+
+                if (cancelado) {
+                    return;
+                }
+
+
+                // =========================================
+                // ERROR
+                // =========================================
+
+                if (!respuesta.ok) {
+
+                    setRutas([]);
+
+                    setError(
+                        datos.mensaje ||
+                        datos.error ||
+                        "No fue posible encontrar una ruta."
+                    );
+
+                    setCargando(false);
+
+                    return;
+                }
+
+
+                // =========================================
+                // GUARDAR RECOMENDACIONES
+                // =========================================
+
+                if (
+                    Array.isArray(datos.rutas)
+                ) {
+
+                    setRutas(datos.rutas);
+
+                } else {
+
+                    setRutas([]);
 
                 }
-            );
 
 
+                setError("");
+
+                setCargando(false);
 
 
-            const datos = await respuesta.json();
+            } catch (err) {
+
+                if (cancelado) {
+                    return;
+                }
 
 
-
-
-            if(!respuesta.ok){
-
-                throw new Error(
-                    datos.mensaje ||
-                    datos.error ||
-                    "No se encontraron rutas"
+                console.error(
+                    "Error buscando ruta:",
+                    err
                 );
+
+
+                setRutas([]);
+
+                setError(
+                    "No fue posible calcular la ruta."
+                );
+
+                setCargando(false);
 
             }
 
+        };
 
 
-
-            setRutas(
-                datos.rutas || []
-            );
+        buscarRuta();
 
 
+        return () => {
 
-        } catch(error){
+            cancelado = true;
 
-
-            console.error(error);
-
-
-            setError(
-                error.message
-            );
+        };
 
 
-            setRutas([]);
+    }, [state]);
 
 
-
-        } finally{
-
-
-            setCargando(false);
-
-
-        }
-
-
-
-    };
-
-
-
-    buscarRuta();
-
-
-}, [state]);
-
-
-
-
+    // =====================================================
+    // FORMATEAR DISTANCIA
+    // =====================================================
 
     const formatearDistancia = (metros) => {
 
-
         if (
             metros === null ||
-            metros === undefined
+            metros === undefined ||
+            Number.isNaN(Number(metros))
         ) {
 
             return "0 m";
@@ -156,45 +249,69 @@ function GuiaViaje() {
         }
 
 
-
         const distancia = Number(metros);
-
 
 
         if (distancia >= 1000) {
 
-
-            return (
-                (distancia / 1000)
-                .toFixed(1)
-                + " km"
-            );
-
+            return `${(
+                distancia / 1000
+            ).toFixed(1)} km`;
 
         }
 
 
-
-        return (
-            Math.round(distancia)
-            + " m"
-        );
-
+        return `${Math.round(distancia)} m`;
 
     };
 
 
+    // =====================================================
+    // SIN INFORMACIÓN
+    // =====================================================
+
+    if (!state) {
+
+        return (
+
+            <div className="guia-container">
+
+                <div className="contenido">
+
+                    <h2>
+                        Tu viaje
+                    </h2>
 
 
+                    <div className="mensaje error">
+
+                        <p>
+                            No se recibió la información del viaje.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <Navar />
+
+            </div>
+
+        );
+
+    }
+
+
+    // =====================================================
+    // RENDER
+    // =====================================================
 
     return (
 
         <div className="guia-container">
 
-
-
             <div className="contenido">
-
 
 
                 <h2>
@@ -202,29 +319,28 @@ function GuiaViaje() {
                 </h2>
 
 
+                {/* =================================================
+                    CARGANDO
+                ================================================= */}
 
-
-
-                {
-                cargando && (
+                {cargando && (
 
                     <div className="mensaje">
 
                         <p>
-                            Calculando ruta...
+                            Calculando las mejores rutas...
                         </p>
 
                     </div>
 
-                )
-                }
+                )}
 
 
+                {/* =================================================
+                    ERROR
+                ================================================= */}
 
-
-
-                {
-                !cargando && error && (
+                {!cargando && error && (
 
                     <div className="mensaje error">
 
@@ -234,502 +350,522 @@ function GuiaViaje() {
 
                     </div>
 
-                )
-                }
+                )}
 
 
+                {/* =================================================
+                    SIN RUTAS
+                ================================================= */}
 
-
-
-
-                {
-                !cargando &&
+                {!cargando &&
                 !error &&
                 rutas.length === 0 && (
 
                     <div className="mensaje">
 
                         <p>
-                            No hay rutas disponibles.
+                            No se encontró una ruta disponible.
                         </p>
 
                     </div>
 
-                )
-                }
+                )}
 
 
+                {/* =================================================
+                    RECOMENDACIONES
+                ================================================= */}
 
-
-
-
-
-                {
-                !cargando &&
+                {!cargando &&
+                !error &&
                 rutas.length > 0 && (
 
+                    <>
 
-                <>
+                        <h3 className="subtitulo">
+                            Opciones para tu viaje
+                        </h3>
 
 
-                <h3 className="subtitulo">
-                    Autobuses disponibles
-                </h3>
+                        {rutas.map(
+                            (recomendacion, indice) => {
 
-
-
-
-
-                {
-                rutas.map((ruta,index)=>(
-
-
-
-                <div
-                    className="ruta-viaje"
-                    key={index}
-                >
-
-
-
-
-
-                    <div className="ruta-header">
-
-
-                        <div className="bus-icon-container">
-
-                            <FaBus
-                                className="icono-bus"
-                            />
-
-                        </div>
-
-
-
-
-                        <div>
-
-
-                            <h3>
-                                {ruta.nombre}
-                            </h3>
-
-
-                            <p>
-                                Ruta #{ruta.id}
-                            </p>
-
-
-                        </div>
-
-
-                    </div>
-
-
-
-
-
-
-
-                    <div className="recorrido">
-
-
-
-
-
-                        <div className="paso">
-
-
-                            <div className="paso-icono">
-
-                                <FaWalking />
-
-                            </div>
-
-
-
-                            <div className="paso-info">
-
-
-                                <span className="paso-titulo">
-
-                                    Camina hasta
-
-                                </span>
-
-
-
-                                <strong>
-
-                                    {ruta.parada_subida}
-
-                                </strong>
-
-
-
-                                <span>
-
-                                    Distancia:
-                                    {" "}
-                                    {
-                                    formatearDistancia(
-                                        ruta.distancia_origen_metros
+                                const tramos =
+                                    Array.isArray(
+                                        recomendacion.rutas
                                     )
-                                    }
+                                        ? recomendacion.rutas
+                                        : [];
 
-                                </span>
 
+                                return (
 
-                            </div>
+                                    <div
+                                        className="ruta-viaje"
+                                        key={`${indice}-${recomendacion.tipo}`}
+                                    >
 
 
-                        </div>
+                                        {/* =================================
+                                            ENCABEZADO DE RECOMENDACIÓN
+                                        ================================= */}
 
+                                        <div className="ruta-header">
 
+                                            <div className="bus-icon-container">
 
+                                                <FaBus
+                                                    className="icono-bus"
+                                                />
 
+                                            </div>
 
-                        <div className="linea-recorrido"/>
 
+                                            <div>
 
+                                                <h3>
+                                                    {indice === 0
+                                                        ? "⭐ Mejor opción"
+                                                        : `Opción ${indice + 1}`
+                                                    }
+                                                </h3>
 
 
+                                                <p>
 
+                                                    {recomendacion.numero_transbordos === 0
+                                                        ? "Ruta directa"
+                                                        : `${recomendacion.numero_transbordos} transbordo`
+                                                    }
 
-                        <div className="paso">
+                                                </p>
 
+                                            </div>
 
-                            <div className="paso-icono">
+                                        </div>
 
-                                <FaBus />
 
-                            </div>
+                                        {/* =================================
+                                            RECORRIDO COMPLETO
+                                        ================================= */}
 
+                                        <div className="recorrido">
 
 
+                                            {/* =================================
+                                                CAMINAR AL PRIMER CAMIÓN
+                                            ================================= */}
 
-                            <div className="paso-info">
+                                            {tramos.length > 0 && (
 
+                                                <>
 
-                                <span className="paso-titulo">
+                                                    <div className="paso">
 
-                                    Subir al autobús
+                                                        <div className="paso-icono">
 
-                                </span>
+                                                            <FaWalking />
 
+                                                        </div>
 
 
-                                <strong>
+                                                        <div className="paso-info">
 
-                                    {ruta.parada_subida}
+                                                            <span className="paso-titulo">
+                                                                Camina hasta
+                                                            </span>
 
-                                </strong>
 
+                                                            <strong>
+                                                                {tramos[0].parada_subida}
+                                                            </strong>
 
 
-                                <span>
+                                                            <span>
 
-                                    Ruta:
-                                    {" "}
-                                    {ruta.nombre}
+                                                                Distancia:
+                                                                {" "}
 
-                                </span>
+                                                                {formatearDistancia(
+                                                                    tramos[0]
+                                                                        .distancia_origen_metros
+                                                                )}
 
+                                                            </span>
 
+                                                        </div>
 
-                            </div>
+                                                    </div>
 
 
-                        </div>
+                                                    <div className="linea-recorrido" />
 
+                                                </>
 
+                                            )}
 
 
+                                            {/* =================================
+                                                CADA CAMIÓN
+                                            ================================= */}
 
+                                            {tramos.map(
+                                                (tramo, tramoIndex) => (
 
+                                                    <div
+                                                        key={`${tramo.id}-${tramoIndex}`}
+                                                    >
 
-                        <div className="linea-recorrido"/>
 
+                                                        {/* =========================
+                                                            SUBIR AL AUTOBÚS
+                                                        ========================= */}
 
+                                                        <div className="paso">
 
+                                                            <div className="paso-icono">
 
+                                                                <FaBus />
 
+                                                            </div>
 
 
-                        <div className="paso">
+                                                            <div className="paso-info">
 
+                                                                <span className="paso-titulo">
 
-                            <div className="paso-icono">
+                                                                    {tramoIndex === 0
+                                                                        ? "Subir al autobús"
+                                                                        : "Subir al segundo autobús"
+                                                                    }
 
-                                <FaMapMarkerAlt />
+                                                                </span>
 
-                            </div>
 
+                                                                <strong>
+                                                                    {tramo.parada_subida}
+                                                                </strong>
 
 
+                                                                <span>
 
-                            <div className="paso-info">
+                                                                    Ruta {tramo.nombre}
 
+                                                                </span>
 
-                                <span className="paso-titulo">
 
-                                    Bajar en
+                                                                <span>
 
-                                </span>
+                                                                    Color:
+                                                                    {" "}
+                                                                    {tramo.color}
 
+                                                                </span>
 
+                                                            </div>
 
+                                                        </div>
 
-                                <strong>
 
-                                    {ruta.parada_bajada}
+                                                        <div className="linea-recorrido" />
 
-                                </strong>
 
+                                                        {/* =========================
+                                                            BAJAR
+                                                        ========================= */}
 
+                                                        <div className="paso">
 
+                                                            <div className="paso-icono">
 
-                                <span>
+                                                                <FaMapMarkerAlt />
 
-                                    Orden de parada:
-                                    {" "}
-                                    {ruta.orden_bajada}
+                                                            </div>
 
-                                </span>
 
+                                                            <div className="paso-info">
 
+                                                                <span className="paso-titulo">
 
+                                                                    {tramoIndex <
+                                                                    tramos.length - 1
+                                                                        ? "Bajar para hacer transbordo"
+                                                                        : "Bajar del autobús"
+                                                                    }
 
-                            </div>
+                                                                </span>
 
 
+                                                                <strong>
+                                                                    {tramo.parada_bajada}
+                                                                </strong>
 
-                        </div>
 
+                                                                <span>
 
+                                                                    Parada #
+                                                                    {" "}
+                                                                    {tramo.orden_bajada}
 
+                                                                </span>
 
+                                                            </div>
 
+                                                        </div>
 
 
-                        <div className="linea-recorrido"/>
+                                                        {/* =================================
+                                                            TRANSBORDO
+                                                        ================================= */}
 
+                                                        {tramoIndex <
+                                                        tramos.length - 1 && (
 
+                                                            <>
 
+                                                                <div className="linea-recorrido" />
 
 
+                                                                <div className="paso">
 
+                                                                    <div className="paso-icono">
 
-                        <div className="paso">
+                                                                        <FaExchangeAlt />
 
+                                                                    </div>
 
-                            <div className="paso-icono">
 
-                                <FaFlagCheckered />
+                                                                    <div className="paso-info">
 
-                            </div>
+                                                                        <span className="paso-titulo">
+                                                                            Transbordo
+                                                                        </span>
 
 
+                                                                        <strong>
 
+                                                                            Cambia a la ruta:
+                                                                            {" "}
+                                                                            {tramos[
+                                                                                tramoIndex + 1
+                                                                            ].nombre}
 
-                            <div className="paso-info">
+                                                                        </strong>
 
 
-                                <span className="paso-titulo">
+                                                                        <span>
 
-                                    Llegaste cerca de tu destino
+                                                                            Camina aproximadamente
+                                                                            {" "}
+                                                                            {formatearDistancia(
+                                                                                tramos[
+                                                                                    tramoIndex + 1
+                                                                                ]
+                                                                                    .distancia_transbordo_metros
+                                                                            )}
 
-                                </span>
+                                                                        </span>
 
+                                                                    </div>
 
+                                                                </div>
 
 
-                                <strong>
+                                                                <div className="linea-recorrido" />
 
-                                    Destino
+                                                            </>
 
-                                </strong>
+                                                        )}
 
+                                                    </div>
 
+                                                )
+                                            )}
 
 
-                                <span>
+                                            {/* =================================
+                                                DESTINO FINAL
+                                            ================================= */}
 
-                                    Distancia desde parada:
-                                    {" "}
-                                    {
-                                    formatearDistancia(
-                                    ruta.distancia_destino_metros
-                                    )
-                                    }
+                                            {tramos.length > 0 && (
 
-                                </span>
+                                                <>
 
+                                                    <div className="paso">
 
+                                                        <div className="paso-icono">
 
-                            </div>
+                                                            <FaFlagCheckered />
 
+                                                        </div>
 
 
-                        </div>
+                                                        <div className="paso-info">
 
+                                                            <span className="paso-titulo">
 
+                                                                Llegar a tu destino
 
+                                                            </span>
 
 
-                    </div>
+                                                            <strong>
 
+                                                                {state.destino?.nombre ||
+                                                                "Destino"}
 
+                                                            </strong>
 
 
+                                                            <span>
 
+                                                                Distancia desde la última parada:
+                                                                {" "}
 
+                                                                {formatearDistancia(
+                                                                    tramos[
+                                                                        tramos.length - 1
+                                                                    ]
+                                                                        .distancia_destino_metros
+                                                                )}
 
+                                                            </span>
 
+                                                        </div>
 
-                    <div className="ruta-info">
+                                                    </div>
 
+                                                </>
 
-                        <p>
+                                            )}
 
-                            <strong>
-                                Color:
-                            </strong>
+                                        </div>
 
-                            {" "}
 
-                            {ruta.color}
+                                        {/* =================================
+                                            INFORMACIÓN
+                                        ================================= */}
 
+                                        <div className="ruta-info">
 
-                        </p>
 
+                                            <p>
 
+                                                <strong>
+                                                    Tipo:
+                                                </strong>
 
+                                                {" "}
 
+                                                {recomendacion.numero_transbordos === 0
+                                                    ? "Ruta directa"
+                                                    : "Ruta con transbordo"
+                                                }
 
-                        <p>
+                                            </p>
 
-                            <strong>
-                                Caminata total:
-                            </strong>
 
-                            {" "}
+                                            <p>
 
-                            {
-                            formatearDistancia(
-                                ruta.distancia_caminando_total_metros
-                            )
+                                                <strong>
+                                                    Camiones:
+                                                </strong>
+
+                                                {" "}
+
+                                                {tramos.length}
+
+                                            </p>
+
+
+                                            <p>
+
+                                                <strong>
+                                                    Distancia caminando:
+                                                </strong>
+
+                                                {" "}
+
+                                                {formatearDistancia(
+                                                    recomendacion
+                                                        .distancia_caminando_total
+                                                )}
+
+                                            </p>
+
+
+                                            {tramos.map(
+                                                (tramo, tramoIndex) => (
+
+                                                    <p
+                                                        key={`info-${tramo.id}-${tramoIndex}`}
+                                                    >
+
+                                                        <strong>
+
+                                                            Ruta {tramoIndex + 1}:
+
+                                                        </strong>
+
+                                                        {" "}
+
+                                                        {tramo.nombre}
+
+                                                        {" — "}
+
+                                                        {tramo.parada_subida}
+
+                                                        {" → "}
+
+                                                        {tramo.parada_bajada}
+
+                                                    </p>
+
+                                                )
+                                            )}
+
+                                        </div>
+
+
+                                    </div>
+
+                                );
+
                             }
+                        )}
 
 
-                        </p>
+                        {/* =================================
+                            COMENZAR VIAJE
+                        ================================= */}
 
+                        <button
+                            className="btn-comenzar"
+                            onClick={() => {
 
+                                console.log(
+                                    "Comenzando viaje..."
+                                );
 
+                            }}
+                        >
 
+                            <FaBus />
 
-                        <p>
+                            Comenzar viaje
 
-                            <strong>
-                                Subir:
-                            </strong>
+                        </button>
 
-                            {" "}
+                    </>
 
-                            {ruta.parada_subida}
-
-
-                        </p>
-
-
-
-
-
-                        <p>
-
-                            <strong>
-                                Bajar:
-                            </strong>
-
-                            {" "}
-
-                            {ruta.parada_bajada}
-
-
-                        </p>
-
-
-
-
-                    </div>
-
-
-
-
-
-                </div>
-
-
-                ))
-
-                }
-
-
-
-
-
-
-
-
-                <button
-
-                    className="btn-comenzar"
-
-                    onClick={()=>{
-
-                        console.log(
-                            "Ruta elegida:",
-                            rutas[0]
-                        );
-
-                    }}
-
-                >
-
-                    <FaBus/>
-
-                    Comenzar viaje
-
-
-                </button>
-
-
-
-
-
-                </>
-
-                )
-
-                }
-
-
-
-
-
-
+                )}
 
             </div>
 
 
-
-
-            <Navar/>
-
+            <Navar />
 
         </div>
-
 
     );
 
