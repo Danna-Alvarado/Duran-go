@@ -1,206 +1,254 @@
 import "./guia_viaje.css";
 import Navar from "../../components/Navar";
-import { FaBus, FaMapMarkerAlt, FaWalking, FaFlagCheckered } from "react-icons/fa";
+import {
+  FaBus,
+  FaMapMarkerAlt,
+  FaWalking,
+  FaExchangeAlt,
+  FaFlagCheckered
+} from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function GuiaViaje() {
-
   const location = useLocation();
   const navigate = useNavigate();
 
-  const rutas = location.state?.rutas || [];
-  const origen = location.state?.origen;
-  const destino = location.state?.destino;
+  const datos = location.state;
 
-  console.log("Rutas recibidas:", rutas);
-  console.log("Origen:", origen);
-  console.log("Destino:", destino);
+  if (!datos || !datos.rutas) {
+    return (
+      <>
+        <Navar />
 
+        <div className="guia-container">
+          <div className="contenido-guia">
+            <h1>Guía de viaje</h1>
 
-  const comenzarViaje = () => {
-
-    navigate("/viaje", {
-      state: {
-        rutas,
-        origen,
-        destino
-      }
-    });
-
-  };
-
-
-  return (
-
-    <div className="guia-container">
-
-      <div className="contenido">
-
-        <h2>Autobuses a tomar</h2>
-
-
-        {rutas.length === 0 ? (
-
-          <div className="mensaje-sin-ruta">
-
-            <FaBus className="icono-bus-grande"/>
-
-            <h3>No encontramos una ruta</h3>
-
-            <p>
-              No encontramos autobuses que pasen cerca
-              de tu ubicación y destino.
-            </p>
+            <p>No hay una ruta seleccionada.</p>
 
             <button
-              className="btn-regresar"
+              className="boton-volver"
               onClick={() => navigate("/")}
             >
-              Regresar
+              Volver al inicio
             </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const resultado = datos.rutas;
+
+  const rutas = resultado.rutas || [];
+  const cantidadCamiones = resultado.cantidad_camiones || rutas.length;
+
+  return (
+    <>
+      <Navar />
+
+      <div className="guia-container">
+        <div className="contenido-guia">
+
+          <div className="encabezado-guia">
+            <div className="icono-ruta">
+              <FaBus />
+            </div>
+
+            <div>
+              <p className="titulo-secundario">
+                TU VIAJE
+              </p>
+
+              <h1>
+                Guía de viaje
+              </h1>
+            </div>
+          </div>
+
+
+          <div className="resumen-viaje">
+
+            <FaBus />
+
+            <div>
+
+              <strong>
+                {cantidadCamiones === 1
+                  ? "Toma un solo camión para llegar a tu destino."
+                  : "Necesitas tomar dos camiones para llegar a tu destino."
+                }
+              </strong>
+
+              <p>
+                {cantidadCamiones}{" "}
+                {cantidadCamiones === 1
+                  ? "camión"
+                  : "camiones"
+                }
+              </p>
+
+            </div>
 
           </div>
 
-        ) : (
 
-          <>
+          <div className="ruta-completa">
 
-            <div className="rutas-encontradas">
+            {rutas.map((ruta, index) => (
 
-              {rutas.map((ruta, index) => (
+              <div
+                className="paso"
+                key={index}
+              >
 
-                <div
-                  className="bus-card"
-                  key={ruta.id || index}
-                >
+                <div className="linea-tiempo">
 
-                  <div className="bus-icon-container">
+                  <div className="circulo">
 
-                    <FaBus className="icono-bus"/>
+                    {index === 0
+                      ? <FaMapMarkerAlt />
+                      : <FaExchangeAlt />
+                    }
+
+                  </div>
+
+                  {index < rutas.length && (
+                    <div className="linea"></div>
+                  )}
+
+                </div>
+
+
+                <div className="contenido-paso">
+
+                  <p className="etiqueta">
+
+                    {index === 0
+                      ? "PRIMER CAMIÓN"
+                      : "SEGUNDO CAMIÓN"
+                    }
+
+                  </p>
+
+
+                  <h2>
+                    {ruta.ruta}
+                  </h2>
+
+
+                  <span
+                    className="color-ruta"
+                    style={{
+                      backgroundColor: ruta.color
+                    }}
+                  >
+                    {ruta.color}
+                  </span>
+
+
+                  <div className="detalle">
+
+                    <FaWalking />
+
+                    <div>
+
+                      <strong>
+                        Camina hasta la parada
+                      </strong>
+
+                      <p>
+                        {ruta.parada_subida?.nombre}
+                      </p>
+
+                    </div>
 
                   </div>
 
 
-                  <div className="bus-info">
+                  <div className="detalle">
 
-                    <h3>
-                      {ruta.nombre}
-                    </h3>
+                    <FaBus />
 
+                    <div>
 
-                    {ruta.color && (
+                      <strong>
+                        Aborda este camión
+                      </strong>
 
-                      <p className="color-ruta">
-
-                        <span
-                          className="color-indicador"
-                          style={{
-                            backgroundColor:
-                              ruta.color.toLowerCase()
-                          }}
-                        ></span>
-
-                        {ruta.color}
-
+                      <p>
+                        Ruta {ruta.ruta}
                       </p>
 
-                    )}
+                    </div>
+
+                  </div>
 
 
-                    {ruta.parada_subida && (
+                  <div className="detalle">
 
-                      <div className="parada-info">
+                    <FaMapMarkerAlt />
 
-                        <FaMapMarkerAlt/>
+                    <div>
 
-                        <div>
+                      <strong>
+                        Baja en
+                      </strong>
 
-                          <strong>Sube en</strong>
+                      <p>
+                        {ruta.parada_bajada?.nombre}
+                      </p>
 
-                          <span>
-                            {ruta.parada_subida}
-                          </span>
-
-                          {ruta.distancia_subida !== undefined && (
-
-                            <small>
-                              {Math.round(
-                                ruta.distancia_subida * 1000
-                              )} metros
-                            </small>
-
-                          )}
-
-                        </div>
-
-                      </div>
-
-                    )}
-
-
-                    {ruta.parada_bajada && (
-
-                      <div className="parada-info">
-
-                        <FaFlagCheckered/>
-
-                        <div>
-
-                          <strong>Baja en</strong>
-
-                          <span>
-                            {ruta.parada_bajada}
-                          </span>
-
-                          {ruta.distancia_bajada !== undefined && (
-
-                            <small>
-                              {Math.round(
-                                ruta.distancia_bajada * 1000
-                              )} metros
-                            </small>
-
-                          )}
-
-                        </div>
-
-                      </div>
-
-                    )}
+                    </div>
 
                   </div>
 
                 </div>
 
-              ))}
+              </div>
+
+            ))}
+
+
+            <div className="paso final">
+
+              <div className="linea-tiempo">
+
+                <div className="circulo">
+                  <FaFlagCheckered />
+                </div>
+
+              </div>
+
+
+              <div className="contenido-paso">
+
+                <p className="etiqueta">
+                  DESTINO
+                </p>
+
+                <h2>
+                  Has llegado a tu destino
+                </h2>
+
+              </div>
 
             </div>
 
+          </div>
 
-            <button
-              className="btn-comenzar"
-              onClick={comenzarViaje}
-            >
 
-              <FaWalking/>
+          <button
+            className="boton-volver"
+            onClick={() => navigate("/")}
+          >
+            Buscar otra ruta
+          </button>
 
-              Comenzar
-
-            </button>
-
-          </>
-
-        )}
-
+        </div>
       </div>
-
-
-      <Navar/>
-
-    </div>
-
+    </>
   );
-
 }
 
 export default GuiaViaje;
