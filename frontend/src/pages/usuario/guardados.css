@@ -1,3 +1,7 @@
+/* =====================================================
+   RESET
+===================================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -5,21 +9,40 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.guardados {
-    min-height: calc(100vh - 110px);
+
+/* =====================================================
+   PÁGINA
+===================================================== */
+
+.guardados-page {
+    min-height: 100vh;
     background: #f7f6f8;
-    padding: 45px 20px 100px;
 }
 
 
-/* =========================
-   TITULO
-========================= */
+/* =====================================================
+   CONTENEDOR PRINCIPAL
+===================================================== */
+
+.guardados {
+    min-height: calc(100vh - 110px);
+
+    padding: 45px 20px 110px;
+}
+
+
+/* =====================================================
+   TÍTULO
+===================================================== */
 
 .titulo {
     text-align: center;
-    margin-bottom: 40px;
+
+    max-width: 700px;
+
+    margin: 0 auto 40px;
 }
+
 
 .titulo-icono {
     width: 60px;
@@ -34,44 +57,59 @@
     justify-content: center;
 
     background: #f3dff1;
+
     color: #75176E;
 
     font-size: 25px;
 }
 
+
 .titulo h1 {
     color: #75176E;
+
     font-size: 38px;
+
+    font-weight: 700;
 }
+
 
 .titulo p {
     margin-top: 10px;
+
     color: #777;
+
     font-size: 17px;
+
+    line-height: 1.5;
 }
 
 
-/* =========================
+/* =====================================================
    CONTENEDOR
-========================= */
+===================================================== */
 
 .contenedor {
     width: 100%;
+
     max-width: 850px;
-    margin: auto;
+
+    margin: 0 auto;
 
     display: flex;
+
     flex-direction: column;
-    gap: 20px;
+
+    gap: 22px;
 }
 
 
-/* =========================
+/* =====================================================
    TARJETA
-========================= */
+===================================================== */
 
 .ruta-card {
     display: flex;
+
     gap: 22px;
 
     background: white;
@@ -80,25 +118,28 @@
 
     padding: 25px;
 
-    box-shadow: 0 8px 25px rgba(0,0,0,.08);
-
     border: 1px solid #eee;
 
-    transition: .25s;
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.07);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
+
 
 .ruta-card:hover {
     transform: translateY(-3px);
 
     box-shadow:
-        0 12px 30px
-        rgba(117,23,110,.13);
+        0 12px 30px rgba(117, 23, 110, 0.13);
 }
 
 
-/* =========================
-   ICONO
-========================= */
+/* =====================================================
+   ICONO DE BUS
+===================================================== */
 
 .icono-ruta {
     width: 68px;
@@ -108,7 +149,7 @@
 
     border-radius: 18px;
 
-    background: #f4e1f2;
+    background: #f3dff1;
 
     color: #75176E;
 
@@ -120,53 +161,69 @@
 }
 
 
-/* =========================
+/* =====================================================
    CONTENIDO
-========================= */
+===================================================== */
 
 .ruta-contenido {
     flex: 1;
+
     min-width: 0;
 }
 
 
-/* =========================
+/* =====================================================
    CABECERA
-========================= */
+===================================================== */
 
 .ruta-cabecera {
     display: flex;
+
     justify-content: space-between;
+
     align-items: flex-start;
+
     gap: 15px;
 }
 
+
 .favorita {
     display: flex;
+
     align-items: center;
-    gap: 5px;
+
+    gap: 6px;
 
     color: #75176E;
 
     font-size: 11px;
+
     font-weight: bold;
+
     letter-spacing: 1px;
 }
 
+
 .ruta-cabecera h2 {
+    margin-top: 6px;
+
     color: #222;
-    font-size: 24px;
-    margin-top: 5px;
+
+    font-size: 25px;
+
+    line-height: 1.2;
 }
 
 
-/* =========================
+/* =====================================================
    ELIMINAR
-========================= */
+===================================================== */
 
 .btn-eliminar {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
 
     border: none;
 
@@ -184,167 +241,48 @@
 
     font-size: 16px;
 
-    transition: .2s;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
+
 
 .btn-eliminar:hover {
     background: #75176E;
+
     color: white;
+
+    transform: scale(1.05);
 }
 
 
-/* =========================
-   ORIGEN DESTINO
-========================= */
+/* =====================================================
+   NOMBRE DE RUTA
+===================================================== */
 
-.trayecto {
+.nombre-ruta {
     display: flex;
+
     align-items: center;
-    flex-wrap: wrap;
 
-    gap: 9px;
+    gap: 13px;
 
-    margin-top: 18px;
+    margin-top: 25px;
 
-    color: #555;
+    padding: 14px;
 
-    font-size: 15px;
-}
+    background: #faf8fa;
 
-.trayecto svg {
-    color: #75176E;
-    font-size: 13px;
+    border-radius: 13px;
 }
 
 
-/* =========================
-   CANTIDAD
-========================= */
-
-.cantidad-buses {
-    margin-top: 16px;
-
-    display: flex;
-    align-items: center;
-    gap: 7px;
-
-    color: #75176E;
-
-    font-size: 14px;
-}
-
-.cantidad-buses strong {
-    font-size: 16px;
-}
-
-
-/* =========================
-   MINI RUTAS
-========================= */
-
-.mini-rutas {
-    margin-top: 14px;
-
-    display: flex;
-    flex-wrap: wrap;
-
-    gap: 8px;
-}
-
-.mini-ruta {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-
-    background: #f7f5f7;
-
-    padding: 8px 12px;
+.nombre-ruta-icono {
+    width: 38px;
+    height: 38px;
 
     border-radius: 10px;
-
-    color: #444;
-
-    font-size: 14px;
-}
-
-.punto-ruta {
-    width: 9px;
-    height: 9px;
-
-    border-radius: 50%;
-}
-
-
-/* =========================
-   VER RUTA
-========================= */
-
-.btn-ver-ruta {
-    width: 100%;
-
-    margin-top: 20px;
-
-    padding: 13px 17px;
-
-    border: none;
-
-    border-radius: 12px;
-
-    background: #75176E;
-
-    color: white;
-
-    font-size: 15px;
-
-    font-weight: bold;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 10px;
-
-    cursor: pointer;
-
-    transition: .25s;
-}
-
-.btn-ver-ruta:hover {
-    background: #641261;
-}
-
-.btn-ver-ruta svg {
-    font-size: 13px;
-}
-
-
-/* =========================
-   SIN GUARDADOS
-========================= */
-
-.sinGuardados {
-    max-width: 550px;
-
-    margin: 80px auto;
-
-    background: white;
-
-    border-radius: 25px;
-
-    padding: 50px 30px;
-
-    text-align: center;
-
-    box-shadow: 0 8px 25px rgba(0,0,0,.07);
-}
-
-.icono-sin {
-    width: 80px;
-    height: 80px;
-
-    margin: auto;
-
-    border-radius: 50%;
 
     background: #f3dff1;
 
@@ -353,66 +291,242 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
 
+
+.nombre-ruta-texto {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.nombre-ruta-texto span {
+    color: #888;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.8px;
+}
+
+
+.nombre-ruta-texto strong {
+    color: #222;
+
+    font-size: 16px;
+}
+
+
+/* =====================================================
+   COLOR
+===================================================== */
+
+.color-ruta-info {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 14px;
+
+    padding: 4px 5px;
+}
+
+
+.punto-ruta {
+    width: 13px;
+    height: 13px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+}
+
+
+.color-ruta-info div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+
+.color-ruta-info span {
+    color: #888;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.8px;
+}
+
+
+.color-ruta-info strong {
+    color: #444;
+
+    font-size: 14px;
+}
+
+
+.btn-ver-ruta {
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
+    background: #75176E;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.btn-ver-ruta:hover {
+    background: #641261;
+
+    transform: translateY(-1px);
+}
+
+
+.btn-ver-ruta svg {
+    font-size: 13px;
+}
+
+
+
+
+.sinGuardados {
+    max-width: 550px;
+
+    margin: 70px auto;
+    background: white;
+    border-radius: 25px;
+    padding: 50px 30px;
+    text-align: center;
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.07);
+}
+
+
+.icono-sin {
+    width: 80px;
+    height: 80px;
+    margin: auto;
+    border-radius: 50%;
+    background: #f3dff1;
+    color: #75176E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 32px;
 }
 
+
 .sinGuardados h2 {
     margin-top: 20px;
-
     color: #75176E;
-
     font-size: 24px;
 }
 
+
 .sinGuardados p {
     margin-top: 10px;
-
     color: #777;
-
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 
-/* =========================
-   RESPONSIVE
-========================= */
+
 
 @media (max-width: 768px) {
 
     .guardados {
-        padding: 30px 15px 100px;
+        padding: 30px 15px 110px;
     }
+
+
+    .titulo {
+        margin-bottom: 30px;
+    }
+
 
     .titulo h1 {
         font-size: 30px;
     }
 
+
     .titulo p {
         font-size: 15px;
     }
 
+
     .ruta-card {
         padding: 20px;
+
         gap: 15px;
     }
+
 
     .icono-ruta {
         width: 55px;
         height: 55px;
+
         font-size: 25px;
     }
+
+
+    .ruta-cabecera h2 {
+        font-size: 21px;
+    }
+
+
+    .nombre-ruta {
+        margin-top: 20px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .ruta-card {
+        flex-direction: column;
+    }
+
+
+    .icono-ruta {
+        width: 58px;
+        height: 58px;
+    }
+
 
     .ruta-cabecera h2 {
         font-size: 20px;
     }
 
-    .trayecto {
-        font-size: 13px;
-    }
 
-    .mini-ruta {
-        width: 100%;
+    .titulo h1 {
+        font-size: 27px;
     }
 
 }

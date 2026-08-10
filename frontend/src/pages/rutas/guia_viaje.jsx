@@ -5,8 +5,7 @@ import Navar from "../../components/Navar";
 import {
     FaBus,
     FaHeart,
-    FaMapMarkerAlt,
-    FaWalking
+    FaMapMarkerAlt
 } from "react-icons/fa";
 
 import {
@@ -14,16 +13,12 @@ import {
     useNavigate
 } from "react-router-dom";
 
-
-const USUARIO_URL =
-    import.meta.env.VITE_USUARIO_URL;
-
+const USUARIO_URL = import.meta.env.VITE_USUARIO_URL;
 
 function GuiaViaje() {
 
     const location = useLocation();
     const navigate = useNavigate();
-
 
     // =====================================================
     // DATOS RECIBIDOS DESDE HOME
@@ -35,7 +30,7 @@ function GuiaViaje() {
         ? datos.rutas
         : [];
 
-    const tipoRuta = datos?.tipo || "";
+    const tipoRuta = datos?.tipo || "DIRECTA";
 
 
     // =====================================================
@@ -54,9 +49,7 @@ function GuiaViaje() {
 
         try {
 
-            const token =
-                localStorage.getItem("token");
-
+            const token = localStorage.getItem("token");
 
             if (!token) {
 
@@ -65,7 +58,6 @@ function GuiaViaje() {
                 );
 
                 return;
-
             }
 
 
@@ -81,29 +73,23 @@ function GuiaViaje() {
                 );
 
                 return;
-
             }
 
 
-            const nombreRuta =
+            const nombrePredeterminado =
                 ruta.ruta ||
+                ruta.nombre ||
                 `Ruta ${ruta.ruta_id}`;
 
 
-            const nombre =
-                window.prompt(
-                    "¿Qué nombre quieres ponerle a esta ruta?",
-                    nombreRuta
-                );
+            const nombre = window.prompt(
+                "¿Qué nombre quieres ponerle a esta ruta?",
+                nombrePredeterminado
+            );
 
 
-            if (
-                !nombre ||
-                !nombre.trim()
-            ) {
-
+            if (!nombre || !nombre.trim()) {
                 return;
-
             }
 
 
@@ -111,53 +97,25 @@ function GuiaViaje() {
             setMensaje("");
 
 
-            console.log(
-                "Guardando ruta:",
+            const respuesta = await fetch(
+                `${USUARIO_URL}/guardados`,
                 {
-                    ruta_id:
-                        ruta.ruta_id,
+                    method: "POST",
 
-                    nombre_personalizado:
-                        nombre.trim()
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+
+                    body: JSON.stringify({
+                        ruta_id: ruta.ruta_id,
+                        nombre_personalizado: nombre.trim()
+                    })
                 }
             );
 
 
-            const respuesta =
-                await fetch(
-                    `${USUARIO_URL}/guardados`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-
-                            Authorization:
-                                `Bearer ${token}`
-                        },
-
-                        body: JSON.stringify({
-
-                            ruta_id:
-                                ruta.ruta_id,
-
-                            nombre_personalizado:
-                                nombre.trim()
-
-                        })
-                    }
-                );
-
-
-            const datosRespuesta =
-                await respuesta.json();
-
-
-            console.log(
-                "Respuesta guardar:",
-                datosRespuesta
-            );
+            const datosRespuesta = await respuesta.json();
 
 
             if (!respuesta.ok) {
@@ -167,12 +125,11 @@ function GuiaViaje() {
                     datosRespuesta?.mensaje ||
                     "No se pudo guardar la ruta."
                 );
-
             }
 
 
             setMensaje(
-                "❤️ Ruta guardada correctamente."
+                "Ruta guardada correctamente."
             );
 
 
@@ -183,9 +140,7 @@ function GuiaViaje() {
                 error
             );
 
-            alert(
-                error.message
-            );
+            alert(error.message);
 
 
         } finally {
@@ -198,7 +153,7 @@ function GuiaViaje() {
 
 
     // =====================================================
-    // NO HAY DATOS
+    // SIN DATOS DE NAVEGACIÓN
     // =====================================================
 
     if (!location.state) {
@@ -218,15 +173,13 @@ function GuiaViaje() {
                         </h1>
 
                         <p>
-                            Regresa al inicio para
-                            buscar una nueva ruta.
+                            Regresa al inicio para buscar
+                            una nueva ruta.
                         </p>
 
                         <button
                             className="btn-regresar"
-                            onClick={() =>
-                                navigate("/")
-                            }
+                            onClick={() => navigate("/")}
                         >
                             Buscar ruta
                         </button>
@@ -240,12 +193,11 @@ function GuiaViaje() {
             </div>
 
         );
-
     }
 
 
     // =====================================================
-    // NO SE ENCONTRARON RUTAS
+    // SIN RUTAS ENCONTRADAS
     // =====================================================
 
     if (rutas.length === 0) {
@@ -265,15 +217,13 @@ function GuiaViaje() {
                         </h1>
 
                         <p>
-                            No se encontró una ruta
+                            No encontramos una ruta
                             disponible para tu recorrido.
                         </p>
 
                         <button
                             className="btn-regresar"
-                            onClick={() =>
-                                navigate("/")
-                            }
+                            onClick={() => navigate("/")}
                         >
                             Buscar otra ruta
                         </button>
@@ -287,7 +237,6 @@ function GuiaViaje() {
             </div>
 
         );
-
     }
 
 
@@ -301,10 +250,9 @@ function GuiaViaje() {
 
             <main className="guia-contenido">
 
-
-                {/* =========================================
+                {/* =================================================
                     ENCABEZADO
-                ========================================= */}
+                ================================================= */}
 
                 <div className="guia-header">
 
@@ -316,10 +264,9 @@ function GuiaViaje() {
 
                         {tipoRuta === "TRANSBORDO"
 
-                            ? "Necesitas tomar 2 camiones."
+                            ? "Tu recorrido requiere un transbordo."
 
-                            : "Puedes llegar directamente a tu destino."
-
+                            : "Esta ruta te lleva directamente a tu destino."
                         }
 
                     </p>
@@ -327,9 +274,9 @@ function GuiaViaje() {
                 </div>
 
 
-                {/* =========================================
+                {/* =================================================
                     AVISO DE TRANSBORDO
-                ========================================= */}
+                ================================================= */}
 
                 {tipoRuta === "TRANSBORDO" && (
 
@@ -340,14 +287,14 @@ function GuiaViaje() {
                         <div>
 
                             <strong>
-                                Ruta con transbordo
+                                Tu viaje requiere un transbordo
                             </strong>
 
                             <p>
                                 Toma el primer camión,
-                                baja en el punto de
-                                transbordo y después
-                                toma el segundo.
+                                baja en la parada indicada
+                                y continúa con el siguiente
+                                camión.
                             </p>
 
                         </div>
@@ -357,27 +304,47 @@ function GuiaViaje() {
                 )}
 
 
-                {/* =========================================
-                    RUTAS
-                ========================================= */}
+                {/* =================================================
+                    LISTA DE RUTAS
+                ================================================= */}
 
                 <div className="lista-rutas">
 
-                    {rutas.map(
-                        (ruta, index) => (
+                    {rutas.map((ruta, index) => {
+
+                        const nombreRuta =
+                            ruta.ruta ||
+                            ruta.nombre ||
+                            `Ruta ${index + 1}`;
+
+
+                        const paradaSubida =
+                            ruta.parada_subida?.nombre ||
+                            "Parada no disponible";
+
+
+                        const paradaBajada =
+                            ruta.parada_bajada?.nombre ||
+                            "Parada no disponible";
+
+
+                        const esTransbordo =
+                            tipoRuta === "TRANSBORDO";
+
+
+                        const esPrimerCamion =
+                            esTransbordo &&
+                            index === 0;
+                        return (
 
                             <div
                                 className="ruta-guia"
                                 key={
                                     ruta.ruta_id ||
-                                    index
+                                    `${nombreRuta}-${index}`
                                 }
                             >
 
-
-                                {/* =========================
-                                    CABECERA
-                                ========================= */}
 
                                 <div className="ruta-header">
 
@@ -385,10 +352,9 @@ function GuiaViaje() {
 
                                         <span className="numero-ruta">
 
-                                            {tipoRuta ===
-                                            "TRANSBORDO"
+                                            {esTransbordo
 
-                                                ? `CAMIÓN ${ruta.numero}`
+                                                ? `CAMIÓN ${index + 1}`
 
                                                 : "RUTA DIRECTA"
 
@@ -398,8 +364,7 @@ function GuiaViaje() {
 
 
                                         <h2>
-                                            {ruta.ruta ||
-                                                "Ruta sin nombre"}
+                                            {nombreRuta}
                                         </h2>
 
                                     </div>
@@ -408,13 +373,9 @@ function GuiaViaje() {
                                     <button
                                         className="btn-guardar"
                                         onClick={() =>
-                                            guardarRuta(
-                                                ruta
-                                            )
+                                            guardarRuta(ruta)
                                         }
-                                        disabled={
-                                            guardando
-                                        }
+                                        disabled={guardando}
                                         title="Guardar ruta"
                                     >
 
@@ -425,65 +386,22 @@ function GuiaViaje() {
                                 </div>
 
 
-                                {/* =========================
-                                    COLOR
-                                ========================= */}
-
                                 <div className="ruta-color">
 
                                     <span
                                         className="color-ruta"
-                                        style={{
-                                            backgroundColor:
-                                                ruta.color ||
-                                                "#75176E"
-                                        }}
+                                        
+                                        
                                     />
+                                    <h1 className="color-r">color:</h1>
 
                                     <span>
-                                        {ruta.color ||
+                                        { ruta.color ||
                                             "Color no disponible"}
                                     </span>
 
                                 </div>
 
-
-                                {/* =========================
-                                    CAMINAR
-                                ========================= */}
-
-                                <div className="paso">
-
-                                    <div className="paso-icono caminar">
-
-                                        <FaWalking />
-
-                                    </div>
-
-
-                                    <div className="paso-info">
-
-                                        <small>
-                                            PASO 1
-                                        </small>
-
-                                        <strong>
-                                            Dirígete a la parada
-                                        </strong>
-
-                                        <span>
-                                            Camina hasta la
-                                            parada indicada.
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* =========================
-                                    SUBIDA
-                                ========================= */}
 
                                 <div className="parada">
 
@@ -501,26 +419,13 @@ function GuiaViaje() {
                                         </small>
 
                                         <strong>
-
-                                            {
-                                                ruta
-                                                    .parada_subida
-                                                    ?.nombre ||
-
-                                                "Parada no disponible"
-
-                                            }
-
+                                            {paradaSubida}
                                         </strong>
 
                                     </div>
 
                                 </div>
 
-
-                                {/* =========================
-                                    CAMIÓN
-                                ========================= */}
 
                                 <div className="paso-camion">
 
@@ -533,17 +438,12 @@ function GuiaViaje() {
                                         </small>
 
                                         <strong>
-                                            {ruta.ruta}
+                                            {nombreRuta}
                                         </strong>
 
                                     </div>
 
                                 </div>
-
-
-                                {/* =========================
-                                    BAJADA
-                                ========================= */}
 
                                 <div className="parada">
 
@@ -558,9 +458,7 @@ function GuiaViaje() {
 
                                         <small>
 
-                                            {tipoRuta ===
-                                                "TRANSBORDO" &&
-                                            index === 0
+                                            {esPrimerCamion
 
                                                 ? "BAJA PARA TRANSBORDAR"
 
@@ -572,16 +470,7 @@ function GuiaViaje() {
 
 
                                         <strong>
-
-                                            {
-                                                ruta
-                                                    .parada_bajada
-                                                    ?.nombre ||
-
-                                                "Parada no disponible"
-
-                                            }
-
+                                            {paradaBajada}
                                         </strong>
 
                                     </div>
@@ -589,14 +478,7 @@ function GuiaViaje() {
                                 </div>
 
 
-                                {/* =========================
-                                    TRANSBORDO
-                                ========================= */}
-
-                                {tipoRuta ===
-                                    "TRANSBORDO" &&
-
-                                    index === 0 && (
+                                {esPrimerCamion && (
 
                                     <div className="transbordo">
 
@@ -609,12 +491,9 @@ function GuiaViaje() {
                                             </strong>
 
                                             <p>
-                                                Baja aquí y
-                                                camina hacia
-                                                la siguiente
-                                                parada para
-                                                tomar el segundo
-                                                camión.
+                                                Baja en esta parada
+                                                y continúa con el
+                                                siguiente camión.
                                             </p>
 
                                         </div>
@@ -625,40 +504,31 @@ function GuiaViaje() {
 
                             </div>
 
-                        )
-                    )}
+                        );
+
+                    })}
 
                 </div>
 
-
-                {/* =========================================
-                    MENSAJE
-                ========================================= */}
 
                 {mensaje && (
 
                     <div className="mensaje-exito">
 
-                        {mensaje}
+                         {mensaje}
 
                     </div>
 
                 )}
 
 
-                {/* =========================================
-                    REGRESAR
-                ========================================= */}
 
                 <button
                     className="btn-regresar"
-                    onClick={() =>
-                        navigate("/")
-                    }
+                    onClick={() => navigate("/home")}
                 >
                     Buscar otra ruta
                 </button>
-
 
             </main>
 
@@ -668,8 +538,6 @@ function GuiaViaje() {
         </div>
 
     );
-
 }
-
 
 export default GuiaViaje;

@@ -1,568 +1,521 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* =========================
-   CONTENEDOR
-========================= */
 
 .guia-container {
-  min-height: calc(100vh - 110px);
-  background: #f7f6f8;
-  padding: 45px 20px 100px;
+    min-height: 100vh;
+
+    background: #f7f5f7;
+
+    padding-bottom: 100px;
 }
 
-.contenido-guia {
-  width: 100%;
-  max-width: 900px;
-  margin: auto;
+.guia-contenido {
+    width: 90%;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 100px 0 40px;
 }
 
-/* =========================
-   HEADER
-========================= */
 
 .guia-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 35px;
+    margin-bottom: 25px;
 }
 
-.guia-etiqueta {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  color: #e63946;
-  margin-bottom: 8px;
-}
 
 .guia-header h1 {
-  font-size: 34px;
-  color: #222;
-  margin-bottom: 8px;
+
+    margin: 50px;
+    color: #75176E;
+    font-size: 40px;
+    font-weight: 700;
+
 }
+
 
 .guia-header p {
-  color: #777;
-  font-size: 16px;
+    margin-top: 8px;
+    color: #666;
+    font-size: 16px;
 }
 
-.btn-guardados {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 
-  border: none;
-  background: white;
-  color: #e63946;
+.aviso-transbordo {
+    display: flex;
 
-  padding: 13px 18px;
-  border-radius: 12px;
+    align-items: flex-start;
 
-  font-size: 14px;
-  font-weight: bold;
+    gap: 15px;
 
-  cursor: pointer;
+    background: #f3e4f1;
 
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border-left: 5px solid #75176E;
 
-  transition: 0.2s;
+    padding: 18px;
+
+    margin-bottom: 25px;
+
+    border-radius: 10px;
 }
 
-.btn-guardados:hover {
-  transform: translateY(-2px);
+
+.aviso-transbordo > svg {
+    color: #75176E;
+
+    font-size: 24px;
+
+    margin-top: 3px;
 }
 
-/* =========================
-   RUTAS
-========================= */
 
-.rutas-viaje {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.aviso-transbordo strong {
+    display: block;
+    color: #75176E;
+    font-size: 17px;
 }
 
-.ruta-card {
-  display: flex;
 
-  background: white;
-  border-radius: 20px;
-
-  padding: 25px;
-
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+.aviso-transbordo p {
+    margin: 5px 0 0;
+    color: #555;
+    line-height: 1.5;
 }
 
-/* =========================
-   NUMERO
-========================= */
-
-.ruta-numero {
-  width: 55px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  position: relative;
+.lista-rutas {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
 }
 
-.ruta-numero > span {
-  width: 36px;
-  height: 36px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  background: #222;
-  color: white;
-
-  border-radius: 50%;
-
-  font-weight: bold;
-
-  z-index: 2;
+.ruta-guia {
+    background: white;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eee;
 }
 
-.linea-ruta {
-  position: absolute;
 
-  top: 36px;
-  bottom: -25px;
-
-  width: 2px;
-
-  background: #ddd;
+.ruta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
 }
 
-/* =========================
-   CONTENIDO
-========================= */
-
-.ruta-contenido {
-  flex: 1;
+.ruta-header h2 {
+    margin: 5px 0 0;
+    font-size: 25px;
+    color: #222;
 }
 
-.ruta-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
+
+.numero-ruta {
+    display: inline-block;
+    color: #75176E;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
-.ruta-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+
+.btn-guardar {
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 50%;
+    background: #f5e6f3;
+    color: #75176E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
 }
 
-.bus-icono {
-  width: 55px;
-  height: 55px;
 
-  border-radius: 15px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  color: white;
-  font-size: 24px;
+.btn-guardar:hover {
+    background: #ead1e7;
+    transform: scale(1.08);
 }
 
-.tomar {
-  display: block;
 
-  color: #e63946;
-
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 1px;
-
-  margin-bottom: 4px;
+.btn-guardar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-.ruta-info h2 {
-  font-size: 23px;
-  color: #222;
+
+.ruta-color {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 25px;
+    color: #000000;
+    font-size: 14px;
+}
+.color-r{
+    display: flex;
+    margin-top: 8px;
+    color: #000000;
+    font-size: 17px;
 }
 
-.ruta-info p {
-  color: #888;
-  margin-top: 4px;
+
+.color-ruta {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    border-radius: 50%;
 }
 
-/* =========================
-   CORAZON
-========================= */
 
-.corazon-btn {
-  width: 45px;
-  height: 45px;
-
-  border-radius: 50%;
-
-  border: 1px solid #eee;
-
-  background: white;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  color: #e63946;
-
-  font-size: 19px;
-
-  cursor: pointer;
-
-  transition: 0.2s;
+.paso {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
 }
 
-.corazon-btn:hover {
-  background: #fff0f1;
-  transform: scale(1.08);
+
+.paso-icono {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3e4f1;
+    color: #75176E;
+    font-size: 18px;
 }
 
-/* =========================
-   RECORRIDO
-========================= */
 
-.recorrido {
-  display: flex;
-  align-items: center;
+.paso-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
 
-  gap: 20px;
 
-  margin-top: 25px;
+.paso-info small {
+    color: #75176E;
+    font-size: 11px;
+    font-weight: 700;
+}
 
-  padding-top: 20px;
 
-  border-top: 1px solid #eee;
+.paso-info strong {
+    color: #222;
+    font-size: 16px;
+}
+
+
+.paso-info span {
+    color: #777;
+    font-size: 14px;
 }
 
 .parada {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 18px 0;
+    padding-left: 5px;
 }
 
-.punto {
-  width: 35px;
-  height: 35px;
 
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 13px;
+.parada-icono {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #75176E;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
 }
 
-.punto.subida {
-  background: #e8f7ee;
-  color: #27ae60;
+
+.parada-info {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
 }
 
-.punto.bajada {
-  background: #fff0f0;
-  color: #e63946;
+
+.parada-info small {
+    color: #75176E;
+
+    font-size: 11px;
+
+    font-weight: 700;
 }
 
-.parada span {
-  display: block;
 
-  font-size: 10px;
+.parada-info strong {
+    color: #222;
 
-  color: #999;
-
-  font-weight: bold;
-
-  margin-bottom: 3px;
+    font-size: 16px;
 }
 
-.parada strong {
-  display: block;
 
-  color: #333;
+/* =====================================================
+   CAMIÓN
+===================================================== */
 
-  font-size: 14px;
+.paso-camion {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin: 20px 0;
+
+    padding: 15px 18px;
+
+    background: #75176E;
+
+    color: white;
+
+    border-radius: 12px;
 }
 
-.flecha {
-  color: #aaa;
-  font-size: 18px;
+
+.paso-camion > svg {
+    font-size: 25px;
 }
 
-/* =========================
-   SIN RUTAS
-========================= */
 
-.sin-rutas {
-  background: white;
+.paso-camion div {
+    display: flex;
 
-  padding: 60px 25px;
+    flex-direction: column;
 
-  border-radius: 20px;
-
-  text-align: center;
-
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+    gap: 3px;
 }
 
-.sin-rutas > svg {
-  font-size: 45px;
-  color: #ccc;
-  margin-bottom: 15px;
+
+.paso-camion small {
+    font-size: 10px;
+
+    opacity: 0.85;
+
+    font-weight: 700;
 }
 
-.sin-rutas h2 {
-  color: #333;
-  margin-bottom: 8px;
+
+.paso-camion strong {
+    font-size: 17px;
 }
 
-.sin-rutas p {
-  color: #888;
-  margin-bottom: 25px;
+
+/* =====================================================
+   TRANSBORDO
+===================================================== */
+
+.transbordo {
+    display: flex;
+
+    gap: 15px;
+
+    margin: 25px 0;
+
+    padding: 18px;
+
+    background: #fff7e6;
+
+    border-left: 5px solid #e0a100;
+
+    border-radius: 10px;
 }
 
-.sin-rutas button {
-  border: none;
 
-  background: #222;
-  color: white;
+.transbordo > svg {
+    color: #d08f00;
 
-  padding: 12px 20px;
+    font-size: 22px;
 
-  border-radius: 10px;
-
-  cursor: pointer;
+    margin-top: 2px;
 }
 
-/* =========================
-   MODAL
-========================= */
 
-.modal-overlay {
-  position: fixed;
+.transbordo strong {
+    color: #8b6200;
 
-  inset: 0;
-
-  background: rgba(0, 0, 0, 0.5);
-
-  display: flex;
-
-  justify-content: center;
-  align-items: center;
-
-  padding: 20px;
-
-  z-index: 9999;
+    font-size: 16px;
 }
 
-.modal-guardar {
-  width: 100%;
-  max-width: 430px;
 
-  background: white;
+.transbordo p {
+    margin: 5px 0 0;
 
-  border-radius: 22px;
+    color: #666;
 
-  padding: 30px;
+    font-size: 14px;
 
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
-
-  text-align: center;
+    line-height: 1.5;
 }
 
-.modal-corazon {
-  width: 60px;
-  height: 60px;
 
-  margin: 0 auto 15px;
-
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #fff0f1;
-
-  color: #e63946;
-
-  font-size: 25px;
-}
-
-.modal-guardar h2 {
-  color: #222;
-
-  margin-bottom: 8px;
-}
-
-.modal-guardar p {
-  color: #888;
-
-  font-size: 14px;
-
-  line-height: 1.5;
-
-  margin-bottom: 20px;
-}
-
-.modal-guardar input {
-  width: 100%;
-
-  padding: 14px 16px;
-
-  border: 1px solid #ddd;
-
-  border-radius: 12px;
-
-  outline: none;
-
-  font-size: 15px;
-
-  transition: 0.2s;
-}
-
-.modal-guardar input:focus {
-  border-color: #e63946;
-
-  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
-}
-
-/* =========================
-   MENSAJES
-========================= */
+/* =====================================================
+   MENSAJE ÉXITO
+===================================================== */
 
 .mensaje-exito {
-  color: #27ae60;
+    margin-top: 20px;
 
-  font-size: 14px;
-  font-weight: bold;
+    padding: 14px 18px;
 
-  margin-top: 12px;
+    background: #e8f7ed;
+
+    border: 1px solid #b7e2c3;
+
+    color: #287a3d;
+
+    border-radius: 10px;
+
+    font-weight: 600;
+
+    text-align: center;
 }
 
-.mensaje-error {
-  color: #e63946;
 
-  font-size: 14px;
-  font-weight: bold;
+/* =====================================================
+   SIN RUTAS
+===================================================== */
 
-  margin-top: 12px;
+.sin-rutas {
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 50px 30px;
+
+    text-align: center;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* =========================
-   BOTONES MODAL
-========================= */
 
-.modal-botones {
-  display: flex;
+.sin-rutas > svg {
+    font-size: 45px;
 
-  gap: 10px;
+    color: #75176E;
 
-  margin-top: 20px;
+    margin-bottom: 15px;
 }
 
-.modal-botones button {
-  flex: 1;
 
-  padding: 13px;
+.sin-rutas h1 {
+    color: #222;
 
-  border-radius: 11px;
-
-  font-weight: bold;
-
-  cursor: pointer;
-
-  border: none;
+    margin: 0 0 10px;
 }
 
-.btn-cancelar {
-  background: #f1f1f1;
 
-  color: #555;
+.sin-rutas p {
+    color: #666;
+
+    margin-bottom: 25px;
 }
 
-.btn-guardar {
-  background: #e63946;
 
-  color: white;
+/* =====================================================
+   BOTÓN REGRESAR
+===================================================== */
 
-  display: flex;
+.btn-regresar {
+    display: block;
 
-  justify-content: center;
-  align-items: center;
-
-  gap: 7px;
-}
-
-.btn-guardar:disabled,
-.btn-cancelar:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 700px) {
-
-  .guia-container {
-    padding: 30px 15px 80px;
-  }
-
-  .guia-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .guia-header h1 {
-    font-size: 28px;
-  }
-
-  .btn-guardados {
     width: 100%;
-    justify-content: center;
-  }
 
-  .ruta-card {
-    padding: 18px;
-  }
+    max-width: 300px;
 
-  .ruta-numero {
-    width: 40px;
-  }
+    margin: 30px auto 0;
 
-  .ruta-info h2 {
-    font-size: 19px;
-  }
+    padding: 14px 20px;
 
-  .recorrido {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
+    border: none;
 
-  .flecha {
-    display: none;
-  }
+    border-radius: 10px;
 
-  .parada {
-    flex: none;
-  }
+    background: #75176E;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.btn-regresar:hover {
+    background: #5f1259;
+
+    transform: translateY(-2px);
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    .guia-contenido {
+        width: 92%;
+
+        padding: 40px 0 25px;
+    }
+
+
+    .guia-header h1 {
+        font-size: 27px;
+    }
+
+
+    .guia-header p {
+        font-size: 15px;
+    }
+
+
+    .ruta-guia {
+        padding: 20px;
+    }
+
+
+    .ruta-header h2 {
+        font-size: 22px;
+    }
+
+
+    .paso-camion {
+        padding: 13px;
+    }
+
+
+    .parada {
+        gap: 12px;
+    }
+
+
+    .parada-info strong {
+        font-size: 15px;
+    }
+
 }
