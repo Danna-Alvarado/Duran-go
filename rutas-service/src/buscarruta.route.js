@@ -37,27 +37,19 @@ router.post("/buscar-ruta", async (req, res) => {
             destinoLat == null ||
             destinoLng == null
         ) {
-
             return res.status(400).json({
-                error: "Se requieren las coordenadas de origen y destino"
+                error: "Faltan coordenadas"
             });
-
         }
-
-        /*
-        ============================================
-        CONFIGURACIÓN
-        ============================================
-        */
 
         const RADIO_ORIGEN = 1000;
         const RADIO_DESTINO = 1000;
-        const RADIO_TRANSBORDO = 500;
+        const RADIO_TRANSBORDO = 600;
 
 
         /*
         ============================================
-        OBTENER TODAS LAS PARADAS
+        PARADAS
         ============================================
         */
 
@@ -71,7 +63,7 @@ router.post("/buscar-ruta", async (req, res) => {
         `);
 
         const paradas = paradasResult.rows.map(p => ({
-            id: p.id,
+            id: Number(p.id),
             nombre: p.nombre_parada,
             latitud: Number(p.latitud),
             longitud: Number(p.longitud)
@@ -80,62 +72,71 @@ router.post("/buscar-ruta", async (req, res) => {
 
         /*
         ============================================
-        CALCULAR DISTANCIA DE CADA PARADA
+        DISTANCIAS
         ============================================
         */
 
-        const paradasCalculadas = paradas.map(parada => {
+        const paradasCalculadas = paradas.map(p => ({
+            ...p,
 
-            const distanciaOrigen = distancia(
+            distanciaOrigen: distancia(
                 origenLat,
                 origenLng,
-                parada.latitud,
-                parada.longitud
-            );
+                p.latitud,
+                p.longitud
+            ),
 
-            const distanciaDestino = distancia(
+            distanciaDestino: distancia(
                 destinoLat,
                 destinoLng,
-                parada.latitud,
-                parada.longitud
-            );
-
-            return {
-                ...parada,
-                distanciaOrigen,
-                distanciaDestino
-            };
-
-        });
+                p.latitud,
+                p.longitud
+            )
+        }));
 
 
-        /*
-        ============================================
-        PARADAS CERCANAS
-        ============================================
-        */
+        const paradasOrigen =
+            paradasCalculadas
+                .filter(p =>
+                    p.distanciaOrigen <= RADIO_ORIGEN
+                )
+                .sort(
+                    (a, b) =>
+                        a.distanciaOrigen -
+                        b.distanciaOrigen
+                );
 
-        const paradasOrigen = paradasCalculadas
-            .filter(p => p.distanciaOrigen <= RADIO_ORIGEN)
-            .sort((a, b) =>
-                a.distanciaOrigen - b.distanciaOrigen
-            );
 
-        const paradasDestino = paradasCalculadas
-            .filter(p => p.distanciaDestino <= RADIO_DESTINO)
-            .sort((a, b) =>
-                a.distanciaDestino - b.distanciaDestino
-            );
+        const paradasDestino =
+            paradasCalculadas
+                .filter(p =>
+                    p.distanciaDestino <= RADIO_DESTINO
+                )
+                .sort(
+                    (a, b) =>
+                        a.distanciaDestino -
+                        b.distanciaDestino
+                );
 
 
         console.log(
-            "Paradas cercanas al origen:",
-            paradasOrigen.length
+            "=============================="
         );
 
         console.log(
-            "Paradas cercanas al destino:",
-            paradasDestino.length
+            "PARADAS ORIGEN:"
+        );
+
+        console.table(
+            paradasOrigen
+        );
+
+        console.log(
+            "PARADAS DESTINO:"
+        );
+
+        console.table(
+            paradasDestino
         );
 
 
@@ -147,17 +148,7 @@ router.post("/buscar-ruta", async (req, res) => {
             return res.status(404).json({
 
                 mensaje:
-                    "No existen paradas suficientemente cercanas al origen o destino.",
-
-                origen: {
-                    lat: origenLat,
-                    lng: origenLng
-                },
-
-                destino: {
-                    lat: destinoLat,
-                    lng: destinoLng
-                },
+                    "No existen paradas cercanas.",
 
                 paradas_cercanas_origen:
                     paradasOrigen.length,
@@ -174,107 +165,124 @@ router.post("/buscar-ruta", async (req, res) => {
 
         /*
         ============================================
-        OBTENER RELACIONES RUTA - PARADA
+        RUTAS Y PARADAS
         ============================================
         */
 
-        const relacionesResult = await pool.query(`
+        const result = await pool.query(`
             SELECT
-                rp.ruta_id,
+                r.id AS ruta_id,
+                r.nombre AS ruta_nombre,
+                r.color AS ruta_color,
+
                 rp.parada_id,
                 rp.orden,
-                r.nombre AS ruta_nombre,
-                r.color AS ruta_color
-            FROM ruta_paradas rp
-            INNER JOIN rutas r
-                ON r.id = rp.ruta_id
+
+                p.nombre_parada,
+                p.latitud,
+                p.longitud
+
+            FROM rutas r
+
+            INNER JOIN ruta_paradas rp
+                ON rp.ruta_id = r.id
+
+            INNER JOIN paradas p
+                ON p.id = rp.parada_id
+
             ORDER BY
-                rp.ruta_id,
+                r.id,
                 rp.orden
         `);
 
-        const relaciones = relacionesResult.rows;
-
 
         /*
         ============================================
-        CREAR MAPA DE PARADAS
-        ============================================
-        */
-
-        const mapaParadas = new Map();
-
-        for (const parada of paradasCalculadas) {
-            mapaParadas.set(
-                Number(parada.id),
-                parada
-            );
-        }
-
-
-        /*
-        ============================================
-        AGRUPAR PARADAS POR RUTA
+        AGRUPAR RUTAS
         ============================================
         */
 
         const rutas = new Map();
 
-        for (const relacion of relaciones) {
 
-            const rutaId = Number(relacion.ruta_id);
+        for (const row of result.rows) {
+
+            const rutaId =
+                Number(row.ruta_id);
+
 
             if (!rutas.has(rutaId)) {
 
                 rutas.set(rutaId, {
+
                     id: rutaId,
-                    nombre: relacion.ruta_nombre,
-                    color: relacion.ruta_color,
+
+                    nombre:
+                        row.ruta_nombre,
+
+                    color:
+                        row.ruta_color,
+
                     paradas: []
+
                 });
 
             }
 
-            const parada = mapaParadas.get(
-                Number(relacion.parada_id)
-            );
-
-            if (!parada) {
-                continue;
-            }
 
             rutas.get(rutaId).paradas.push({
-                ...parada,
-                orden: Number(relacion.orden)
+
+                id:
+                    Number(row.parada_id),
+
+                nombre:
+                    row.nombre_parada,
+
+                latitud:
+                    Number(row.latitud),
+
+                longitud:
+                    Number(row.longitud),
+
+                orden:
+                    Number(row.orden)
+
             });
 
         }
 
 
+        console.log(
+            "RUTAS CARGADAS:",
+            rutas.size
+        );
+
+
         /*
         ============================================
-        BUSCAR RUTA DIRECTA
+        RUTA DIRECTA
         ============================================
         */
 
-        const rutasDirectas = [];
+        const directas = [];
 
 
         for (const ruta of rutas.values()) {
 
-            const subidas = ruta.paradas.filter(parada =>
-                paradasOrigen.some(
-                    origen =>
-                        origen.id === parada.id
-                )
-            );
+            const subidas =
+                ruta.paradas.filter(p =>
+                    paradasOrigen.some(
+                        o => o.id === p.id
+                    )
+                );
 
-            const bajadas = ruta.paradas.filter(parada =>
-                paradasDestino.some(
-                    destino =>
-                        destino.id === parada.id
-                )
-            );
+
+            const bajadas =
+                ruta.paradas.filter(p =>
+                    paradasDestino.some(
+                        d => d.id === p.id
+                    )
+                );
 
 
             for (const subida of subidas) {
@@ -282,22 +290,30 @@ router.post("/buscar-ruta", async (req, res) => {
                 for (const bajada of bajadas) {
 
                     if (
-                        subida.orden >= bajada.orden
+                        subida.orden >=
+                        bajada.orden
                     ) {
                         continue;
                     }
 
 
-                    const distanciaOrigen =
-                        subida.distanciaOrigen;
+                    const origen =
+                        paradasOrigen.find(
+                            o =>
+                                o.id ===
+                                subida.id
+                        );
 
-                    const distanciaDestino =
-                        bajada.distanciaDestino;
+
+                    const destino =
+                        paradasDestino.find(
+                            d =>
+                                d.id ===
+                                bajada.id
+                        );
 
 
-                    rutasDirectas.push({
-
-                        tipo: "DIRECTA",
+                    directas.push({
 
                         ruta,
 
@@ -305,9 +321,9 @@ router.post("/buscar-ruta", async (req, res) => {
 
                         bajada,
 
-                        distanciaTotal:
-                            distanciaOrigen +
-                            distanciaDestino
+                        costo:
+                            origen.distanciaOrigen +
+                            destino.distanciaDestino
 
                     });
 
@@ -318,35 +334,39 @@ router.post("/buscar-ruta", async (req, res) => {
         }
 
 
-        /*
-        ============================================
-        SI EXISTE DIRECTA
-        ============================================
-        */
+        console.log(
+            "RUTAS DIRECTAS ENCONTRADAS:",
+            directas.length
+        );
 
-        if (rutasDirectas.length > 0) {
 
-            rutasDirectas.sort(
+        if (directas.length > 0) {
+
+            directas.sort(
                 (a, b) =>
-                    a.distanciaTotal -
-                    b.distanciaTotal
+                    a.costo -
+                    b.costo
             );
 
+
             const mejor =
-                rutasDirectas[0];
+                directas[0];
 
 
             return res.json({
 
-                tipo: "DIRECTA",
+                tipo:
+                    "DIRECTA",
 
-                cantidad_camiones: 1,
+                cantidad_camiones:
+                    1,
 
                 rutas: [
 
                     {
 
-                        numero: 1,
+                        numero:
+                            1,
 
                         ruta_id:
                             mejor.ruta.id,
@@ -400,37 +420,43 @@ router.post("/buscar-ruta", async (req, res) => {
 
         /*
         ============================================
-        BUSCAR TRANSBORDOS
+        TRANSBORDOS
         ============================================
         */
 
-        const combinaciones = [];
+        const transbordos = [];
 
 
         for (const ruta1 of rutas.values()) {
 
-            const subidas = ruta1.paradas.filter(
-                parada =>
+            const subidas =
+                ruta1.paradas.filter(p =>
                     paradasOrigen.some(
-                        origen =>
-                            origen.id === parada.id
+                        o => o.id === p.id
                     )
-            );
+                );
 
 
             for (const subida of subidas) {
 
-                for (const transbordo of ruta1.paradas) {
+                const paradasPosteriores =
+                    ruta1.paradas.filter(
+                        p =>
+                            p.orden >
+                            subida.orden
+                    );
 
-                    if (
-                        transbordo.orden <=
-                        subida.orden
+
+                for (
+                    const bajada1
+                    of paradasPosteriores
+                ) {
+
+
+                    for (
+                        const ruta2
+                        of rutas.values()
                     ) {
-                        continue;
-                    }
-
-
-                    for (const ruta2 of rutas.values()) {
 
                         if (
                             ruta1.id ===
@@ -440,86 +466,102 @@ router.post("/buscar-ruta", async (req, res) => {
                         }
 
 
-                        const posiblesSubidas =
+                        const subidas2 =
                             ruta2.paradas.filter(
-                                parada =>
-                                    parada.orden <
-                                    Math.max(
-                                        ...ruta2.paradas.map(
-                                            p => p.orden
-                                        )
-                                    )
+                                p =>
+
+                                    p.orden <
+                                    ruta2.paradas.length
                             );
 
 
                         for (
                             const subida2
-                            of posiblesSubidas
+                            of subidas2
                         ) {
 
-                            const distanciaTransbordo =
+
+                            const distanciaCambio =
                                 distancia(
-                                    transbordo.latitud,
-                                    transbordo.longitud,
+
+                                    bajada1.latitud,
+
+                                    bajada1.longitud,
+
                                     subida2.latitud,
+
                                     subida2.longitud
+
                                 );
 
 
                             if (
-                                distanciaTransbordo >
+                                distanciaCambio >
                                 RADIO_TRANSBORDO
                             ) {
                                 continue;
                             }
 
 
-                            const bajadas =
+                            const bajadas2 =
                                 ruta2.paradas.filter(
-                                    parada =>
+                                    p =>
 
-                                        parada.orden >
+                                        p.orden >
                                         subida2.orden &&
 
                                         paradasDestino.some(
-                                            destino =>
-                                                destino.id ===
-                                                parada.id
+                                            d =>
+                                                d.id ===
+                                                p.id
                                         )
                                 );
 
 
                             for (
-                                const bajada
-                                of bajadas
+                                const bajada2
+                                of bajadas2
                             ) {
 
-                                const distanciaTotal =
+                                const origen =
+                                    paradasOrigen.find(
+                                        o =>
+                                            o.id ===
+                                            subida.id
+                                    );
 
-                                    subida.distanciaOrigen +
 
-                                    distanciaTransbordo +
+                                const destino =
+                                    paradasDestino.find(
+                                        d =>
+                                            d.id ===
+                                            bajada2.id
+                                    );
 
-                                    bajada.distanciaDestino;
 
-
-                                combinaciones.push({
+                                transbordos.push({
 
                                     ruta1,
 
                                     subida,
 
-                                    transbordo,
+                                    bajada1,
 
                                     ruta2,
 
                                     subida2,
 
-                                    bajada,
+                                    bajada2,
 
-                                    distanciaTransbordo,
+                                    distanciaCambio,
 
-                                    distanciaTotal
+                                    costo:
+
+                                        origen.distanciaOrigen +
+
+                                        distanciaCambio +
+
+                                        destino.distanciaDestino
 
                                 });
 
@@ -536,13 +578,15 @@ router.post("/buscar-ruta", async (req, res) => {
         }
 
 
-        /*
-        ============================================
-        NO HAY RUTA
-        ============================================
-        */
+        console.log(
+            "TRANSBORDOS ENCONTRADOS:",
+            transbordos.length
+        );
 
-        if (combinaciones.length === 0) {
+
+        if (
+            transbordos.length === 0
+        ) {
 
             return res.status(404).json({
 
@@ -562,40 +606,31 @@ router.post("/buscar-ruta", async (req, res) => {
         }
 
 
-        /*
-        ============================================
-        MEJOR TRANSBORDO
-        ============================================
-        */
-
-        combinaciones.sort(
+        transbordos.sort(
             (a, b) =>
-                a.distanciaTotal -
-                b.distanciaTotal
+                a.costo -
+                b.costo
         );
 
 
         const mejor =
-            combinaciones[0];
+            transbordos[0];
 
-
-        /*
-        ============================================
-        RESPUESTA
-        ============================================
-        */
 
         return res.json({
 
-            tipo: "TRANSBORDO",
+            tipo:
+                "TRANSBORDO",
 
-            cantidad_camiones: 2,
+            cantidad_camiones:
+                2,
 
             rutas: [
 
                 {
 
-                    numero: 1,
+                    numero:
+                        1,
 
                     ruta_id:
                         mejor.ruta1.id,
@@ -625,24 +660,26 @@ router.post("/buscar-ruta", async (req, res) => {
                     parada_bajada: {
 
                         id:
-                            mejor.transbordo.id,
+                            mejor.bajada1.id,
 
                         nombre:
-                            mejor.transbordo.nombre,
+                            mejor.bajada1.nombre,
 
                         latitud:
-                            mejor.transbordo.latitud,
+                            mejor.bajada1.latitud,
 
                         longitud:
-                            mejor.transbordo.longitud
+                            mejor.bajada1.longitud
 
                     }
 
                 },
 
+
                 {
 
-                    numero: 2,
+                    numero:
+                        2,
 
                     ruta_id:
                         mejor.ruta2.id,
@@ -672,16 +709,16 @@ router.post("/buscar-ruta", async (req, res) => {
                     parada_bajada: {
 
                         id:
-                            mejor.bajada.id,
+                            mejor.bajada2.id,
 
                         nombre:
-                            mejor.bajada.nombre,
+                            mejor.bajada2.nombre,
 
                         latitud:
-                            mejor.bajada.latitud,
+                            mejor.bajada2.latitud,
 
                         longitud:
-                            mejor.bajada.longitud
+                            mejor.bajada2.longitud
 
                     }
 
@@ -694,20 +731,10 @@ router.post("/buscar-ruta", async (req, res) => {
     } catch (error) {
 
         console.error(
-            "================================"
+            "ERROR BUSCANDO RUTA:"
         );
 
-        console.error(
-            "ERROR BUSCANDO RUTA"
-        );
-
-        console.error(
-            error
-        );
-
-        console.error(
-            "================================"
-        );
+        console.error(error);
 
         return res.status(500).json({
 
