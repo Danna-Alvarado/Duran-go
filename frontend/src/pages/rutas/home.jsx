@@ -1,3 +1,4 @@
+
 import "./home.css";
 import Navar from "../../components/Navar";
 import { useEffect, useState } from "react";
@@ -19,121 +20,201 @@ function Home() {
   const [cargando, setCargando] = useState(true);
   const [errorUbicacion, setErrorUbicacion] = useState("");
 
+  // ==========================================
+  // BUSCAR RUTA
+  // ==========================================
+
   const buscarRuta = async () => {
 
     try {
 
-        if(!coordenadas || !destinoCoords){
-            return;
+      if (!coordenadas || !destinoCoords) {
+        return;
+      }
+
+      console.log("Calculando ruta...");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_RUTAS_URL}/buscar-ruta`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+
+            origenLat: coordenadas.lat,
+            origenLng: coordenadas.lng,
+
+            destinoLat: destinoCoords.lat,
+            destinoLng: destinoCoords.lng
+
+          })
         }
-        const response = await fetch(
-            `${import.meta.env.VITE_RUTAS_URL}/buscar-ruta`,
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify({
+      );
 
-                    origenLat: coordenadas.lat,
-                    origenLng: coordenadas.lng,
+      const data = await response.json();
 
-                    destinoLat: destinoCoords.lat,
-                    destinoLng: destinoCoords.lng
+      console.log("Respuesta del servidor:", data);
 
-                })
-            }
-        );
-
-
-        const data = await response.json();
-
-
-        console.log("Rutas encontradas:", data);
-
-
-        navigate("/guia_viaje",{
-
-            state:{
-                rutas:data,
-
-                origen:coordenadas,
-
-                destino:destinoCoords
-
-            }
-
-        });
-
-
-    }catch(error){
+      if (!response.ok) {
 
         console.error(
-            "Error buscando ruta:",
-            error
+          "Error del servidor:",
+          data
         );
+
+        alert(
+          data?.mensaje ||
+          data?.error ||
+          "No se pudo encontrar una ruta."
+        );
+
+        return;
+      }
+
+      // ==========================================
+      // VALIDAR RUTAS
+      // ==========================================
+
+      if (
+        !data ||
+        !Array.isArray(data.rutas) ||
+        data.rutas.length === 0
+      ) {
+
+        alert(
+          "No encontramos una ruta para este destino."
+        );
+
+        return;
+      }
+
+      console.log(
+        "Rutas encontradas:",
+        data.rutas
+      );
+
+      // ==========================================
+      // IR A GUIA DE VIAJE
+      // ==========================================
+
+      navigate("/guia_viaje", {
+
+        state: {
+
+          rutas: data.rutas,
+
+          origen: coordenadas,
+
+          destino: destinoCoords
+
+        }
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Error buscando ruta:",
+        error
+      );
+
+      alert(
+        "Ocurrió un error al buscar la ruta."
+      );
 
     }
 
-};
+  };
 
-
+  // ==========================================
+  // OBTENER UBICACIÓN
+  // ==========================================
 
   useEffect(() => {
 
     const cargarUbicacion = async () => {
 
       try {
+
         const datos = await obtenerUbicacion();
-        setUbicacion(datos.direccion);
+
+        setUbicacion(
+          datos.direccion
+        );
+
         setCoordenadas({
+
           lat: datos.lat,
+
           lng: datos.lng
+
         });
 
-        console.log("Origen:");
-        console.log({
-          lat: datos.lat,
-          lng: datos.lng
-        });
+        console.log(
+          "Origen:",
+          {
+            lat: datos.lat,
+            lng: datos.lng
+          }
+        );
 
       } catch (error) {
 
-        console.error(error);
-         setErrorUbicacion("Activa la ubicación de tu dispositivo."  );
+        console.error(
+          error
+        );
+
+        setErrorUbicacion(
+          "Activa la ubicación de tu dispositivo."
+        );
 
       } finally {
+
         setCargando(false);
+
       }
 
     };
-
 
     cargarUbicacion();
 
   }, []);
 
+  // ==========================================
+  // CONFIRMAR DESTINO
+  // ==========================================
 
   const confirmarDestino = () => {
 
-    if(!destinoCoords){
-        alert("Selecciona un destino");
-        return;
+    if (!destinoCoords) {
+
+      alert(
+        "Selecciona un destino."
+      );
+
+      return;
     }
 
+    if (!coordenadas) {
 
-    if(!coordenadas){
-        alert("Esperando ubicación...");
-        return;
+      alert(
+        "Esperando ubicación..."
+      );
+
+      return;
     }
-
-
-    console.log("Calculando ruta...");
 
     buscarRuta();
 
-};
+  };
 
+  // ==========================================
+  // INTERFAZ
+  // ==========================================
 
   return (
 
@@ -145,6 +226,8 @@ function Home() {
           Encuentra tu mejor ruta
         </h2>
 
+        {/* UBICACIÓN */}
+
         <input
           type="text"
           value={ubicacion}
@@ -153,34 +236,62 @@ function Home() {
           placeholder="Obteniendo ubicación..."
         />
 
-        {
-          errorUbicacion && (
-            <p className="mensaje-error">
-              {errorUbicacion}
-            </p>
-          )
-        }
+        {errorUbicacion && (
 
+          <p className="mensaje-error">
+            {errorUbicacion}
+          </p>
+
+        )}
+
+        {/* DESTINO */}
 
         <input
           type="text"
 
           value={destino}
 
-          onChange={async (e)=>{
-            const texto = e.target.value;
+          onChange={async (e) => {
+
+            const texto =
+              e.target.value;
+
             setDestino(texto);
+
             setDestinoCoords(null);
 
-            if(texto.length < 3){
+            if (texto.length < 3) {
+
               setSugerencias([]);
+
               return;
 
             }
-            const resultados = await buscarLugares(texto);
-            console.log("Resultados:", resultados);
-            setSugerencias(resultados);
 
+            try {
+
+              const resultados =
+                await buscarLugares(texto);
+
+              console.log(
+                "Resultados:",
+                resultados
+              );
+
+              setSugerencias(
+                resultados
+              );
+
+            } catch (error) {
+
+              console.error(
+                "Error buscando lugares:",
+                error
+              );
+
+              setSugerencias([]);
+
+            }
 
           }}
 
@@ -190,12 +301,12 @@ function Home() {
 
         />
 
-
+        {/* SUGERENCIAS */}
 
         <div className="sugerencias">
 
-          {
-            sugerencias.map((lugar, index)=>(
+          {sugerencias.map(
+            (lugar, index) => (
 
               <div
 
@@ -203,11 +314,11 @@ function Home() {
 
                 className="item-sugerencia"
 
-                onClick={()=>{
+                onClick={() => {
 
-
-                  setDestino(lugar.nombre);
-
+                  setDestino(
+                    lugar.nombre
+                  );
 
                   setDestinoCoords({
 
@@ -217,22 +328,16 @@ function Home() {
 
                   });
 
-
                   setSugerencias([]);
 
-
-                  console.log("Destino seleccionado:");
-
-                  console.log({
-
-                    nombre: lugar.nombre,
-
-                    lat: lugar.lat,
-
-                    lng: lugar.lng
-
-                  });
-
+                  console.log(
+                    "Destino seleccionado:",
+                    {
+                      nombre: lugar.nombre,
+                      lat: lugar.lat,
+                      lng: lugar.lng
+                    }
+                  );
 
                 }}
 
@@ -240,42 +345,45 @@ function Home() {
 
                 {lugar.nombre}
 
-                <br/>
+                <br />
 
                 <small>
                   {lugar.direccion}
                 </small>
 
-
               </div>
 
-
-            ))
-          }
-
+            )
+          )}
 
         </div>
 
-
+        {/* BOTÓN */}
 
         <button
-              className="btn-confirmar"
-              disabled={cargando || !coordenadas || !destinoCoords}
-              onClick={confirmarDestino}
-              >
-              {cargando 
-              ? "Obteniendo ubicación..."
-              : "Buscar ruta"
-              }
+
+          className="btn-confirmar"
+
+          disabled={
+            cargando ||
+            !coordenadas ||
+            !destinoCoords
+          }
+
+          onClick={confirmarDestino}
+
+        >
+
+          {cargando
+            ? "Obteniendo ubicación..."
+            : "Buscar ruta"
+          }
+
         </button>
-
-
 
       </div>
 
-
       <Navar />
-
 
     </div>
 

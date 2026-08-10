@@ -1,436 +1,390 @@
-
 import "./guia_viaje.css";
 import Navar from "../../components/Navar";
-import { FaBus, FaMapMarkerAlt } from "react-icons/fa";
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import {
+  FaBus,
+  FaHeart,
+  FaArrowRight,
+  FaMapMarkerAlt
+} from "react-icons/fa";
 
-const API_URL = import.meta.env.VITE_RUTAS_URL;
+import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+const USUARIO_URL = import.meta.env.VITE_USUARIO_URL;
 
 function GuiaViaje() {
-
-    const { state } = useLocation();
-
-    const [rutas, setRutas] = useState([]);
-    const [tipo, setTipo] = useState("");
-    const [cargando, setCargando] = useState(Boolean(state));
-
-    const [error, setError] = useState(
-        state
-            ? ""
-            : "No se recibió la información del viaje."
-    );
-
-
-    // ============================================
-    // BUSCAR RUTA
-    // ============================================
-
-    useEffect(() => {
-
-        if (!state) {
-            return;
-        }
-
-        let cancelado = false;
-
-        const buscarRuta = async () => {
-
-            try {
-
-                // ========================================
-                // COORDENADAS
-                // ========================================
-
-                const origenLat =
-                    state.origen?.lat ??
-                    state.origenLat;
-
-                const origenLng =
-                    state.origen?.lng ??
-                    state.origenLng;
-
-                const destinoLat =
-                    state.destino?.lat ??
-                    state.destinoLat;
-
-                const destinoLng =
-                    state.destino?.lng ??
-                    state.destinoLng;
-
-
-                console.log(
-                    "Coordenadas enviadas:",
-                    {
-                        origenLat,
-                        origenLng,
-                        destinoLat,
-                        destinoLng
-                    }
-                );
-
-
-                // ========================================
-                // VALIDAR
-                // ========================================
-
-                if (
-                    origenLat == null ||
-                    origenLng == null ||
-                    destinoLat == null ||
-                    destinoLng == null
-                ) {
-
-                    if (!cancelado) {
-
-                        setError(
-                            "No se encontraron las coordenadas de origen y destino."
-                        );
-
-                        setCargando(false);
-
-                    }
-
-                    return;
-                }
-
-
-                // ========================================
-                // PETICIÓN
-                // ========================================
-
-                const respuesta = await fetch(
-                    `${API_URL}/buscar-ruta`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-
-                        body: JSON.stringify({
-                            origenLat,
-                            origenLng,
-                            destinoLat,
-                            destinoLng
-                        })
-                    }
-                );
-
-
-                const datos = await respuesta.json();
-
-
-                console.log(
-                    "Respuesta buscar-ruta:",
-                    datos
-                );
-
-
-                if (cancelado) {
-                    return;
-                }
-
-
-                // ========================================
-                // ERROR
-                // ========================================
-
-                if (!respuesta.ok) {
-
-                    setRutas([]);
-                    setTipo("");
-
-                    setError(
-                        datos.mensaje ||
-                        datos.error ||
-                        "No fue posible encontrar una ruta."
-                    );
-
-                    setCargando(false);
-
-                    return;
-                }
-
-
-                // ========================================
-                // GUARDAR SOLO LAS RUTAS
-                // ========================================
-
-                setRutas(
-                    Array.isArray(datos.rutas)
-                        ? datos.rutas
-                        : []
-                );
-
-                setTipo(
-                    datos.tipo || ""
-                );
-
-                setError("");
-                setCargando(false);
-
-
-            } catch (err) {
-
-                if (cancelado) {
-                    return;
-                }
-
-                console.error(
-                    "Error buscando ruta:",
-                    err
-                );
-
-                setRutas([]);
-                setTipo("");
-
-                setError(
-                    "No fue posible calcular la ruta."
-                );
-
-                setCargando(false);
-
-            }
-
-        };
-
-
-        buscarRuta();
-
-
-        return () => {
-
-            cancelado = true;
-
-        };
-
-    }, [state]);
-
-
-    // ============================================
-    // SIN INFORMACIÓN
-    // ============================================
-
-    if (!state) {
-
-        return (
-
-            <div className="guia-container">
-
-                <div className="contenido">
-
-                    <h2>
-                        Tu viaje
-                    </h2>
-
-                    <div className="mensaje error">
-
-                        <p>
-                            No se recibió la información del viaje.
-                        </p>
-
-                    </div>
-
-                </div>
-
-                <Navar />
-
-            </div>
-
-        );
-
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [nombreGuardado, setNombreGuardado] = useState("");
+  const [rutaParaGuardar, setRutaParaGuardar] = useState(null);
+  const [guardando, setGuardando] = useState(false);
+  const [mensaje, setMensaje] = useState("");
+
+  /*
+    Home puede mandar:
+
+    state: {
+      rutas: [...]
     }
 
+    o directamente:
 
-    // ============================================
-    // RENDER
-    // ============================================
+    state: {
+      cantidad_camiones: 2,
+      rutas: [...]
+    }
+  */
 
-    return (
+  const datos = location.state || {};
 
-        <div className="guia-container">
+  const rutas = Array.isArray(datos)
+    ? datos
+    : Array.isArray(datos.rutas)
+      ? datos.rutas
+      : [];
 
-            <div className="contenido">
+  // Abrir ventana para guardar
+  const abrirGuardar = (ruta) => {
+    setRutaParaGuardar(ruta);
+    setNombreGuardado(
+      ruta.ruta ||
+      ruta.nombre ||
+      `Ruta ${ruta.numero || ""}`.trim()
+    );
+    setMensaje("");
+  };
 
-                <h2>
-                    Tu viaje
-                </h2>
+  // Guardar ruta
+  const guardarRuta = async () => {
+    if (!rutaParaGuardar) return;
 
+    const nombre = nombreGuardado.trim();
 
-                {/* ==================================
-                    CARGANDO
-                ================================== */}
+    if (!nombre) {
+      setMensaje("Ponle un nombre a tu ruta.");
+      return;
+    }
 
-                {cargando && (
+    const token = localStorage.getItem("token");
 
-                    <div className="mensaje">
+    if (!token) {
+      setMensaje("Debes iniciar sesión para guardar rutas.");
+      return;
+    }
 
-                        <p>
-                            Buscando los autobuses que necesitas...
-                        </p>
+    try {
+      setGuardando(true);
+      setMensaje("");
+
+      const respuesta = await fetch(`${USUARIO_URL}/guardados`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ruta_id: rutaParaGuardar.ruta_id,
+          nombre_personalizado: nombre
+        })
+      });
+
+      const data = await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(
+          data?.mensaje ||
+          data?.error ||
+          "No se pudo guardar la ruta."
+        );
+      }
+
+      setMensaje("¡Ruta guardada! ❤️");
+
+      setTimeout(() => {
+        setRutaParaGuardar(null);
+        setNombreGuardado("");
+        setMensaje("");
+      }, 900);
+
+    } catch (error) {
+      console.error("Error guardando ruta:", error);
+      setMensaje(error.message);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <>
+      <Navar />
+
+      <main className="guia-container">
+
+        <div className="contenido-guia">
+
+          <div className="guia-header">
+            <div>
+              <span className="guia-etiqueta">
+                TU VIAJE
+              </span>
+
+              <h1>Ruta recomendada</h1>
+
+              <p>
+                Estos son los camiones que necesitas tomar.
+              </p>
+            </div>
+
+            <button
+              className="btn-guardados"
+              onClick={() => navigate("/guardados")}
+            >
+              <FaHeart />
+              Ver guardados
+            </button>
+          </div>
+
+          {rutas.length === 0 ? (
+
+            <div className="sin-rutas">
+              <FaBus />
+
+              <h2>No encontramos una ruta</h2>
+
+              <p>
+                Regresa al inicio e intenta buscar tu destino nuevamente.
+              </p>
+
+              <button
+                onClick={() => navigate("/")}
+              >
+                Volver al inicio
+              </button>
+            </div>
+
+          ) : (
+
+            <div className="rutas-viaje">
+
+              {rutas.map((ruta, index) => {
+
+                const nombreRuta =
+                  ruta.ruta ||
+                  ruta.nombre ||
+                  `Ruta ${ruta.numero || index + 1}`;
+
+                const numero =
+                  ruta.numero ??
+                  ruta.ruta_id ??
+                  index + 1;
+
+                const color =
+                  ruta.color ||
+                  "#555";
+
+                const subida =
+                  ruta.parada_subida?.nombre ||
+                  ruta.parada_subida?.nombre_parada ||
+                  "Parada de subida";
+
+                const bajada =
+                  ruta.parada_bajada?.nombre ||
+                  ruta.parada_bajada?.nombre_parada ||
+                  "Parada de bajada";
+
+                return (
+                  <section
+                    className="ruta-card"
+                    key={`${ruta.ruta_id}-${index}`}
+                  >
+
+                    <div className="ruta-numero">
+                      <span>
+                        {index + 1}
+                      </span>
+
+                      {index < rutas.length - 1 && (
+                        <div className="linea-ruta" />
+                      )}
+                    </div>
+
+                    <div className="ruta-contenido">
+
+                      <div className="ruta-top">
+
+                        <div className="ruta-info">
+
+                          <div
+                            className="bus-icono"
+                            style={{
+                              backgroundColor: color
+                            }}
+                          >
+                            <FaBus />
+                          </div>
+
+                          <div>
+                            <span className="tomar">
+                              {index === 0
+                                ? "TOMA ESTE CAMIÓN"
+                                : "DESPUÉS TOMA ESTE CAMIÓN"}
+                            </span>
+
+                            <h2>
+                              {nombreRuta}
+                            </h2>
+
+                            <p>
+                              Camión #{numero}
+                            </p>
+                          </div>
+
+                        </div>
+
+                        <button
+                          className="corazon-btn"
+                          onClick={() => abrirGuardar(ruta)}
+                          title="Guardar ruta"
+                        >
+                          <FaHeart />
+                        </button>
+
+                      </div>
+
+                      <div className="recorrido">
+
+                        <div className="parada">
+
+                          <div className="punto subida">
+                            <FaMapMarkerAlt />
+                          </div>
+
+                          <div>
+                            <span>SUBE EN</span>
+                            <strong>{subida}</strong>
+                          </div>
+
+                        </div>
+
+                        <div className="flecha">
+                          <FaArrowRight />
+                        </div>
+
+                        <div className="parada">
+
+                          <div className="punto bajada">
+                            <FaMapMarkerAlt />
+                          </div>
+
+                          <div>
+                            <span>BAJA EN</span>
+                            <strong>{bajada}</strong>
+                          </div>
+
+                        </div>
+
+                      </div>
 
                     </div>
 
-                )}
+                  </section>
+                );
+              })}
 
+            </div>
+          )}
 
-                {/* ==================================
-                    ERROR
-                ================================== */}
+        </div>
+      </main>
 
-                {!cargando && error && (
+      {/* MODAL PARA GUARDAR */}
 
-                    <div className="mensaje error">
+      {rutaParaGuardar && (
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            if (!guardando) {
+              setRutaParaGuardar(null);
+            }
+          }}
+        >
 
-                        <p>
-                            {error}
-                        </p>
+          <div
+            className="modal-guardar"
+            onClick={(e) => e.stopPropagation()}
+          >
 
-                    </div>
+            <div className="modal-corazon">
+              <FaHeart />
+            </div>
 
-                )}
+            <h2>Guardar ruta</h2>
 
+            <p>
+              Ponle un nombre para encontrarla fácilmente después.
+            </p>
 
-                {/* ==================================
-                    SIN RUTAS
-                ================================== */}
+            <input
+              type="text"
+              value={nombreGuardado}
+              onChange={(e) =>
+                setNombreGuardado(e.target.value)
+              }
+              placeholder="Ej. Casa a la escuela"
+              maxLength={100}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  guardarRuta();
+                }
+              }}
+            />
 
-                {!cargando &&
-                !error &&
-                rutas.length === 0 && (
+            {mensaje && (
+              <div
+                className={
+                  mensaje.includes("guardada")
+                    ? "mensaje-exito"
+                    : "mensaje-error"
+                }
+              >
+                {mensaje}
+              </div>
+            )}
 
-                    <div className="mensaje">
+            <div className="modal-botones">
 
-                        <p>
-                            No se encontró una ruta disponible.
-                        </p>
+              <button
+                className="btn-cancelar"
+                disabled={guardando}
+                onClick={() =>
+                  setRutaParaGuardar(null)
+                }
+              >
+                Cancelar
+              </button>
 
-                    </div>
+              <button
+                className="btn-guardar"
+                disabled={guardando}
+                onClick={guardarRuta}
+              >
+                <FaHeart />
 
-                )}
-
-
-                {/* ==================================
-                    RUTAS
-                ================================== */}
-
-                {!cargando &&
-                !error &&
-                rutas.length > 0 && (
-
-                    <div className="rutas-container">
-
-                        <h3 className="subtitulo">
-
-                            {tipo === "TRANSBORDO"
-                                ? "Necesitas tomar 2 autobuses"
-                                : "Necesitas tomar 1 autobús"
-                            }
-
-                        </h3>
-
-
-                        {rutas.map((ruta, index) => (
-
-                            <div
-                                className="ruta-viaje"
-                                key={`${ruta.ruta_id}-${index}`}
-                            >
-
-                                {/* =========================
-                                    RUTA
-                                ========================= */}
-
-                                <div className="ruta-header">
-
-                                    <div className="bus-icon-container">
-
-                                        <FaBus
-                                            className="icono-bus"
-                                        />
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <span>
-                                            Autobús {index + 1}
-                                        </span>
-
-                                        <h3>
-                                            {ruta.ruta}
-                                        </h3>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* =========================
-                                    PARADA DE SUBIDA
-                                ========================= */}
-
-                                <div className="parada-info">
-
-                                    <FaBus />
-
-                                    <div>
-
-                                        <span>
-                                            Sube en
-                                        </span>
-
-                                        <strong>
-                                            {ruta.parada_subida}
-                                        </strong>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* =========================
-                                    PARADA DE BAJADA
-                                ========================= */}
-
-                                <div className="parada-info">
-
-                                    <FaMapMarkerAlt />
-
-                                    <div>
-
-                                        <span>
-                                            Baja en
-                                        </span>
-
-                                        <strong>
-                                            {ruta.parada_bajada}
-                                        </strong>
-
-                                    </div>
-
-                                </div>
-
-
-                            </div>
-
-                        ))}
-
-                    </div>
-
-                )}
+                {guardando
+                  ? "Guardando..."
+                  : "Guardar"}
+              </button>
 
             </div>
 
-
-            <Navar />
+          </div>
 
         </div>
-
-    );
-
+      )}
+    </>
+  );
 }
 
 export default GuiaViaje;

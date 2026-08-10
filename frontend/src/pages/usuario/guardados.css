@@ -1,219 +1,418 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-body{
-    background:#F8F6FB;
-    font-family:Arial, Helvetica, sans-serif;
-}
-
-
-.guardados{
-    min-height:100vh;
-    padding:125px 20px;
-}
-
-/* TITULO */
-
-.titulo{
-    text-align:center;
-    margin-bottom:40px;
+.guardados {
+    min-height: calc(100vh - 110px);
+    background: #f7f6f8;
+    padding: 45px 20px 100px;
 }
 
 
-.titulo h1{
+/* =========================
+   TITULO
+========================= */
 
-    font-size:40px;
-    color:#75176E;
-    font-weight:700;
+.titulo {
+    text-align: center;
+    margin-bottom: 40px;
 }
 
-.titulo p{
-    margin-top:15px;
-    color:#777;
-    font-size:17px;
+.titulo-icono {
+    width: 60px;
+    height: 60px;
+
+    margin: 0 auto 15px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f3dff1;
+    color: #75176E;
+
+    font-size: 25px;
+}
+
+.titulo h1 {
+    color: #75176E;
+    font-size: 38px;
+}
+
+.titulo p {
+    margin-top: 10px;
+    color: #777;
+    font-size: 17px;
 }
 
 
+/* =========================
+   CONTENEDOR
+========================= */
 
+.contenedor {
+    width: 100%;
+    max-width: 850px;
+    margin: auto;
 
-/* CONTENEDOR */
-
-.contenedor{
-
-    width:100%;
-    max-width:700px;
-    margin:auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* TARJETA */
 
-.ruta-card{
-    background:white;
-    border-radius:25px;
-    padding:25px;
-    margin-bottom:25px;
+/* =========================
+   TARJETA
+========================= */
+
+.ruta-card {
+    display: flex;
+    gap: 22px;
+
+    background: white;
+
+    border-radius: 24px;
+
+    padding: 25px;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,.08);
+
+    border: 1px solid #eee;
+
+    transition: .25s;
+}
+
+.ruta-card:hover {
+    transform: translateY(-3px);
+
     box-shadow:
-    0 8px 20px rgba(0,0,0,.08);
-    transition:.3s;
+        0 12px 30px
+        rgba(117,23,110,.13);
 }
 
 
-.ruta-card:hover{
-    transform:translateY(-5px);
-    box-shadow:
-    0 15px 30px rgba(117,23,110,.15);
+/* =========================
+   ICONO
+========================= */
+
+.icono-ruta {
+    width: 68px;
+    height: 68px;
+
+    flex-shrink: 0;
+
+    border-radius: 18px;
+
+    background: #f4e1f2;
+
+    color: #75176E;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 31px;
 }
 
 
-/* PARTE SUPERIOR */
-.parteSuperior{
-    display:flex;
-    align-items:center;
-}
+/* =========================
+   CONTENIDO
+========================= */
 
-.bus{
-    width:65px;
-    height:65px;
-    background:#F4E5F3;
-    color:#75176E;
-    border-radius:50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:28px;
-    margin-right:20px;
+.ruta-contenido {
+    flex: 1;
+    min-width: 0;
 }
 
 
+/* =========================
+   CABECERA
+========================= */
 
-.info{
-    flex:1;
+.ruta-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
 }
 
-.info h2{
-    color:#75176E;
-    font-size:22px;
-    margin-bottom:10px;
+.favorita {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    color: #75176E;
+
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
-
-.info p{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    color:#666;
-    font-size:15px;
-}
-
-
-
-/* BOTONES */
-
-.acciones{
-    display:flex;
-    gap:15px;
-    margin-top:25px;
-}
-
-
-
-.acciones button{
-    height:42px;
-    border:none;
-    border-radius:12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    cursor:pointer;
-    font-size:15px;
-    font-weight:bold;
-    transition:.3s;
+.ruta-cabecera h2 {
+    color: #222;
+    font-size: 24px;
+    margin-top: 5px;
 }
 
 
+/* =========================
+   ELIMINAR
+========================= */
 
+.btn-eliminar {
+    width: 40px;
+    height: 40px;
 
-/* VER RUTA */
+    border: none;
 
-.acciones button:first-child{
-    flex:1;
-    background:#75176E;
-    color:white;
+    background: #f8f1f7;
+
+    color: #75176E;
+
+    border-radius: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    transition: .2s;
+}
+
+.btn-eliminar:hover {
+    background: #75176E;
+    color: white;
 }
 
 
-.acciones button:first-child:hover{
-    background:#9b2a92;
-    transform:scale(1.03);
+/* =========================
+   ORIGEN DESTINO
+========================= */
+
+.trayecto {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 9px;
+
+    margin-top: 18px;
+
+    color: #555;
+
+    font-size: 15px;
+}
+
+.trayecto svg {
+    color: #75176E;
+    font-size: 13px;
 }
 
 
+/* =========================
+   CANTIDAD
+========================= */
 
+.cantidad-buses {
+    margin-top: 16px;
 
+    display: flex;
+    align-items: center;
+    gap: 7px;
 
-/* ELIMINAR */
+    color: #75176E;
 
-.acciones .eliminar{
-    width:50px;
-    background:#FCE7F3;
-    color:#75176E;
+    font-size: 14px;
+}
+
+.cantidad-buses strong {
+    font-size: 16px;
 }
 
 
+/* =========================
+   MINI RUTAS
+========================= */
 
-.acciones .eliminar:hover{
-    background:#75176E;
-    color:white;
+.mini-rutas {
+    margin-top: 14px;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 8px;
+}
+
+.mini-ruta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    background: #f7f5f7;
+
+    padding: 8px 12px;
+
+    border-radius: 10px;
+
+    color: #444;
+
+    font-size: 14px;
+}
+
+.punto-ruta {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
 }
 
 
+/* =========================
+   VER RUTA
+========================= */
 
+.btn-ver-ruta {
+    width: 100%;
 
-/* SIN GUARDADOS */
+    margin-top: 20px;
 
-.sinGuardados{
-    text-align:center;
-    color:#777;
-    margin-top:40px;
-    font-size:18px;
+    padding: 13px 17px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #75176E;
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    cursor: pointer;
+
+    transition: .25s;
+}
+
+.btn-ver-ruta:hover {
+    background: #641261;
+}
+
+.btn-ver-ruta svg {
+    font-size: 13px;
 }
 
 
+/* =========================
+   SIN GUARDADOS
+========================= */
 
-/* RESPONSIVE */
+.sinGuardados {
+    max-width: 550px;
 
-@media(max-width:600px){
+    margin: 80px auto;
+
+    background: white;
+
+    border-radius: 25px;
+
+    padding: 50px 30px;
+
+    text-align: center;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,.07);
+}
+
+.icono-sin {
+    width: 80px;
+    height: 80px;
+
+    margin: auto;
+
+    border-radius: 50%;
+
+    background: #f3dff1;
+
+    color: #75176E;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 32px;
+}
+
+.sinGuardados h2 {
+    margin-top: 20px;
+
+    color: #75176E;
+
+    font-size: 24px;
+}
+
+.sinGuardados p {
+    margin-top: 10px;
+
+    color: #777;
+
+    line-height: 1.5;
+}
 
 
-    .guardados{
-        padding:30px 15px;
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+    .guardados {
+        padding: 30px 15px 100px;
     }
 
-    .titulo h1{
-        font-size:32px;
+    .titulo h1 {
+        font-size: 30px;
     }
 
-
-    .ruta-card{
-        padding:20px;
+    .titulo p {
+        font-size: 15px;
     }
 
-
-    .info h2{
-        font-size:18px;
+    .ruta-card {
+        padding: 20px;
+        gap: 15px;
     }
 
-
-    .bus{
-        width:55px;
-        height:55px;
-        font-size:23px;
-
+    .icono-ruta {
+        width: 55px;
+        height: 55px;
+        font-size: 25px;
     }
 
+    .ruta-cabecera h2 {
+        font-size: 20px;
+    }
+
+    .trayecto {
+        font-size: 13px;
+    }
+
+    .mini-ruta {
+        width: 100%;
+    }
 
 }

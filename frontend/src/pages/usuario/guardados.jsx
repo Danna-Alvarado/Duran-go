@@ -1,231 +1,502 @@
+
 import { useEffect, useState } from "react";
 import "./guardados.css";
 import Navar from "../../components/Navar";
 
 import {
-    FaBus,
-    FaTrash,
-    FaBookmark
+  FaBus,
+  FaTrash,
+  FaHeart,
+  FaArrowRight,
+  FaMapMarkerAlt
 } from "react-icons/fa";
+
+import { useNavigate } from "react-router-dom";
+
 const USUARIO_URL = import.meta.env.VITE_USUARIO_URL;
 
 function Guardados() {
 
-    const [guardados, setGuardados] = useState([]);
-    const [cargando, setCargando] = useState(true);
-    
+  const navigate = useNavigate();
 
-    useEffect(() => {
+  const [guardados, setGuardados] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
-        async function cargar() {
+  // ==========================================
+  // CARGAR GUARDADOS
+  // ==========================================
 
-            try {
+  useEffect(() => {
 
-                const token = localStorage.getItem("token");
+    const cargarGuardados = async () => {
 
-                const respuesta = await fetch(
-                     `${USUARIO_URL}/guardados`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                );
+      try {
 
-                if (!respuesta.ok) {
-                    throw new Error("Error al obtener guardados");
-                }
+        const token = localStorage.getItem("token");
 
-                const datos = await respuesta.json();
+        if (!token) {
+          setGuardados([]);
+          return;
+        }
 
-                setGuardados(datos);
-
-            } catch (error) {
-
-                console.error(error);
-
-            } finally {
-
-                setCargando(false);
-
+        const respuesta = await fetch(
+          `${USUARIO_URL}/guardados`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`
             }
+          }
+        );
+
+        const datos = await respuesta.json();
+
+        console.log(
+          "Guardados:",
+          datos
+        );
+
+        if (!respuesta.ok) {
+
+          throw new Error(
+            datos?.mensaje ||
+            datos?.error ||
+            "No se pudieron cargar los guardados."
+          );
 
         }
 
-        cargar();
+        const lista = Array.isArray(datos)
+          ? datos
+          : datos.guardados || [];
 
-    }, []);
+        setGuardados(lista);
 
-    async function eliminarGuardado(id) {
+      } catch (error) {
 
-        try {
+        console.error(
+          "Error cargando guardados:",
+          error
+        );
 
-            const token = localStorage.getItem("token");
+        setGuardados([]);
 
-            const respuesta = await fetch(
+      } finally {
 
-                `${USUARIO_URL}/guardados/${id}`,
+        setCargando(false);
 
-                {
+      }
 
-                    method: "DELETE",
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
+    };
 
-                }
+    cargarGuardados();
 
-            );
+  }, []);
 
-            if (!respuesta.ok) {
+  // ==========================================
+  // ELIMINAR
+  // ==========================================
 
-                throw new Error("No se pudo eliminar.");
+  const eliminarGuardado = async (id) => {
 
-            }
+    try {
 
-            setGuardados((anterior) =>
-                anterior.filter((ruta) => ruta.id !== id)
-            );
+      const token =
+        localStorage.getItem("token");
 
-        } catch (error) {
+      if (!token) {
+        return;
+      }
 
-            console.error(error);
+      const respuesta = await fetch(
+        `${USUARIO_URL}/guardados/${id}`,
+        {
+          method: "DELETE",
 
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
         }
+      );
+
+      if (!respuesta.ok) {
+
+        const datos =
+          await respuesta.json();
+
+        throw new Error(
+          datos?.mensaje ||
+          "No se pudo eliminar la ruta."
+        );
+
+      }
+
+      // Actualizamos pantalla
+      // sin volver a consultar
+      setGuardados(
+        anteriores =>
+          anteriores.filter(
+            ruta => ruta.id !== id
+          )
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Error eliminando ruta:",
+        error
+      );
+
+      alert(
+        "No se pudo eliminar la ruta."
+      );
 
     }
 
+  };
+
+  // ==========================================
+  // VER RUTA INDIVIDUAL
+  // ==========================================
+
+  const verRuta = (ruta) => {
+
+    console.log(
+      "Abriendo ruta guardada:",
+      ruta
+    );
+
+    navigate(
+      "/guia_viaje",
+      {
+        state: {
+
+          rutas: [
+
+            {
+              ruta_id:
+                ruta.ruta_id,
+
+              ruta:
+                ruta.nombre ||
+                ruta.nombre_ruta ||
+                "Ruta",
+
+              nombre:
+                ruta.nombre ||
+                ruta.nombre_ruta ||
+                "Ruta",
+
+              color:
+                ruta.color ||
+                "#75176E",
+
+              numero:
+                ruta.numero ||
+                ruta.numero_bus ||
+                null,
+
+              parada_subida:
+                ruta.parada_subida ||
+                null,
+
+              parada_bajada:
+                ruta.parada_bajada ||
+                null
+            }
+
+          ]
+
+        }
+      }
+    );
+
+  };
+
+  // ==========================================
+  // CARGANDO
+  // ==========================================
+
+  if (cargando) {
+
     return (
 
-        <>
-            <Navar />
-            <div className="guardados">
-                <div className="titulo">
-                    <h1>Mis rutas guardadas</h1>
-                    <p>
-                        Tus rutas favoritas aparecerán aquí.
-                    </p>
+      <>
+        <Navar />
+
+        <main className="guardados">
+
+          <div className="sinGuardados">
+
+            <FaBus />
+
+            <h2>
+              Cargando tus rutas...
+            </h2>
+
+          </div>
+
+        </main>
+      </>
+
+    );
+
+  }
+
+  // ==========================================
+  // PANTALLA
+  // ==========================================
+
+  return (
+
+    <>
+      <Navar />
+
+      <main className="guardados">
+
+        <div className="titulo">
+
+          <span className="titulo-icono">
+            <FaHeart />
+          </span>
+
+          <h1>
+            Mis rutas guardadas
+          </h1>
+
+          <p>
+            Tus rutas favoritas aparecerán aquí.
+          </p>
+
+        </div>
+
+        {guardados.length === 0 ? (
+
+          // ====================================
+          // SIN GUARDADOS
+          // ====================================
+
+          <div className="sinGuardados">
+
+            <div className="icono-sin">
+              <FaHeart />
+            </div>
+
+            <h2>
+              No tienes rutas guardadas
+            </h2>
+
+            <p>
+              Cuando encuentres una ruta que
+              quieras conservar, toca el corazón.
+            </p>
+
+            <button
+              className="btn-ver-ruta"
+              onClick={() => navigate("/")}
+            >
+              Buscar una ruta
+              <FaArrowRight />
+            </button>
+
+          </div>
+
+        ) : (
+
+          // ====================================
+          // RUTAS
+          // ====================================
+
+          <div className="contenedor">
+
+            {guardados.map(
+              (ruta, index) => (
+
+                <div
+                  className="ruta-card"
+                  key={
+                    ruta.id ||
+                    ruta.id_guardado ||
+                    index
+                  }
+                >
+
+                  {/* ICONO */}
+
+                  <div
+                    className="icono-ruta"
+                    style={{
+                      backgroundColor:
+                        ruta.color ||
+                        "#75176E"
+                    }}
+                  >
+
+                    <FaBus />
+
+                  </div>
+
+                  {/* CONTENIDO */}
+
+                  <div className="ruta-contenido">
+
+                    {/* CABECERA */}
+
+                    <div className="ruta-cabecera">
+
+                      <div>
+
+                        <span className="favorita">
+
+                          <FaHeart />
+
+                          GUARDADA
+
+                        </span>
+
+                        <h2>
+                          {
+                            ruta.nombre_personalizado ||
+                            "Ruta guardada"
+                          }
+                        </h2>
+
+                      </div>
+
+                      <button
+                        className="btn-eliminar"
+                        title="Eliminar ruta"
+                        onClick={() =>
+                          eliminarGuardado(
+                            ruta.id ||
+                            ruta.id_guardado
+                          )
+                        }
+                      >
+
+                        <FaTrash />
+
+                      </button>
+
+                    </div>
+
+                    {/* NOMBRE DE LA RUTA */}
+
+                    <div className="nombre-ruta">
+
+                      <FaBus />
+
+                      <div>
+
+                        <span>
+                          RUTA
+                        </span>
+
+                        <strong>
+                          {
+                            ruta.nombre ||
+                            ruta.nombre_ruta ||
+                            "Ruta"
+                          }
+                        </strong>
+
+                      </div>
+
+                    </div>
+
+                    {/* PARADAS */}
+
+                    <div className="paradas-guardado">
+
+                      <div className="parada-guardada">
+
+                        <div className="icono-parada subida">
+
+                          <FaMapMarkerAlt />
+
+                        </div>
+
+                        <div>
+
+                          <small>
+                            SUBE EN
+                          </small>
+
+                          <strong>
+                            {
+                              ruta.parada_subida?.nombre ||
+                              "Parada de subida"
+                            }
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                      <div className="flecha-parada">
+
+                        <FaArrowRight />
+
+                      </div>
+
+                      <div className="parada-guardada">
+
+                        <div className="icono-parada bajada">
+
+                          <FaMapMarkerAlt />
+
+                        </div>
+
+                        <div>
+
+                          <small>
+                            BAJA EN
+                          </small>
+
+                          <strong>
+                            {
+                              ruta.parada_bajada?.nombre ||
+                              "Parada de bajada"
+                            }
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    {/* VER RUTA */}
+
+                    <button
+                      className="btn-ver-ruta"
+                      onClick={() =>
+                        verRuta(ruta)
+                      }
+                    >
+
+                      Ver ruta
+
+                      <FaArrowRight />
+
+                    </button>
+
+                  </div>
 
                 </div>
 
-                {
+              )
+            )}
 
-                    cargando ?
+          </div>
 
-                        <div className="sinGuardados">
+        )}
 
-                            <h2>Cargando...</h2>
+      </main>
+    </>
 
-                        </div>
-
-                    :
-
-                    guardados.length === 0 ?
-
-                        <div className="sinGuardados">
-
-                            <FaBookmark
-                                size={70}
-                                color="#75176E"
-                            />
-
-                            <h2
-                                style={{
-                                    marginTop:20,
-                                    color:"#75176E"
-                                }}
-                            >
-                                No tienes rutas guardadas
-                            </h2>
-
-                            <p
-                                style={{
-                                    marginTop:10
-                                }}
-                            >
-                                Guarda una ruta cuando busques un destino.
-                            </p>
-
-                        </div>
-
-                    :
-
-                        <div className="contenedor">
-
-                            {
-
-                                guardados.map((ruta) => (
-
-                                    <div
-                                        className="ruta-card"
-                                        key={ruta.id}
-                                    >
-
-                                        <div className="parteSuperior">
-
-                                            <div className="bus">
-
-                                                <FaBus />
-
-                                            </div>
-
-                                            <div className="info">
-
-                                                <h2>
-
-                                                    {ruta.nombre_personalizado}
-
-                                                </h2>
-
-                                                <div className="ruta-info">
-
-                                                    <span className="nombre-ruta">
-
-                                                        {ruta.nombre}
-
-                                                    </span>
-
-                                                    <div
-                                                        className="color-ruta"
-                                                        style={{
-                                                            backgroundColor: ruta.color
-                                                        }}
-                                                    ></div>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                        <div className="acciones">
-
-                                            <button
-                                                className="eliminar"
-                                                onClick={() => eliminarGuardado(ruta.id)}
-                                            >
-
-                                                <FaTrash />
-
-                                            </button>
-
-                                        </div>
-
-                                    </div>
-
-                                ))
-
-                            }
-
-                        </div>
-
-                }
-
-            </div>
-
-        </>
-
-    );
+  );
 
 }
 
