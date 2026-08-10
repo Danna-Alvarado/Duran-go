@@ -750,4 +750,48 @@ router.post("/buscar-ruta", async (req, res) => {
 
 });
 
+router.get("/debug-rutas", async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                r.id AS ruta_id,
+                r.nombre AS ruta,
+                r.color,
+
+                rp.orden,
+
+                p.id AS parada_id,
+                p.nombre_parada,
+                p.latitud,
+                p.longitud
+
+            FROM rutas r
+
+            INNER JOIN ruta_paradas rp
+                ON rp.ruta_id = r.id
+
+            INNER JOIN paradas p
+                ON p.id = rp.parada_id
+
+            ORDER BY
+                r.id,
+                rp.orden
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+});
+
 module.exports = router;
