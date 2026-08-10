@@ -1,390 +1,675 @@
+import { useState } from "react";
 import "./guia_viaje.css";
 import Navar from "../../components/Navar";
+
 import {
-  FaBus,
-  FaHeart,
-  FaArrowRight,
-  FaMapMarkerAlt
+    FaBus,
+    FaHeart,
+    FaMapMarkerAlt,
+    FaWalking
 } from "react-icons/fa";
 
-import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import {
+    useLocation,
+    useNavigate
+} from "react-router-dom";
 
-const USUARIO_URL = import.meta.env.VITE_USUARIO_URL;
+
+const USUARIO_URL =
+    import.meta.env.VITE_USUARIO_URL;
+
 
 function GuiaViaje() {
-  const location = useLocation();
-  const navigate = useNavigate();
 
-  const [nombreGuardado, setNombreGuardado] = useState("");
-  const [rutaParaGuardar, setRutaParaGuardar] = useState(null);
-  const [guardando, setGuardando] = useState(false);
-  const [mensaje, setMensaje] = useState("");
+    const location = useLocation();
+    const navigate = useNavigate();
 
-  /*
-    Home puede mandar:
 
-    state: {
-      rutas: [...]
-    }
+    // =====================================================
+    // DATOS RECIBIDOS DESDE HOME
+    // =====================================================
 
-    o directamente:
+    const datos = location.state?.rutas;
 
-    state: {
-      cantidad_camiones: 2,
-      rutas: [...]
-    }
-  */
+    const rutas = Array.isArray(datos?.rutas)
+        ? datos.rutas
+        : [];
 
-  const datos = location.state || {};
+    const tipoRuta = datos?.tipo || "";
 
-  const rutas = Array.isArray(datos)
-    ? datos
-    : Array.isArray(datos.rutas)
-      ? datos.rutas
-      : [];
 
-  // Abrir ventana para guardar
-  const abrirGuardar = (ruta) => {
-    setRutaParaGuardar(ruta);
-    setNombreGuardado(
-      ruta.ruta ||
-      ruta.nombre ||
-      `Ruta ${ruta.numero || ""}`.trim()
-    );
-    setMensaje("");
-  };
+    // =====================================================
+    // ESTADOS
+    // =====================================================
 
-  // Guardar ruta
-  const guardarRuta = async () => {
-    if (!rutaParaGuardar) return;
+    const [guardando, setGuardando] = useState(false);
+    const [mensaje, setMensaje] = useState("");
 
-    const nombre = nombreGuardado.trim();
 
-    if (!nombre) {
-      setMensaje("Ponle un nombre a tu ruta.");
-      return;
-    }
+    // =====================================================
+    // GUARDAR RUTA
+    // =====================================================
 
-    const token = localStorage.getItem("token");
+    const guardarRuta = async (ruta) => {
 
-    if (!token) {
-      setMensaje("Debes iniciar sesión para guardar rutas.");
-      return;
-    }
+        try {
 
-    try {
-      setGuardando(true);
-      setMensaje("");
+            const token =
+                localStorage.getItem("token");
 
-      const respuesta = await fetch(`${USUARIO_URL}/guardados`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ruta_id: rutaParaGuardar.ruta_id,
-          nombre_personalizado: nombre
-        })
-      });
 
-      const data = await respuesta.json();
+            if (!token) {
 
-      if (!respuesta.ok) {
-        throw new Error(
-          data?.mensaje ||
-          data?.error ||
-          "No se pudo guardar la ruta."
-        );
-      }
+                alert(
+                    "Debes iniciar sesión para guardar una ruta."
+                );
 
-      setMensaje("¡Ruta guardada! ❤️");
+                return;
 
-      setTimeout(() => {
-        setRutaParaGuardar(null);
-        setNombreGuardado("");
-        setMensaje("");
-      }, 900);
+            }
 
-    } catch (error) {
-      console.error("Error guardando ruta:", error);
-      setMensaje(error.message);
-    } finally {
-      setGuardando(false);
-    }
-  };
 
-  return (
-    <>
-      <Navar />
+            if (!ruta.ruta_id) {
 
-      <main className="guia-container">
+                console.error(
+                    "Ruta sin ID:",
+                    ruta
+                );
 
-        <div className="contenido-guia">
+                alert(
+                    "No se puede guardar esta ruta porque no tiene ID."
+                );
 
-          <div className="guia-header">
-            <div>
-              <span className="guia-etiqueta">
-                TU VIAJE
-              </span>
+                return;
 
-              <h1>Ruta recomendada</h1>
+            }
 
-              <p>
-                Estos son los camiones que necesitas tomar.
-              </p>
-            </div>
 
-            <button
-              className="btn-guardados"
-              onClick={() => navigate("/guardados")}
-            >
-              <FaHeart />
-              Ver guardados
-            </button>
-          </div>
+            const nombreRuta =
+                ruta.ruta ||
+                `Ruta ${ruta.ruta_id}`;
 
-          {rutas.length === 0 ? (
 
-            <div className="sin-rutas">
-              <FaBus />
+            const nombre =
+                window.prompt(
+                    "¿Qué nombre quieres ponerle a esta ruta?",
+                    nombreRuta
+                );
 
-              <h2>No encontramos una ruta</h2>
 
-              <p>
-                Regresa al inicio e intenta buscar tu destino nuevamente.
-              </p>
+            if (
+                !nombre ||
+                !nombre.trim()
+            ) {
 
-              <button
-                onClick={() => navigate("/")}
-              >
-                Volver al inicio
-              </button>
-            </div>
+                return;
 
-          ) : (
+            }
 
-            <div className="rutas-viaje">
 
-              {rutas.map((ruta, index) => {
+            setGuardando(true);
+            setMensaje("");
 
-                const nombreRuta =
-                  ruta.ruta ||
-                  ruta.nombre ||
-                  `Ruta ${ruta.numero || index + 1}`;
 
-                const numero =
-                  ruta.numero ??
-                  ruta.ruta_id ??
-                  index + 1;
+            console.log(
+                "Guardando ruta:",
+                {
+                    ruta_id:
+                        ruta.ruta_id,
 
-                const color =
-                  ruta.color ||
-                  "#555";
+                    nombre_personalizado:
+                        nombre.trim()
+                }
+            );
 
-                const subida =
-                  ruta.parada_subida?.nombre ||
-                  ruta.parada_subida?.nombre_parada ||
-                  "Parada de subida";
 
-                const bajada =
-                  ruta.parada_bajada?.nombre ||
-                  ruta.parada_bajada?.nombre_parada ||
-                  "Parada de bajada";
+            const respuesta =
+                await fetch(
+                    `${USUARIO_URL}/guardados`,
+                    {
+                        method: "POST",
 
-                return (
-                  <section
-                    className="ruta-card"
-                    key={`${ruta.ruta_id}-${index}`}
-                  >
+                        headers: {
+                            "Content-Type":
+                                "application/json",
 
-                    <div className="ruta-numero">
-                      <span>
-                        {index + 1}
-                      </span>
+                            Authorization:
+                                `Bearer ${token}`
+                        },
 
-                      {index < rutas.length - 1 && (
-                        <div className="linea-ruta" />
-                      )}
-                    </div>
+                        body: JSON.stringify({
 
-                    <div className="ruta-contenido">
+                            ruta_id:
+                                ruta.ruta_id,
 
-                      <div className="ruta-top">
+                            nombre_personalizado:
+                                nombre.trim()
 
-                        <div className="ruta-info">
+                        })
+                    }
+                );
 
-                          <div
-                            className="bus-icono"
-                            style={{
-                              backgroundColor: color
-                            }}
-                          >
-                            <FaBus />
-                          </div>
 
-                          <div>
-                            <span className="tomar">
-                              {index === 0
-                                ? "TOMA ESTE CAMIÓN"
-                                : "DESPUÉS TOMA ESTE CAMIÓN"}
-                            </span>
+            const datosRespuesta =
+                await respuesta.json();
 
-                            <h2>
-                              {nombreRuta}
-                            </h2>
 
-                            <p>
-                              Camión #{numero}
-                            </p>
-                          </div>
+            console.log(
+                "Respuesta guardar:",
+                datosRespuesta
+            );
 
-                        </div>
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    datosRespuesta?.error ||
+                    datosRespuesta?.mensaje ||
+                    "No se pudo guardar la ruta."
+                );
+
+            }
+
+
+            setMensaje(
+                "❤️ Ruta guardada correctamente."
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Error guardando ruta:",
+                error
+            );
+
+            alert(
+                error.message
+            );
+
+
+        } finally {
+
+            setGuardando(false);
+
+        }
+
+    };
+
+
+    // =====================================================
+    // NO HAY DATOS
+    // =====================================================
+
+    if (!location.state) {
+
+        return (
+
+            <div className="guia-container">
+
+                <main className="guia-contenido">
+
+                    <div className="sin-rutas">
+
+                        <FaBus />
+
+                        <h1>
+                            No hay una ruta seleccionada
+                        </h1>
+
+                        <p>
+                            Regresa al inicio para
+                            buscar una nueva ruta.
+                        </p>
 
                         <button
-                          className="corazon-btn"
-                          onClick={() => abrirGuardar(ruta)}
-                          title="Guardar ruta"
+                            className="btn-regresar"
+                            onClick={() =>
+                                navigate("/")
+                            }
                         >
-                          <FaHeart />
+                            Buscar ruta
                         </button>
-
-                      </div>
-
-                      <div className="recorrido">
-
-                        <div className="parada">
-
-                          <div className="punto subida">
-                            <FaMapMarkerAlt />
-                          </div>
-
-                          <div>
-                            <span>SUBE EN</span>
-                            <strong>{subida}</strong>
-                          </div>
-
-                        </div>
-
-                        <div className="flecha">
-                          <FaArrowRight />
-                        </div>
-
-                        <div className="parada">
-
-                          <div className="punto bajada">
-                            <FaMapMarkerAlt />
-                          </div>
-
-                          <div>
-                            <span>BAJA EN</span>
-                            <strong>{bajada}</strong>
-                          </div>
-
-                        </div>
-
-                      </div>
 
                     </div>
 
-                  </section>
-                );
-              })}
+                </main>
+
+                <Navar />
 
             </div>
-          )}
+
+        );
+
+    }
+
+
+    // =====================================================
+    // NO SE ENCONTRARON RUTAS
+    // =====================================================
+
+    if (rutas.length === 0) {
+
+        return (
+
+            <div className="guia-container">
+
+                <main className="guia-contenido">
+
+                    <div className="sin-rutas">
+
+                        <FaBus />
+
+                        <h1>
+                            No encontramos una ruta
+                        </h1>
+
+                        <p>
+                            No se encontró una ruta
+                            disponible para tu recorrido.
+                        </p>
+
+                        <button
+                            className="btn-regresar"
+                            onClick={() =>
+                                navigate("/")
+                            }
+                        >
+                            Buscar otra ruta
+                        </button>
+
+                    </div>
+
+                </main>
+
+                <Navar />
+
+            </div>
+
+        );
+
+    }
+
+
+    // =====================================================
+    // GUÍA DE VIAJE
+    // =====================================================
+
+    return (
+
+        <div className="guia-container">
+
+            <main className="guia-contenido">
+
+
+                {/* =========================================
+                    ENCABEZADO
+                ========================================= */}
+
+                <div className="guia-header">
+
+                    <h1>
+                        Guía de viaje
+                    </h1>
+
+                    <p>
+
+                        {tipoRuta === "TRANSBORDO"
+
+                            ? "Necesitas tomar 2 camiones."
+
+                            : "Puedes llegar directamente a tu destino."
+
+                        }
+
+                    </p>
+
+                </div>
+
+
+                {/* =========================================
+                    AVISO DE TRANSBORDO
+                ========================================= */}
+
+                {tipoRuta === "TRANSBORDO" && (
+
+                    <div className="aviso-transbordo">
+
+                        <FaBus />
+
+                        <div>
+
+                            <strong>
+                                Ruta con transbordo
+                            </strong>
+
+                            <p>
+                                Toma el primer camión,
+                                baja en el punto de
+                                transbordo y después
+                                toma el segundo.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                )}
+
+
+                {/* =========================================
+                    RUTAS
+                ========================================= */}
+
+                <div className="lista-rutas">
+
+                    {rutas.map(
+                        (ruta, index) => (
+
+                            <div
+                                className="ruta-guia"
+                                key={
+                                    ruta.ruta_id ||
+                                    index
+                                }
+                            >
+
+
+                                {/* =========================
+                                    CABECERA
+                                ========================= */}
+
+                                <div className="ruta-header">
+
+                                    <div>
+
+                                        <span className="numero-ruta">
+
+                                            {tipoRuta ===
+                                            "TRANSBORDO"
+
+                                                ? `CAMIÓN ${ruta.numero}`
+
+                                                : "RUTA DIRECTA"
+
+                                            }
+
+                                        </span>
+
+
+                                        <h2>
+                                            {ruta.ruta ||
+                                                "Ruta sin nombre"}
+                                        </h2>
+
+                                    </div>
+
+
+                                    <button
+                                        className="btn-guardar"
+                                        onClick={() =>
+                                            guardarRuta(
+                                                ruta
+                                            )
+                                        }
+                                        disabled={
+                                            guardando
+                                        }
+                                        title="Guardar ruta"
+                                    >
+
+                                        <FaHeart />
+
+                                    </button>
+
+                                </div>
+
+
+                                {/* =========================
+                                    COLOR
+                                ========================= */}
+
+                                <div className="ruta-color">
+
+                                    <span
+                                        className="color-ruta"
+                                        style={{
+                                            backgroundColor:
+                                                ruta.color ||
+                                                "#75176E"
+                                        }}
+                                    />
+
+                                    <span>
+                                        {ruta.color ||
+                                            "Color no disponible"}
+                                    </span>
+
+                                </div>
+
+
+                                {/* =========================
+                                    CAMINAR
+                                ========================= */}
+
+                                <div className="paso">
+
+                                    <div className="paso-icono caminar">
+
+                                        <FaWalking />
+
+                                    </div>
+
+
+                                    <div className="paso-info">
+
+                                        <small>
+                                            PASO 1
+                                        </small>
+
+                                        <strong>
+                                            Dirígete a la parada
+                                        </strong>
+
+                                        <span>
+                                            Camina hasta la
+                                            parada indicada.
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* =========================
+                                    SUBIDA
+                                ========================= */}
+
+                                <div className="parada">
+
+                                    <div className="parada-icono">
+
+                                        <FaMapMarkerAlt />
+
+                                    </div>
+
+
+                                    <div className="parada-info">
+
+                                        <small>
+                                            SUBE EN
+                                        </small>
+
+                                        <strong>
+
+                                            {
+                                                ruta
+                                                    .parada_subida
+                                                    ?.nombre ||
+
+                                                "Parada no disponible"
+
+                                            }
+
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* =========================
+                                    CAMIÓN
+                                ========================= */}
+
+                                <div className="paso-camion">
+
+                                    <FaBus />
+
+                                    <div>
+
+                                        <small>
+                                            TOMA EL CAMIÓN
+                                        </small>
+
+                                        <strong>
+                                            {ruta.ruta}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* =========================
+                                    BAJADA
+                                ========================= */}
+
+                                <div className="parada">
+
+                                    <div className="parada-icono">
+
+                                        <FaMapMarkerAlt />
+
+                                    </div>
+
+
+                                    <div className="parada-info">
+
+                                        <small>
+
+                                            {tipoRuta ===
+                                                "TRANSBORDO" &&
+                                            index === 0
+
+                                                ? "BAJA PARA TRANSBORDAR"
+
+                                                : "BAJA EN"
+
+                                            }
+
+                                        </small>
+
+
+                                        <strong>
+
+                                            {
+                                                ruta
+                                                    .parada_bajada
+                                                    ?.nombre ||
+
+                                                "Parada no disponible"
+
+                                            }
+
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* =========================
+                                    TRANSBORDO
+                                ========================= */}
+
+                                {tipoRuta ===
+                                    "TRANSBORDO" &&
+
+                                    index === 0 && (
+
+                                    <div className="transbordo">
+
+                                        <FaMapMarkerAlt />
+
+                                        <div>
+
+                                            <strong>
+                                                Transbordo
+                                            </strong>
+
+                                            <p>
+                                                Baja aquí y
+                                                camina hacia
+                                                la siguiente
+                                                parada para
+                                                tomar el segundo
+                                                camión.
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                )}
+
+                            </div>
+
+                        )
+                    )}
+
+                </div>
+
+
+                {/* =========================================
+                    MENSAJE
+                ========================================= */}
+
+                {mensaje && (
+
+                    <div className="mensaje-exito">
+
+                        {mensaje}
+
+                    </div>
+
+                )}
+
+
+                {/* =========================================
+                    REGRESAR
+                ========================================= */}
+
+                <button
+                    className="btn-regresar"
+                    onClick={() =>
+                        navigate("/")
+                    }
+                >
+                    Buscar otra ruta
+                </button>
+
+
+            </main>
+
+
+            <Navar />
 
         </div>
-      </main>
 
-      {/* MODAL PARA GUARDAR */}
+    );
 
-      {rutaParaGuardar && (
-        <div
-          className="modal-overlay"
-          onClick={() => {
-            if (!guardando) {
-              setRutaParaGuardar(null);
-            }
-          }}
-        >
-
-          <div
-            className="modal-guardar"
-            onClick={(e) => e.stopPropagation()}
-          >
-
-            <div className="modal-corazon">
-              <FaHeart />
-            </div>
-
-            <h2>Guardar ruta</h2>
-
-            <p>
-              Ponle un nombre para encontrarla fácilmente después.
-            </p>
-
-            <input
-              type="text"
-              value={nombreGuardado}
-              onChange={(e) =>
-                setNombreGuardado(e.target.value)
-              }
-              placeholder="Ej. Casa a la escuela"
-              maxLength={100}
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  guardarRuta();
-                }
-              }}
-            />
-
-            {mensaje && (
-              <div
-                className={
-                  mensaje.includes("guardada")
-                    ? "mensaje-exito"
-                    : "mensaje-error"
-                }
-              >
-                {mensaje}
-              </div>
-            )}
-
-            <div className="modal-botones">
-
-              <button
-                className="btn-cancelar"
-                disabled={guardando}
-                onClick={() =>
-                  setRutaParaGuardar(null)
-                }
-              >
-                Cancelar
-              </button>
-
-              <button
-                className="btn-guardar"
-                disabled={guardando}
-                onClick={guardarRuta}
-              >
-                <FaHeart />
-
-                {guardando
-                  ? "Guardando..."
-                  : "Guardar"}
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
-    </>
-  );
 }
+
 
 export default GuiaViaje;
