@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("./db");
 
-const calcularDistancia = (lat1, lng1, lat2, lng2) => {
+const distancia = (lat1, lng1, lat2, lng2) => {
 const R = 6371000;
 const dLat = (lat2 - lat1) * Math.PI / 180;
 const dLng = (lng2 - lng1) * Math.PI / 180;
@@ -14,11 +14,12 @@ router.post("/buscar-ruta", async (req, res) => {
 try {
 const { origenLat, origenLng, destinoLat, destinoLng } = req.body;
 
-    if ([origenLat, origenLng, destinoLat, destinoLng].some(valor => valor === undefined || valor === null || isNaN(Number(valor)))) {
+
+    if ([origenLat, origenLng, destinoLat, destinoLng].some(v => v === undefined || v === null || isNaN(Number(v)))) {
         return res.status(400).json({ mensaje: "Coordenadas inválidas" });
     }
 
-    const resultado = await pool.query(`
+    const { rows } = await pool.query(`
         SELECT
             r.id AS ruta_id,
             r.nombre AS ruta,
@@ -34,281 +35,241 @@ const { origenLat, origenLng, destinoLat, destinoLng } = req.body;
         ORDER BY r.id, rp.orden
     `);
 
-    const datos = resultado.rows;
-
-    if (!datos.length) {
-        return res.status(404).json({
-            mensaje: "No hay rutas registradas"
-        });
+    if (!rows.length) {
+        return res.status(404).json({ mensaje: "No hay rutas disponibles" });
     }
 
-    const origen = {
-        lat: Number(origenLat),
-        lng: Number(origenLng)
-    };
-
-    const destino = {
-        lat: Number(destinoLat),
-        lng: Number(destinoLng)
-    };
-
     const paradas = {};
+    const rutas = {};
 
-    for (const fila of datos) {
-        if (!paradas[fila.parada_id]) {
-            paradas[fila.parada_id] = {
-                id: fila.parada_id,
-                nombre: fila.nombre_parada,
-                latitud: Number(fila.latitud),
-                longitud: Number(fila.longitud),
+    for (const row of rows) {
+        const parada = {
+            id: row.parada_id,
+            nombre: row.nombre_parada,
+            latitud: Number(row.latitud),
+            longitud: Number(row.longitud),
+            orden: Number(row.orden)
+        };
+
+        if (!paradas[row.parada_id]) {
+            paradas[row.parada_id] = {
+                ...parada,
                 rutas: []
             };
         }
 
-        if (!paradas[fila.parada_id].rutas.includes(fila.ruta_id)) {
-            paradas[fila.parada_id].rutas.push(fila.ruta_id);
+        if (!paradas[row.parada_id].rutas.includes(row.ruta_id)) {
+            paradas[row.parada_id].rutas.push(row.ruta_id);
         }
-    }
 
-    const rutas = {};
-
-    for (const fila of datos) {
-        if (!rutas[fila.ruta_id]) {
-            rutas[fila.ruta_id] = {
-                ruta_id: fila.ruta_id,
-                ruta: fila.ruta,
-                color: fila.color,
+        if (!rutas[row.ruta_id]) {
+            rutas[row.ruta_id] = {
+                ruta_id: row.ruta_id,
+                ruta: row.ruta,
+                color: row.color,
                 paradas: []
             };
         }
 
-        rutas[fila.ruta_id].paradas.push({
-            id: fila.parada_id,
-            nombre: fila.nombre_parada,
-            latitud: Number(fila.latitud),
-            longitud: Number(fila.longitud),
-            orden: Number(fila.orden)
-        });
+        rutas[row.ruta_id].paradas.push(parada);
     }
 
-    const todasLasParadas = Object.values(paradas);
+    const listaParadas = Object.values(paradas);
 
-    const paradasOrigen = todasLasParadas
+    const paradasOrigen = listaParadas
         .map(parada => ({
             ...parada,
-            distancia: calcularDistancia(
-                origen.lat,
-                origen.lng,
+            distancia: distancia(
+                Number(origenLat),
+                Number(origenLng),
                 parada.latitud,
                 parada.longitud
             )
         }))
         .sort((a, b) => a.distancia - b.distancia)
-        .slice(0, 8);
+        .slice(0, 10);
 
-    const paradasDestino = todasLasParadas
+    const paradasDestino = listaParadas
         .map(parada => ({
             ...parada,
-            distancia: calcularDistancia(
-                destino.lat,
-                destino.lng,
+            distancia: distancia(
+                Number(destinoLat),
+                Number(destinoLng),
                 parada.latitud,
                 parada.longitud
             )
         }))
         .sort((a, b) => a.distancia - b.distancia)
-        .slice(0, 8);
+        .slice(0, 10);
 
-    const soluciones = [];
+    const rutasOrigen = new Set();
 
-    for (const ruta of Object.values(rutas)) {
-        for (const subida of paradasOrigen) {
-            const indiceSubida = ruta.paradas.findIndex(
-                parada => parada.id === subida.id
-            );
+    for (const parada of paradasOrigen) {
+        for (const rutaId of parada.rutas) {
+            rutasOrigen.add(rutaId);
+        }
+    }
 
-            if (indiceSubida === -1) continue;
+    const rutasDestino = new Set();
 
-            for (const bajada of paradasDestino) {
-                const indiceBajada = ruta.paradas.findIndex(
-                    parada => parada.id === bajada.id
-                );
+    for (const parada of paradasDestino) {
+        for (const rutaId of parada.rutas) {
+            rutasDestino.add(rutaId);
+        }
+    }
 
-                if (indiceBajada === -1) continue;
-                if (indiceBajada <= indiceSubida) continue;
+    const conexiones = {};
 
-                soluciones.push({
-                    cantidad_camiones: 1,
-                    distancia: subida.distancia + bajada.distancia,
-                    rutas: [{
-                        ruta_id: ruta.ruta_id,
-                        ruta: ruta.ruta,
-                        color: ruta.color,
-                        numero: 1,
-                        parada_subida: ruta.paradas[indiceSubida],
-                        parada_bajada: ruta.paradas[indiceBajada]
-                    }]
+    for (const rutaId of Object.keys(rutas)) {
+        conexiones[rutaId] = [];
+
+        for (const otraRutaId of Object.keys(rutas)) {
+            if (rutaId === otraRutaId) continue;
+
+            const ruta = rutas[rutaId];
+            const otraRuta = rutas[otraRutaId];
+
+            const paradasCompartidas = [];
+
+            for (const parada of ruta.paradas) {
+                const existe = otraRuta.paradas.find(p => p.id === parada.id);
+
+                if (existe) {
+                    paradasCompartidas.push(parada);
+                }
+            }
+
+            if (paradasCompartidas.length) {
+                conexiones[rutaId].push({
+                    ruta_id: Number(otraRutaId),
+                    paradas: paradasCompartidas
                 });
             }
         }
     }
 
-    for (const ruta1 of Object.values(rutas)) {
-        for (const subida of paradasOrigen) {
-            const indiceSubida = ruta1.paradas.findIndex(
-                parada => parada.id === subida.id
-            );
+    const soluciones = [];
 
-            if (indiceSubida === -1) continue;
+    const buscarCaminos = (rutaActual, camino, visitadas) => {
+        if (camino.length > 6) return;
 
-            for (const transbordo of ruta1.paradas) {
-                if (transbordo.orden <= ruta1.paradas[indiceSubida].orden) continue;
-
-                for (const ruta2 of Object.values(rutas)) {
-                    if (ruta1.ruta_id === ruta2.ruta_id) continue;
-
-                    const indiceTransbordo = ruta2.paradas.findIndex(
-                        parada => parada.id === transbordo.id
-                    );
-
-                    if (indiceTransbordo === -1) continue;
-
-                    for (const bajada of paradasDestino) {
-                        const indiceBajada = ruta2.paradas.findIndex(
-                            parada => parada.id === bajada.id
-                        );
-
-                        if (indiceBajada === -1) continue;
-                        if (indiceBajada <= indiceTransbordo) continue;
-
-                        soluciones.push({
-                            cantidad_camiones: 2,
-                            distancia: subida.distancia + bajada.distancia,
-                            rutas: [
-                                {
-                                    ruta_id: ruta1.ruta_id,
-                                    ruta: ruta1.ruta,
-                                    color: ruta1.color,
-                                    numero: 1,
-                                    parada_subida: ruta1.paradas[indiceSubida],
-                                    parada_bajada: transbordo
-                                },
-                                {
-                                    ruta_id: ruta2.ruta_id,
-                                    ruta: ruta2.ruta,
-                                    color: ruta2.color,
-                                    numero: 2,
-                                    parada_subida: ruta2.paradas[indiceTransbordo],
-                                    parada_bajada: ruta2.paradas[indiceBajada]
-                                }
-                            ]
-                        });
-                    }
-                }
-            }
+        if (rutasDestino.has(Number(rutaActual))) {
+            soluciones.push([...camino]);
+            return;
         }
-    }
 
-    for (const ruta1 of Object.values(rutas)) {
-        for (const subida of paradasOrigen) {
-            const indiceSubida = ruta1.paradas.findIndex(
-                parada => parada.id === subida.id
+        for (const conexion of conexiones[rutaActual] || []) {
+            if (visitadas.has(conexion.ruta_id)) continue;
+
+            const nuevasVisitadas = new Set(visitadas);
+            nuevasVisitadas.add(conexion.ruta_id);
+
+            buscarCaminos(
+                conexion.ruta_id,
+                [...camino, {
+                    ruta_id: conexion.ruta_id,
+                    transbordos: conexion.paradas
+                }],
+                nuevasVisitadas
             );
-
-            if (indiceSubida === -1) continue;
-
-            for (const transbordo1 of ruta1.paradas) {
-                if (transbordo1.orden <= ruta1.paradas[indiceSubida].orden) continue;
-
-                for (const ruta2 of Object.values(rutas)) {
-                    if (ruta2.ruta_id === ruta1.ruta_id) continue;
-
-                    const indiceTransbordo1 = ruta2.paradas.findIndex(
-                        parada => parada.id === transbordo1.id
-                    );
-
-                    if (indiceTransbordo1 === -1) continue;
-
-                    for (const transbordo2 of ruta2.paradas) {
-                        if (transbordo2.orden <= ruta2.paradas[indiceTransbordo1].orden) continue;
-
-                        for (const ruta3 of Object.values(rutas)) {
-                            if (ruta3.ruta_id === ruta1.ruta_id || ruta3.ruta_id === ruta2.ruta_id) continue;
-
-                            const indiceTransbordo2 = ruta3.paradas.findIndex(
-                                parada => parada.id === transbordo2.id
-                            );
-
-                            if (indiceTransbordo2 === -1) continue;
-
-                            for (const bajada of paradasDestino) {
-                                const indiceBajada = ruta3.paradas.findIndex(
-                                    parada => parada.id === bajada.id
-                                );
-
-                                if (indiceBajada === -1) continue;
-                                if (indiceBajada <= indiceTransbordo2) continue;
-
-                                soluciones.push({
-                                    cantidad_camiones: 3,
-                                    distancia: subida.distancia + bajada.distancia,
-                                    rutas: [
-                                        {
-                                            ruta_id: ruta1.ruta_id,
-                                            ruta: ruta1.ruta,
-                                            color: ruta1.color,
-                                            numero: 1,
-                                            parada_subida: ruta1.paradas[indiceSubida],
-                                            parada_bajada: transbordo1
-                                        },
-                                        {
-                                            ruta_id: ruta2.ruta_id,
-                                            ruta: ruta2.ruta,
-                                            color: ruta2.color,
-                                            numero: 2,
-                                            parada_subida: ruta2.paradas[indiceTransbordo1],
-                                            parada_bajada: transbordo2
-                                        },
-                                        {
-                                            ruta_id: ruta3.ruta_id,
-                                            ruta: ruta3.ruta,
-                                            color: ruta3.color,
-                                            numero: 3,
-                                            parada_subida: ruta3.paradas[indiceTransbordo2],
-                                            parada_bajada: ruta3.paradas[indiceBajada]
-                                        }
-                                    ]
-                                });
-                            }
-                        }
-                    }
-                }
-            }
         }
+    };
+
+    for (const rutaId of rutasOrigen) {
+        buscarCaminos(
+            Number(rutaId),
+            [{
+                ruta_id: Number(rutaId),
+                transbordos: []
+            }],
+            new Set([Number(rutaId)])
+        );
     }
 
-    if (!soluciones.length) {
-        return res.status(404).json({
-            mensaje: "No se encontró una combinación de rutas para llegar al destino"
-        });
-    }
+    const opciones = [];
 
-    const rutasUnicas = [];
+    for (const camino of soluciones) {
+        const primeraRuta = rutas[camino[0].ruta_id];
+        const ultimaRuta = rutas[camino[camino.length - 1].ruta_id];
 
-    for (const solucion of soluciones) {
-        const clave = solucion.rutas
-            .map(ruta => `${ruta.ruta_id}-${ruta.parada_subida.id}-${ruta.parada_bajada.id}`)
-            .join("|");
+        const subida = paradasOrigen.find(parada =>
+            parada.rutas.includes(primeraRuta.ruta_id)
+        );
 
-        if (!rutasUnicas.some(item => item.clave === clave)) {
-            rutasUnicas.push({
-                clave,
-                ...solucion
+        const bajada = paradasDestino.find(parada =>
+            parada.rutas.includes(ultimaRuta.ruta_id)
+        );
+
+        if (!subida || !bajada) continue;
+
+        const segmentos = [];
+
+        for (let i = 0; i < camino.length; i++) {
+            const ruta = rutas[camino[i].ruta_id];
+
+            let paradaSubida;
+            let paradaBajada;
+
+            if (i === 0) {
+                paradaSubida = subida;
+            } else {
+                const rutaAnterior = rutas[camino[i - 1].ruta_id];
+
+                const compartidas = rutaAnterior.paradas.filter(parada =>
+                    ruta.paradas.some(p => p.id === parada.id)
+                );
+
+                paradaSubida = compartidas[0];
+            }
+
+            if (i === camino.length - 1) {
+                paradaBajada = bajada;
+            } else {
+                const siguienteRuta = rutas[camino[i + 1].ruta_id];
+
+                const compartidas = ruta.paradas.filter(parada =>
+                    siguienteRuta.paradas.some(p => p.id === parada.id)
+                );
+
+                paradaBajada = compartidas[0];
+            }
+
+            if (!paradaSubida || !paradaBajada) continue;
+
+            segmentos.push({
+                ruta_id: ruta.ruta_id,
+                ruta: ruta.ruta,
+                color: ruta.color,
+                numero: i + 1,
+                parada_subida: paradaSubida,
+                parada_bajada: paradaBajada
+            });
+        }
+
+        if (segmentos.length === camino.length) {
+            opciones.push({
+                cantidad_camiones: segmentos.length,
+                distancia: subida.distancia + bajada.distancia,
+                segmentos
             });
         }
     }
 
-    rutasUnicas.sort((a, b) => {
+    const claves = new Set();
+    const opcionesUnicas = [];
+
+    for (const opcion of opciones) {
+        const clave = opcion.segmentos
+            .map(s => `${s.ruta_id}-${s.parada_subida.id}-${s.parada_bajada.id}`)
+            .join("|");
+
+        if (!claves.has(clave)) {
+            claves.add(clave);
+            opcionesUnicas.push(opcion);
+        }
+    }
+
+    opcionesUnicas.sort((a, b) => {
         if (a.cantidad_camiones !== b.cantidad_camiones) {
             return a.cantidad_camiones - b.cantidad_camiones;
         }
@@ -316,17 +277,21 @@ const { origenLat, origenLng, destinoLat, destinoLng } = req.body;
         return a.distancia - b.distancia;
     });
 
-    const mejores = rutasUnicas.slice(0, 3);
+    const mejores = opcionesUnicas.slice(0, 3);
+
+    if (!mejores.length) {
+        return res.status(404).json({
+            mensaje: "No se encontró una combinación de rutas para llegar al destino"
+        });
+    }
 
     return res.json({
         cantidad_camiones: mejores[0].cantidad_camiones,
-        rutas: mejores.map(opcion => ({
-            cantidad_camiones: opcion.cantidad_camiones,
-            segmentos: opcion.rutas
-        }))
+        rutas: mejores
     });
 } catch (error) {
-    console.error("Error en /buscar-ruta:", error);
+    console.error("Error en buscar-ruta:", error);
+
     return res.status(500).json({
         mensaje: "Error interno al buscar la ruta",
         error: error.message
