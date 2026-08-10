@@ -14,7 +14,9 @@ app.use("/", horariosRoutes);
 app.use("/", buscarRutaRoutes);
 
 app.get("/", (req, res) => {
-res.json({ mensaje: "Servicio de rutas funcionando" });
+res.json({
+mensaje: "Servicio de rutas funcionando"
+});
 });
 
 const PORT = process.env.PORT || 3002;
