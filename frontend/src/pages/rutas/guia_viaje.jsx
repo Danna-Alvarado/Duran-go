@@ -1,6 +1,6 @@
 import "./guia_viaje.css";
 import Navar from "../../components/Navar";
-import { FaBus, FaMapMarkerAlt,  FaExchangeAlt, FaFlagCheckered } from "react-icons/fa";
+import { FaBus, FaMapMarkerAlt, FaExchangeAlt, FaFlagCheckered, FaArrowRight } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function GuiaViaje() {
@@ -56,7 +56,11 @@ return (
                 </div>
                 <div className="informacion-punto">
                     <span>Tu ubicación</span>
-                    <strong>{origen ? `${Number(origen.lat).toFixed(5)}, ${Number(origen.lng).toFixed(5)}` : "Origen"}</strong>
+                    <strong>
+                        {origen
+                            ? `${Number(origen.lat).toFixed(5)}, ${Number(origen.lng).toFixed(5)}`
+                            : "Origen"}
+                    </strong>
                 </div>
             </div>
 
@@ -66,14 +70,24 @@ return (
 
                     <div className="tarjeta-bus">
                         <div className="numero-paso">{index + 1}</div>
+
                         <div className="icono-bus">
                             <FaBus />
                         </div>
+
                         <div className="datos-bus">
-                            <span className="tipo-transporte">CAMIÓN {index + 1}</span>
+                            <span className="tipo-transporte">
+                                CAMIÓN {index + 1}
+                            </span>
+
                             <h2>{segmento.ruta}</h2>
+
                             <div className="color-ruta">
-                                <span style={{ backgroundColor: segmento.color || "#777" }}></span>
+                                <span
+                                    style={{
+                                        backgroundColor: segmento.color || "#777"
+                                    }}
+                                ></span>
                                 {segmento.color || "Ruta"}
                             </div>
                         </div>
@@ -82,9 +96,12 @@ return (
                     <div className="paradas-viaje">
                         <div className="parada">
                             <FaMapMarkerAlt />
+
                             <div>
                                 <small>Sube en</small>
-                                <strong>{segmento.parada_subida?.nombre || "Parada de subida"}</strong>
+                                <strong>
+                                    {segmento.parada_subida?.nombre || "Parada de subida"}
+                                </strong>
                             </div>
                         </div>
 
@@ -97,9 +114,17 @@ return (
 
                         <div className="parada">
                             <FaFlagCheckered />
+
                             <div>
-                                <small>{index === segmentos.length - 1 ? "Baja en" : "Baja para cambiar"}</small>
-                                <strong>{segmento.parada_bajada?.nombre || "Parada de bajada"}</strong>
+                                <small>
+                                    {index === segmentos.length - 1
+                                        ? "Baja en"
+                                        : "Baja para cambiar"}
+                                </small>
+
+                                <strong>
+                                    {segmento.parada_bajada?.nombre || "Parada de bajada"}
+                                </strong>
                             </div>
                         </div>
                     </div>
@@ -110,28 +135,49 @@ return (
                 <div className="punto-viaje destino">
                     <FaFlagCheckered />
                 </div>
+
                 <div className="informacion-punto">
                     <span>Destino</span>
-                    <strong>{destino ? `${Number(destino.lat).toFixed(5)}, ${Number(destino.lng).toFixed(5)}` : "Destino"}</strong>
+
+                    <strong>
+                        {destino
+                            ? `${Number(destino.lat).toFixed(5)}, ${Number(destino.lng).toFixed(5)}`
+                            : "Destino"}
+                    </strong>
                 </div>
             </div>
 
             {data.rutas.length > 1 && (
                 <div className="otras-rutas">
                     <h2>Otras opciones</h2>
+
                     {data.rutas.slice(1).map((opcion, index) => (
                         <div className="opcion-ruta" key={index}>
                             <div>
-                                <strong>{opcion.cantidad_camiones} {opcion.cantidad_camiones === 1 ? "camión" : "camiones"}</strong>
-                                <span>{opcion.segmentos.map(s => s.ruta).join(" → ")}</span>
+                                <strong>
+                                    {opcion.cantidad_camiones}{" "}
+                                    {opcion.cantidad_camiones === 1
+                                        ? "camión"
+                                        : "camiones"}
+                                </strong>
+
+                                <span>
+                                    {(opcion.segmentos || [])
+                                        .map(segmento => segmento.ruta)
+                                        .join(" → ")}
+                                </span>
                             </div>
-                            
+
+                            <FaArrowRight />
                         </div>
                     ))}
                 </div>
             )}
 
-            <button className="btn-regresar" onClick={() => navigate("/")}>
+            <button
+                className="btn-regresar"
+                onClick={() => navigate("/")}
+            >
                 Buscar otra ruta
             </button>
         </div>
