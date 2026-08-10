@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("./db");
 
-const MAX_DISTANCIA_PARADA = 800;
+const MAX_DISTANCIA_PARADA = 1500;
 const MAX_RESULTADOS = 3;
 
 function distanciaMetros(lat1, lng1, lat2, lng2) {
