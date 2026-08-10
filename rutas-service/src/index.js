@@ -10,15 +10,15 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/", rutasRoutes);
-
 app.use("/", horariosRoutes);
-
-
 app.use("/", buscarRutaRoutes);
 
+app.get("/", (req, res) => {
+res.json({ mensaje: "Servicio de rutas funcionando" });
+});
 
 const PORT = process.env.PORT || 3002;
 
-app.listen(process.env.PORT || 3002, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
+app.listen(PORT, () => {
+console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
