@@ -3,43 +3,73 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("./db");
+
 require("dotenv").config();
 
-
-// LOGIN CHOFER
+// LOGIN ADMIN
 router.post("/login", async (req, res, next) => {
     try {
+
         const { numero_unico, contrasena } = req.body;
+
+        // Validar datos
         if (!numero_unico || !contrasena) {
             return res.status(400).json({
                 error: "Código y contraseña son obligatorios"
             });
         }
 
-        const { rows } = await pool.query( ` SELECT id, numero_unico, nombre_completo, correo, telefono, contrasena FROM choferes WHERE numero_unico = $1 `, [numero_unico]);
+        // Buscar administrador
+        const { rows } = await pool.query(
+            `
+            SELECT
+                id,
+                numero_unico,
+                nombre_completo,
+                correo,
+                telefono,
+                contrasena,
+                rol
+            FROM choferes
+            WHERE numero_unico = $1
+            `,
+            [numero_unico]
+        );
 
+        // Usuario no encontrado
         if (rows.length === 0) {
             return res.status(401).json({
                 error: "Código o contraseña incorrectos"
             });
         }
 
-        const chofer = rows[0];
+        const usuario = rows[0];
 
+        // Verificar que sea administrador
+        if (usuario.rol !== "admin") {
+            return res.status(403).json({
+                error: "No tienes permisos para acceder a esta aplicación"
+            });
+        }
+
+        // Verificar contraseña
         const passwordCorrecta = await bcrypt.compare(
             contrasena,
-            chofer.contrasena
+            usuario.contrasena
         );
 
         if (!passwordCorrecta) {
-            return res.status(401).json({error: "Código o contraseña incorrectos" });
+            return res.status(401).json({
+                error: "Código o contraseña incorrectos"
+            });
         }
 
+        // Crear JWT
         const token = jwt.sign(
             {
-                id: chofer.id,
-                numero_unico: chofer.numero_unico,
-                tipo: "chofer"
+                id: usuario.id,
+                numero_unico: usuario.numero_unico,
+                rol: usuario.rol
             },
             process.env.JWT_SECRET,
             {
@@ -47,15 +77,18 @@ router.post("/login", async (req, res, next) => {
             }
         );
 
-        res.status(200).json({
+        // Respuesta
+        return res.status(200).json({
             mensaje: "Inicio de sesión correcto",
             token,
-            chofer: {
-                id: chofer.id,
-                numero_unico: chofer.numero_unico,
-                nombre_completo: chofer.nombre_completo,
-                correo: chofer.correo,
-                telefono: chofer.telefono
+
+            usuario: {
+                id: usuario.id,
+                numero_unico: usuario.numero_unico,
+                nombre_completo: usuario.nombre_completo,
+                correo: usuario.correo,
+                telefono: usuario.telefono,
+                rol: usuario.rol
             }
         });
 

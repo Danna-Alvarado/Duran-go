@@ -1,6 +1,7 @@
 import "./chofer.css";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+
 const AUTH_URL = import.meta.env.VITE_AUTH_URL;
 
 function Choferes() {
@@ -10,7 +11,6 @@ function Choferes() {
     const [numeroUnico, setNumeroUnico] = useState("");
     const [contrasena, setContrasena] = useState("");
     const [mensaje, setMensaje] = useState("");
-    
 
     const iniciarSesion = async () => {
 
@@ -39,28 +39,36 @@ function Choferes() {
 
             if (respuesta.ok) {
 
+                // Guardar token del administrador
                 localStorage.setItem(
-                    "tokenChofer",
+                    "tokenAdmin",
                     data.token
                 );
 
+                // Guardar información del administrador
                 localStorage.setItem(
-                    "chofer",
-                    JSON.stringify(data.chofer)
+                    "admin",
+                    JSON.stringify(data.usuario)
                 );
 
+                // Ir al panel administrativo
                 navigate("/home");
 
             } else {
 
-                setMensaje(data.error);
+                setMensaje(
+                    data.error || "No se pudo iniciar sesión"
+                );
 
             }
 
         } catch (error) {
 
             console.error(error);
-            setMensaje("Error al conectar con el servidor");
+
+            setMensaje(
+                "Error al conectar con el servidor"
+            );
 
         }
 
@@ -72,20 +80,26 @@ function Choferes() {
 
             <div className="chofer-card">
 
-                <h1>Acceso para Choferes</h1>
+                <h1>Acceso administrativo</h1>
 
-                <p>Ingresa tu código único y contraseña</p>
+                <p>
+                    Ingresa tu código de administrador y contraseña
+                </p>
 
                 {mensaje && (
-                    <p className="mensaje">{mensaje}</p>
+                    <p className="mensaje">
+                        {mensaje}
+                    </p>
                 )}
 
                 <input
                     type="text"
-                    placeholder="Código único de chofer"
+                    placeholder="Código de administrador"
                     className="chofer-input"
                     value={numeroUnico}
-                    onChange={(e) => setNumeroUnico(e.target.value)}
+                    onChange={(e) =>
+                        setNumeroUnico(e.target.value)
+                    }
                 />
 
                 <input
@@ -93,7 +107,9 @@ function Choferes() {
                     placeholder="Contraseña"
                     className="chofer-input"
                     value={contrasena}
-                    onChange={(e) => setContrasena(e.target.value)}
+                    onChange={(e) =>
+                        setContrasena(e.target.value)
+                    }
                 />
 
                 <button

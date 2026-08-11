@@ -7,8 +7,8 @@ import Guardados from "./pages/usuario/guardados";
 import Perfil from "./pages/usuario/perfil";
 import Chofer from "./pages/auth/chofer";
 import GuiaViaje from "./pages/rutas/guia_viaje";
-import JornadaChofer from "./pages/chofer/jornadachofer";
 
+import AdminChofer from "./pages/ubicacion/adminchofer";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -63,14 +63,17 @@ function App() {
             </ProtectedRoute>
           }
         />
-         <Route
-          path="/jornadachofer"
+
+        <Route
+          path="/adminchofer"
           element={
-            <ProtectedRoute>
-              <JornadaChofer />
-            </ProtectedRoute>
+           
+              <AdminChofer />
+           
           }
         />
+
+         
 
 
       </Routes>

@@ -7,13 +7,12 @@
 }
 
 
-/* =========================================
-   CONTENEDOR PRINCIPAL
-========================================= */
+
 
 .horarios-container {
     min-height: calc(100vh - 75px);
     background: #f7f6f8;
+
     padding: 40px 20px 100px;
 
     display: flex;
@@ -22,9 +21,6 @@
 }
 
 
-/* =========================================
-   TÍTULO
-========================================= */
 
 .titulo-horarios {
     width: 100%;
@@ -32,6 +28,7 @@
 
     display: flex;
     align-items: center;
+
     gap: 15px;
 
     margin-bottom: 25px;
@@ -45,6 +42,7 @@
 .titulo-horarios h1 {
     color: #75176e;
     font-size: 30px;
+
     margin-bottom: 4px;
 }
 
@@ -54,39 +52,38 @@
 }
 
 
-/* =========================================
-   BUSCADOR
-========================================= */
 
 .buscador-rutas {
     width: 100%;
-    max-width: 700px;
-
+    max-width: 80%;
     height: 55px;
-
     background: white;
     border: 2px solid #e5e1e6;
     border-radius: 15px;
-
     display: flex;
     align-items: center;
 
     padding: 0 18px;
 
-    transition: all 0.25s ease;
-
     margin-bottom: 8px;
+
+    transition: all 0.25s ease;
 }
 
 .buscador-rutas:focus-within {
     border-color: #75176e;
-    box-shadow: 0 0 0 4px rgba(117, 23, 110, 0.08);
+    box-shadow:
+        0 0 0 4px rgba(117, 23, 110, 0.08);
 }
 
 .iconSearch {
     color: #75176e;
+
     font-size: 19px;
+
     margin-right: 12px;
+
+    flex-shrink: 0;
 }
 
 .buscador-rutas input {
@@ -96,10 +93,11 @@
     border: none;
     outline: none;
 
-    font-size: 16px;
+    background: transparent;
+
     color: #333;
 
-    background: transparent;
+    font-size: 16px;
 }
 
 .buscador-rutas input::placeholder {
@@ -113,7 +111,7 @@
 
 .resultados-rutas {
     width: 100%;
-    max-width: 700px;
+    max-width: 80%;
 
     background: white;
 
@@ -124,7 +122,8 @@
 
     margin-bottom: 18px;
 
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.07);
 
     overflow: hidden;
 
@@ -132,6 +131,7 @@
 }
 
 @keyframes aparecerResultados {
+
     from {
         opacity: 0;
         transform: translateY(-5px);
@@ -141,6 +141,7 @@
         opacity: 1;
         transform: translateY(0);
     }
+
 }
 
 
@@ -179,7 +180,7 @@
 }
 
 
-/* Icono del resultado */
+/* Icono */
 
 .resultado-ruta > svg {
     min-width: 40px;
@@ -190,13 +191,14 @@
     border-radius: 10px;
 
     background: #f4e6f2;
+
     color: #75176e;
 
     font-size: 20px;
 }
 
 
-/* Información de la ruta */
+/* Texto */
 
 .resultado-ruta div {
     display: flex;
@@ -237,6 +239,7 @@
 
 .sin-resultados svg {
     color: #75176e;
+
     font-size: 20px;
 }
 
@@ -246,12 +249,80 @@
 
 
 /* =========================================
-   SELECTS
+   RUTA SELECCIONADA
+========================================= */
+
+.ruta-seleccionada {
+    width: 100%;
+    max-width: 80%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    background: #f8eef7;
+
+    border: 1px solid #ead4e8;
+
+    border-radius: 14px;
+
+    padding: 14px 17px;
+
+    margin-bottom: 15px;
+
+    animation: aparecerRuta 0.2s ease;
+}
+
+@keyframes aparecerRuta {
+
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+.ruta-seleccionada > svg {
+    color: #75176e;
+
+    font-size: 22px;
+
+    flex-shrink: 0;
+}
+
+.ruta-seleccionada div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.ruta-seleccionada span {
+    color: #999;
+
+    font-size: 12px;
+}
+
+.ruta-seleccionada strong {
+    color: #75176e;
+
+    font-size: 15px;
+}
+
+
+/* =========================================
+   SELECT DE PARADA
 ========================================= */
 
 .select-container {
     width: 100%;
-    max-width: 700px;
+    max-width: 80%;
 
     height: 55px;
 
@@ -309,7 +380,44 @@
 
 .select-container select:disabled {
     color: #aaa;
+
     cursor: not-allowed;
+}
+
+
+/* =========================================
+   ERROR AL CARGAR PARADAS
+========================================= */
+
+.error-paradas {
+    width: 100%;
+    max-width: 80%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 13px 16px;
+
+    margin-top: -5px;
+    margin-bottom: 15px;
+
+    border-radius: 12px;
+
+    background: #f8eef7;
+
+    color: #75176e;
+
+    font-size: 14px;
+}
+
+.error-paradas svg {
+    color: #75176e;
+
+    font-size: 17px;
+
+    flex-shrink: 0;
 }
 
 
@@ -319,7 +427,7 @@
 
 .card {
     width: 100%;
-    max-width: 700px;
+    max-width: 80%;
 
     background: white;
 
@@ -348,12 +456,11 @@
 
 .listaHoras {
     display: grid;
-
-    grid-template-columns: repeat(
-        auto-fill,
-        minmax(130px, 1fr)
-    );
-
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(130px, 1fr)
+        );
     gap: 12px;
 }
 
@@ -361,19 +468,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
     gap: 9px;
-
     padding: 13px;
-
     background: #f8eef7;
-
     border-radius: 11px;
-
     color: #75176e;
-
     font-weight: 600;
-
     transition: all 0.2s ease;
 }
 
@@ -388,34 +488,33 @@
 }
 
 
-/* =========================================
-   SIN HORARIOS
-========================================= */
 
 .sinHorarios {
+    width: 100%;
+    display: block;
+
     color: #999;
 
     font-size: 14px;
+    line-height: 1.5;
 
     text-align: center;
 
     padding: 20px;
+
+    margin: 0;
+
+    box-sizing: border-box;
 }
 
 
-/* =========================================
-   INFORMACIÓN
-========================================= */
 
 .infohorarios {
     width: 100%;
-    max-width: 700px;
-
+    max-width: 80%;
     display: flex;
     align-items: center;
-
     gap: 10px;
-
     margin-top: 18px;
 
     padding: 14px 16px;
@@ -442,14 +541,15 @@
 }
 
 
-/* =========================================
-   RESPONSIVE - CELULAR
-========================================= */
-
 @media (max-width: 600px) {
 
     .horarios-container {
         padding: 30px 15px 90px;
+    }
+
+
+    .titulo-horarios {
+        gap: 12px;
     }
 
     .titulo-horarios h1 {
@@ -460,20 +560,25 @@
         font-size: 27px;
     }
 
+
     .buscador-rutas,
     .select-container {
         height: 52px;
     }
 
+
     .resultado-ruta {
         padding: 12px;
     }
 
+
     .resultado-ruta > svg {
         min-width: 37px;
         height: 37px;
+
         padding: 9px;
     }
+
 
     .resultado-ruta strong {
         font-size: 14px;
@@ -483,6 +588,17 @@
         font-size: 12px;
     }
 
+
+    .ruta-seleccionada {
+        padding: 12px 14px;
+    }
+
+
+    .ruta-seleccionada > svg {
+        font-size: 20px;
+    }
+
+
     .card {
         padding: 20px 16px;
     }
@@ -491,25 +607,27 @@
         font-size: 18px;
     }
 
+
     .listaHoras {
         grid-template-columns: repeat(2, 1fr);
     }
 
+
     .infohorarios {
         align-items: flex-start;
     }
+
 }
 
 
-/* =========================================
-   CELULARES MUY PEQUEÑOS
-========================================= */
+
 
 @media (max-width: 380px) {
 
     .listaHoras {
         grid-template-columns: 1fr;
     }
+
 
     .titulo-horarios {
         gap: 10px;
@@ -522,4 +640,15 @@
     .titulo-horarios p {
         font-size: 13px;
     }
+
+
+    .buscador-rutas {
+        padding: 0 14px;
+    }
+
+
+    .ruta-seleccionada {
+        gap: 10px;
+    }
+
 }

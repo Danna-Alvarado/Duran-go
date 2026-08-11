@@ -3,38 +3,29 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
+const adminChoferesRouter = require("./adminchofer.route");
+
 const app = express();
+
 
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
+
 app.get("/", (req, res) => {
     res.json({
         mensaje: "Ubicación Service funcionando 🚀"
     });
 });
 
-app.post("/jornada", (req, res) => {
 
-    const { autobus_id } = req.body;
+app.use("/", adminChoferesRouter);
 
-    if (!autobus_id) {
-        return res.status(400).json({
-            error: "Falta el autobús"
-        });
-    }
-
-
-    res.json({
-        mensaje: "Jornada iniciada correctamente",
-        autobus_id
-    });
-
-});
 
 const PORT = process.env.PORT || 3003;
 
 app.listen(PORT, () => {
-    console.log(`Ubicación Service ejecutándose en el puerto ${PORT}`);
+    console.log(
+        `Ubicación Service ejecutándose en el puerto ${PORT}`
+    );
 });

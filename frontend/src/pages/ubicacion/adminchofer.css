@@ -1,0 +1,520 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* =====================================================
+   CONTENEDOR PRINCIPAL
+===================================================== */
+
+.admin-chofer-page {
+    min-height: 100vh;
+    background: #f7f6f8;
+    padding: 40px 50px 80px;
+}
+
+
+/* =====================================================
+   ENCABEZADO
+===================================================== */
+
+.admin-chofer-header {
+    max-width: 1200px;
+    margin: 0 auto 35px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.admin-chofer-header h1 {
+    color: #75176e;
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.admin-chofer-header p {
+    color: #777;
+    font-size: 15px;
+}
+
+
+/* =====================================================
+   BOTÓN AGREGAR
+===================================================== */
+
+.btn-agregar {
+    background: #75176e;
+    color: white;
+    border: none;
+    padding: 13px 22px;
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.btn-agregar:hover {
+    background: #5f1259;
+    transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   MENSAJES
+===================================================== */
+
+.mensaje-exito,
+.mensaje-error {
+    max-width: 1200px;
+    margin: 0 auto 20px;
+    padding: 13px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.mensaje-exito {
+    background: #e9f8ef;
+    color: #207a43;
+}
+
+.mensaje-error {
+    background: #fdecec;
+    color: #b42323;
+}
+
+
+/* =====================================================
+   ESTADOS
+===================================================== */
+
+.estado {
+    max-width: 1200px;
+    margin: 60px auto;
+    background: white;
+
+    border-radius: 16px;
+    padding: 50px 30px;
+
+    text-align: center;
+
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.estado h2 {
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.estado p {
+    color: #888;
+}
+
+
+/* =====================================================
+   GRID DE CHOFERES
+===================================================== */
+
+.choferes-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(300px, 1fr)
+    );
+
+    gap: 22px;
+}
+
+
+/* =====================================================
+   TARJETA CHOFER
+===================================================== */
+
+.chofer-card-admin {
+    background: white;
+    border-radius: 18px;
+    padding: 22px;
+
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+
+    transition: 0.2s ease;
+}
+
+.chofer-card-admin:hover {
+    transform: translateY(-3px);
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.09);
+}
+
+
+/* =====================================================
+   HEADER TARJETA
+===================================================== */
+
+.chofer-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-bottom: 18px;
+}
+
+.avatar-chofer {
+    width: 52px;
+    height: 52px;
+
+    border-radius: 50%;
+
+    background: #75176e;
+    color: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.chofer-card-header h2 {
+    color: #333;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.chofer-card-header span {
+    color: #888;
+    font-size: 13px;
+}
+
+
+/* =====================================================
+   ESTADO DEL CHOFER
+===================================================== */
+
+.estado-chofer {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    margin-bottom: 18px;
+}
+
+.estado-activo {
+    color: #24a148;
+}
+
+.estado-inactivo {
+    color: #999;
+}
+
+
+/* =====================================================
+   DATOS
+===================================================== */
+
+.datos-chofer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    padding: 16px 0;
+
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.datos-chofer div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 15px;
+}
+
+.datos-chofer strong {
+    color: #666;
+    font-size: 13px;
+}
+
+.datos-chofer span {
+    color: #333;
+    font-size: 14px;
+    text-align: right;
+}
+
+
+/* =====================================================
+   ACCIONES
+===================================================== */
+
+.acciones-chofer {
+    display: flex;
+    gap: 10px;
+
+    margin-top: 18px;
+}
+
+.acciones-chofer button {
+    flex: 1;
+
+    border: none;
+    padding: 10px;
+
+    border-radius: 9px;
+
+    font-weight: bold;
+    font-size: 13px;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.btn-editar {
+    background: #f1e5f0;
+    color: #75176e;
+}
+
+.btn-editar:hover {
+    background: #e7d4e5;
+}
+
+.btn-eliminar {
+    background: #fdecec;
+    color: #b42323;
+}
+
+.btn-eliminar:hover {
+    background: #f9d8d8;
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modal-fondo {
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+
+    z-index: 9999;
+}
+
+
+/* =====================================================
+   CONTENEDOR MODAL
+===================================================== */
+
+.modal-chofer {
+    width: 100%;
+    max-width: 500px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 28px;
+
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+}
+
+
+/* =====================================================
+   HEADER MODAL
+===================================================== */
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    margin-bottom: 25px;
+}
+
+.modal-header h2 {
+    color: #75176e;
+    font-size: 23px;
+    margin-bottom: 5px;
+}
+
+.modal-header p {
+    color: #888;
+    font-size: 14px;
+}
+
+.cerrar-modal {
+    width: 34px;
+    height: 34px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f3f3f3;
+
+    color: #555;
+
+    font-size: 22px;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.cerrar-modal:hover {
+    background: #e8e8e8;
+}
+
+
+/* =====================================================
+   FORMULARIO
+===================================================== */
+
+.modal-chofer form {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-chofer label {
+    color: #555;
+
+    font-size: 13px;
+    font-weight: bold;
+
+    margin-bottom: 7px;
+}
+
+.modal-chofer input {
+    width: 100%;
+
+    padding: 12px 13px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 9px;
+
+    outline: none;
+
+    font-size: 14px;
+
+    margin-bottom: 17px;
+
+    transition: 0.2s ease;
+}
+
+.modal-chofer input:focus {
+    border-color: #75176e;
+
+    box-shadow: 0 0 0 3px rgba(117, 23, 110, 0.08);
+}
+
+
+/* =====================================================
+   BOTONES DEL MODAL
+===================================================== */
+
+.modal-acciones {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 5px;
+}
+
+.modal-acciones button {
+    flex: 1;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.btn-cancelar {
+    background: #eeeeee;
+    color: #555;
+}
+
+.btn-cancelar:hover {
+    background: #e1e1e1;
+}
+
+.btn-guardar {
+    background: #75176e;
+    color: white;
+}
+
+.btn-guardar:hover {
+    background: #5f1259;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .admin-chofer-page {
+        padding: 30px 18px 70px;
+    }
+
+    .admin-chofer-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-chofer-header h1 {
+        font-size: 26px;
+    }
+
+    .btn-agregar {
+        width: 100%;
+    }
+
+    .choferes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-chofer {
+        padding: 22px;
+    }
+
+}
