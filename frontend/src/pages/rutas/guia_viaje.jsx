@@ -309,7 +309,7 @@ function GuiaViaje() {
                         <button
                             className="btn-nueva-ruta"
                             onClick={() =>
-                                navigate("/")
+                                navigate("/home")
                             }
                         >
                             Buscar otra ruta
