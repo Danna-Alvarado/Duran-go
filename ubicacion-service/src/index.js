@@ -4,21 +4,16 @@ const express = require("express");
 const cors = require("cors");
 
 const adminChoferesRouter = require("./adminchofer.route");
+const adminAsignacionesRouter = require("./adminasignaciones.route");
 
 const app = express();
 
-
-// =====================================================
-// MIDDLEWARES
-// =====================================================
-
 app.use(cors());
-
 app.use(express.json());
 
 
 // =====================================================
-// RUTA PRINCIPAL
+// HEALTH CHECK
 // =====================================================
 
 app.get("/", (req, res) => {
@@ -31,10 +26,11 @@ app.get("/", (req, res) => {
 
 
 // =====================================================
-// RUTAS DE ADMINISTRACIÓN DE CHOFERES
+// RUTAS
 // =====================================================
 
 app.use("/", adminChoferesRouter);
+app.use("/", adminAsignacionesRouter);
 
 
 // =====================================================
@@ -50,3 +46,4 @@ app.listen(PORT, () => {
     );
 
 });
+

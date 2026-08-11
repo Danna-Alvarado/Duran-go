@@ -527,9 +527,6 @@ function Horarios() {
                 </div>
 
 
-                {/* =================================
-                    INFORMACIÓN
-                ================================= */}
 
                 <div className="infohorarios">
 

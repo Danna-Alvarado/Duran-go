@@ -3,43 +3,40 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
 }
-
-
-/* =====================================================
-   CONTENEDOR PRINCIPAL
-===================================================== */
 
 .admin-chofer-page {
     min-height: 100vh;
-    background: #f7f6f8;
-    padding: 40px 50px 80px;
+    background: #f7f5f8;
+    padding: 35px 45px 70px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #29232b;
 }
 
 
 /* =====================================================
-   ENCABEZADO
+   HEADER
 ===================================================== */
 
 .admin-chofer-header {
-    max-width: 1200px;
-    margin: 0 auto 35px;
+    max-width: 1250px;
+    margin: 0 auto 30px;
 
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 20px;
+    justify-content: space-between;
+    gap: 25px;
 }
 
 .admin-chofer-header h1 {
     color: #75176e;
     font-size: 32px;
+    font-weight: 700;
     margin-bottom: 8px;
 }
 
 .admin-chofer-header p {
-    color: #777;
+    color: #77717a;
     font-size: 15px;
 }
 
@@ -49,23 +46,32 @@
 ===================================================== */
 
 .btn-agregar {
+    border: none;
     background: #75176e;
     color: white;
-    border: none;
-    padding: 13px 22px;
+
+    padding: 13px 20px;
     border-radius: 10px;
 
-    font-size: 15px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: 700;
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    box-shadow: 0 5px 15px rgba(117, 23, 110, 0.20);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .btn-agregar:hover {
-    background: #5f1259;
-    transform: translateY(-1px);
+    background: #61125b;
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(117, 23, 110, 0.25);
 }
 
 
@@ -75,48 +81,60 @@
 
 .mensaje-exito,
 .mensaje-error {
-    max-width: 1200px;
+    max-width: 1250px;
     margin: 0 auto 20px;
-    padding: 13px 16px;
+
+    padding: 13px 17px;
+
     border-radius: 10px;
+
     font-size: 14px;
+    font-weight: 600;
 }
 
 .mensaje-exito {
     background: #e9f8ef;
-    color: #207a43;
+    color: #18713d;
+    border: 1px solid #bde8cb;
 }
 
 .mensaje-error {
-    background: #fdecec;
-    color: #b42323;
+    background: #fff0f0;
+    color: #a32929;
+    border: 1px solid #f1c4c4;
 }
 
 
 /* =====================================================
-   ESTADOS
+   ESTADO VACÍO / CARGANDO
 ===================================================== */
 
 .estado {
-    max-width: 1200px;
-    margin: 60px auto;
-    background: white;
-
-    border-radius: 16px;
-    padding: 50px 30px;
+    max-width: 700px;
+    margin: 70px auto;
 
     text-align: center;
 
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    background: white;
+
+    border: 1px solid #ece6ed;
+    border-radius: 18px;
+
+    padding: 45px 25px;
+
+    box-shadow:
+        0 8px 25px rgba(45, 25, 45, 0.06);
 }
 
-.estado h2 {
-    color: #333;
-    margin-bottom: 8px;
+.estado h2,
+.estado h3 {
+    color: #75176e;
+    margin-bottom: 10px;
 }
 
 .estado p {
-    color: #888;
+    color: #77717a;
+    line-height: 1.6;
 }
 
 
@@ -125,48 +143,54 @@
 ===================================================== */
 
 .choferes-grid {
-    max-width: 1200px;
+    max-width: 1250px;
     margin: 0 auto;
 
     display: grid;
 
-    grid-template-columns: repeat(
-        auto-fit,
-        minmax(300px, 1fr)
-    );
+    grid-template-columns:
+        repeat(auto-fit, minmax(320px, 1fr));
 
     gap: 22px;
 }
 
 
 /* =====================================================
-   TARJETA CHOFER
+   TARJETA
 ===================================================== */
 
 .chofer-card-admin {
     background: white;
+
+    border: 1px solid #ebe4ec;
     border-radius: 18px;
-    padding: 22px;
 
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    padding: 23px;
 
-    transition: 0.2s ease;
+    box-shadow:
+        0 7px 24px rgba(40, 20, 40, 0.06);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .chofer-card-admin:hover {
     transform: translateY(-3px);
 
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.09);
+    box-shadow:
+        0 12px 30px rgba(40, 20, 40, 0.10);
 }
 
 
 /* =====================================================
-   HEADER TARJETA
+   HEADER CARD
 ===================================================== */
 
 .chofer-card-header {
     display: flex;
     align-items: center;
+
     gap: 14px;
 
     margin-bottom: 18px;
@@ -176,28 +200,40 @@
     width: 52px;
     height: 52px;
 
+    flex-shrink: 0;
+
     border-radius: 50%;
 
-    background: #75176e;
-    color: white;
-
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
-    font-size: 20px;
-    font-weight: bold;
+    background: #f1dff0;
+    color: #75176e;
+
+    font-size: 21px;
+    font-weight: 700;
 }
 
 .chofer-card-header h2 {
-    color: #333;
     font-size: 18px;
-    margin-bottom: 4px;
+    color: #302a31;
+
+    margin-bottom: 5px;
 }
 
 .chofer-card-header span {
-    color: #888;
-    font-size: 13px;
+    display: inline-block;
+
+    background: #f5eef5;
+    color: #75176e;
+
+    padding: 4px 9px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 700;
 }
 
 
@@ -208,20 +244,29 @@
 .estado-chofer {
     display: flex;
     align-items: center;
+
     gap: 7px;
 
-    font-size: 14px;
-    font-weight: bold;
+    padding: 10px 12px;
 
     margin-bottom: 18px;
+
+    background: #faf8fa;
+
+    border-radius: 9px;
+
+    color: #615b62;
+
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .estado-activo {
-    color: #24a148;
+    color: #20a45a;
 }
 
 .estado-inactivo {
-    color: #999;
+    color: #b8b1b8;
 }
 
 
@@ -232,31 +277,36 @@
 .datos-chofer {
     display: flex;
     flex-direction: column;
+
     gap: 12px;
 
-    padding: 16px 0;
+    padding-bottom: 18px;
 
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eee8ef;
 }
 
-.datos-chofer div {
+.datos-chofer > div {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
 
-    gap: 15px;
+    gap: 4px;
 }
 
 .datos-chofer strong {
-    color: #666;
-    font-size: 13px;
+    color: #88818a;
+
+    font-size: 11px;
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
 }
 
 .datos-chofer span {
-    color: #333;
+    color: #383238;
+
     font-size: 14px;
-    text-align: right;
+
+    overflow-wrap: anywhere;
 }
 
 
@@ -266,48 +316,85 @@
 
 .acciones-chofer {
     display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
 
-    margin-top: 18px;
+    gap: 8px;
+
+    padding-top: 18px;
 }
 
 .acciones-chofer button {
-    flex: 1;
-
     border: none;
-    padding: 10px;
 
-    border-radius: 9px;
+    padding: 9px 12px;
 
-    font-weight: bold;
-    font-size: 13px;
+    border-radius: 8px;
+
+    font-size: 12px;
+    font-weight: 700;
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease,
+        background 0.2s ease;
 }
 
-.btn-editar {
-    background: #f1e5f0;
-    color: #75176e;
-}
-
-.btn-editar:hover {
-    background: #e7d4e5;
-}
-
-.btn-eliminar {
-    background: #fdecec;
-    color: #b42323;
-}
-
-.btn-eliminar:hover {
-    background: #f9d8d8;
+.acciones-chofer button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
 }
 
 
 /* =====================================================
-   MODAL
+   ASIGNAR
+===================================================== */
+
+.btn-asignar {
+    background: #75176e;
+    color: white;
+
+    flex: 1 1 100%;
+}
+
+.btn-asignar:hover {
+    background: #61125b;
+}
+
+
+/* =====================================================
+   UBICACIÓN
+===================================================== */
+
+.btn-ubicacion {
+    background: #eee4f0;
+    color: #75176e;
+}
+
+
+/* =====================================================
+   EDITAR
+===================================================== */
+
+.btn-editar {
+    background: #f1edf2;
+    color: #4d464f;
+}
+
+
+/* =====================================================
+   ELIMINAR
+===================================================== */
+
+.btn-eliminar {
+    background: #fdeaea;
+    color: #b52c2c;
+}
+
+
+/* =====================================================
+   MODAL FONDO
 ===================================================== */
 
 .modal-fondo {
@@ -315,25 +402,27 @@
 
     inset: 0;
 
-    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
 
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
     padding: 20px;
 
-    z-index: 9999;
+    background: rgba(31, 20, 31, 0.55);
+
+    backdrop-filter: blur(3px);
 }
 
 
 /* =====================================================
-   CONTENEDOR MODAL
+   MODAL
 ===================================================== */
 
 .modal-chofer {
     width: 100%;
-    max-width: 500px;
+    max-width: 520px;
 
     max-height: 90vh;
 
@@ -341,11 +430,28 @@
 
     background: white;
 
-    border-radius: 18px;
+    border-radius: 20px;
 
-    padding: 28px;
+    padding: 27px;
 
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.20);
+
+    animation: aparecerModal 0.2s ease;
+}
+
+@keyframes aparecerModal {
+
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
 }
 
 
@@ -355,43 +461,65 @@
 
 .modal-header {
     display: flex;
+
     justify-content: space-between;
     align-items: flex-start;
+
+    gap: 20px;
 
     margin-bottom: 25px;
 }
 
 .modal-header h2 {
     color: #75176e;
+
     font-size: 23px;
-    margin-bottom: 5px;
+
+    margin-bottom: 6px;
 }
 
 .modal-header p {
-    color: #888;
-    font-size: 14px;
+    color: #77717a;
+
+    font-size: 13px;
+
+    line-height: 1.5;
 }
 
+.modal-header strong {
+    color: #75176e;
+}
+
+
+/* =====================================================
+   CERRAR MODAL
+===================================================== */
+
 .cerrar-modal {
-    width: 34px;
-    height: 34px;
+    width: 35px;
+    height: 35px;
 
     border: none;
+
     border-radius: 50%;
 
-    background: #f3f3f3;
+    background: #f4eff5;
 
-    color: #555;
+    color: #625a63;
 
-    font-size: 22px;
+    font-size: 24px;
+    line-height: 1;
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
 }
 
 .cerrar-modal:hover {
-    background: #e8e8e8;
+    background: #eadfea;
+    color: #75176e;
 }
 
 
@@ -405,75 +533,94 @@
 }
 
 .modal-chofer label {
-    color: #555;
+    margin-bottom: 7px;
+
+    color: #4b444c;
 
     font-size: 13px;
-    font-weight: bold;
-
-    margin-bottom: 7px;
+    font-weight: 700;
 }
 
-.modal-chofer input {
+.modal-chofer input,
+.modal-chofer select {
     width: 100%;
 
     padding: 12px 13px;
 
-    border: 1px solid #ddd;
+    margin-bottom: 17px;
+
+    border: 1px solid #ddd5df;
 
     border-radius: 9px;
 
-    outline: none;
+    background: #fff;
+
+    color: #302a31;
 
     font-size: 14px;
 
-    margin-bottom: 17px;
+    outline: none;
 
-    transition: 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
-.modal-chofer input:focus {
+.modal-chofer input:focus,
+.modal-chofer select:focus {
     border-color: #75176e;
 
-    box-shadow: 0 0 0 3px rgba(117, 23, 110, 0.08);
+    box-shadow:
+        0 0 0 3px rgba(117, 23, 110, 0.10);
+}
+
+.modal-chofer input::placeholder {
+    color: #aaa3ab;
 }
 
 
 /* =====================================================
-   BOTONES DEL MODAL
+   BOTONES MODAL
 ===================================================== */
 
 .modal-acciones {
     display: flex;
 
+    justify-content: flex-end;
+
     gap: 10px;
 
-    margin-top: 5px;
+    margin-top: 8px;
 }
 
 .modal-acciones button {
-    flex: 1;
-
-    padding: 12px;
-
     border: none;
+
+    padding: 11px 17px;
 
     border-radius: 9px;
 
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: 700;
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.modal-acciones button:hover {
+    transform: translateY(-1px);
 }
 
 .btn-cancelar {
-    background: #eeeeee;
-    color: #555;
+    background: #eee9ef;
+    color: #514a52;
 }
 
 .btn-cancelar:hover {
-    background: #e1e1e1;
+    background: #e3dde4;
 }
 
 .btn-guardar {
@@ -482,7 +629,33 @@
 }
 
 .btn-guardar:hover {
-    background: #5f1259;
+    background: #61125b;
+}
+
+
+/* =====================================================
+   MODAL ASIGNAR
+===================================================== */
+
+.modal-chofer .estado {
+    max-width: none;
+
+    margin: 10px 0 20px;
+
+    padding: 25px 20px;
+
+    box-shadow: none;
+
+    background: #faf8fa;
+}
+
+.modal-chofer .estado h3 {
+    font-size: 18px;
+}
+
+.modal-chofer .estado p {
+    font-size: 13px;
+    margin-bottom: 8px;
 }
 
 
@@ -490,15 +663,15 @@
    RESPONSIVE
 ===================================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
 
     .admin-chofer-page {
-        padding: 30px 18px 70px;
+        padding: 25px 18px 60px;
     }
 
     .admin-chofer-header {
+        align-items: flex-start;
         flex-direction: column;
-        align-items: stretch;
     }
 
     .admin-chofer-header h1 {
@@ -509,12 +682,40 @@
         width: 100%;
     }
 
+}
+
+
+@media (max-width: 500px) {
+
     .choferes-grid {
         grid-template-columns: 1fr;
     }
 
+    .chofer-card-admin {
+        padding: 18px;
+    }
+
+    .acciones-chofer {
+        flex-direction: column;
+    }
+
+    .acciones-chofer button {
+        width: 100%;
+    }
+
     .modal-chofer {
-        padding: 22px;
+        padding: 21px;
+
+        border-radius: 16px;
+    }
+
+    .modal-acciones {
+        flex-direction: column-reverse;
+    }
+
+    .modal-acciones button {
+        width: 100%;
     }
 
 }
+
