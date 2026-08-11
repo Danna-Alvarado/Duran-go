@@ -48,7 +48,6 @@ const verificarAdmin = (req, res, next) => {
         next();
 
     } catch (error) {
-
         console.error(
             "Error verificando administrador:",
             error
@@ -62,119 +61,65 @@ const verificarAdmin = (req, res, next) => {
 
 
 // =====================================================
-// GET - OBTENER RUTAS
-// =====================================================
-// GET /admin/asignaciones/rutas
+// GET
+// OBTENER ASIGNACIÓN ACTUAL DE UN CHOFER
 // =====================================================
 
 router.get(
-    "/admin/asignaciones/rutas",
+    "/admin/asignaciones/chofer/:choferId",
     verificarAdmin,
     async (req, res, next) => {
 
         try {
+            const { choferId } = req.params;
 
             const { rows } = await pool.query(`
                 SELECT
-                    id,
-                    nombre,
-                    color
-                FROM rutas
-                ORDER BY nombre ASC
-            `);
+                    j.id AS jornada_id,
+                    j.chofer_id,
+                    j.autobus_id,
+                    j.fecha_inicio,
+                    j.activa,
 
-            return res.status(200).json({
-                rutas: rows
-            });
+                    c.numero_unico,
+                    c.nombre_completo,
 
-        } catch (error) {
-
-            console.error(
-                "Error obteniendo rutas:",
-                error
-            );
-
-            next(error);
-        }
-    }
-);
-
-
-// =====================================================
-// GET - OBTENER AUTOBUSES
-// =====================================================
-// Puede recibir:
-//
-// /admin/asignaciones/autobuses
-//
-// o:
-//
-// /admin/asignaciones/autobuses?ruta_id=5
-// =====================================================
-
-router.get(
-    "/admin/asignaciones/autobuses",
-    verificarAdmin,
-    async (req, res, next) => {
-
-        try {
-
-            const { ruta_id } = req.query;
-
-            let query = `
-                SELECT
-                    a.id,
                     a.numero_bus,
                     a.ruta_id,
 
                     r.nombre AS ruta_nombre,
-                    r.color AS ruta_color,
+                    r.color AS ruta_color
 
-                    CASE
-                        WHEN j.id IS NOT NULL
-                        AND j.activa = true
-                        THEN true
-                        ELSE false
-                    END AS ocupado
+                FROM jornadas_activas j
 
-                FROM autobuses a
+                INNER JOIN choferes c
+                    ON c.id = j.chofer_id
 
-                INNER JOIN rutas r
+                INNER JOIN autobuses a
+                    ON a.id = j.autobus_id
+
+                LEFT JOIN rutas r
                     ON r.id = a.ruta_id
 
-                LEFT JOIN jornadas_activas j
-                    ON j.autobus_id = a.id
-                    AND j.activa = true
-            `;
+                WHERE j.chofer_id = $1
+                AND j.activa = true
 
-            const valores = [];
+                LIMIT 1
+            `, [choferId]);
 
-            if (ruta_id) {
-
-                query += `
-                    WHERE a.ruta_id = $1
-                `;
-
-                valores.push(ruta_id);
+            if (rows.length === 0) {
+                return res.status(200).json({
+                    asignacion: null
+                });
             }
 
-            query += `
-                ORDER BY a.numero_bus ASC
-            `;
-
-            const { rows } = await pool.query(
-                query,
-                valores
-            );
-
             return res.status(200).json({
-                autobuses: rows
+                asignacion: rows[0]
             });
 
         } catch (error) {
-
             console.error(
-                "Error obteniendo autobuses:",
+                "Error obteniendo asignación:",
                 error
             );
 
@@ -185,15 +130,8 @@ router.get(
 
 
 // =====================================================
-// GET - OBTENER ASIGNACIONES
-// =====================================================
-// GET /admin/asignaciones
-//
-// Muestra:
-// - chofer
-// - ruta
-// - autobús
-// - jornada
+// GET
+// OBTENER TODAS LAS ASIGNACIONES ACTIVAS
 // =====================================================
 
 router.get(
@@ -205,26 +143,20 @@ router.get(
 
             const { rows } = await pool.query(`
                 SELECT
-
                     j.id AS jornada_id,
-
                     j.chofer_id,
-                    c.numero_unico,
-                    c.nombre_completo,
-
                     j.autobus_id,
-                    a.numero_bus,
-
-                    a.ruta_id,
-                    r.nombre AS ruta_nombre,
-                    r.color AS ruta_color,
-
                     j.fecha_inicio,
                     j.activa,
 
-                    a.latitud,
-                    a.longitud,
-                    a.ultima_actualizacion
+                    c.numero_unico,
+                    c.nombre_completo,
+
+                    a.numero_bus,
+                    a.ruta_id,
+
+                    r.nombre AS ruta_nombre,
+                    r.color AS ruta_color
 
                 FROM jornadas_activas j
 
@@ -234,7 +166,7 @@ router.get(
                 INNER JOIN autobuses a
                     ON a.id = j.autobus_id
 
-                INNER JOIN rutas r
+                LEFT JOIN rutas r
                     ON r.id = a.ruta_id
 
                 WHERE j.activa = true
@@ -261,18 +193,8 @@ router.get(
 
 
 // =====================================================
-// POST - ASIGNAR CHOFER
-// =====================================================
-// POST /admin/asignaciones
-//
-// body:
-//
-// {
-//     "chofer_id": 1,
-//     "ruta_id": 5,
-//     "autobus_id": 3
-// }
-//
+// POST
+// ASIGNAR CHOFER + RUTA + AUTOBÚS
 // =====================================================
 
 router.post(
@@ -280,7 +202,7 @@ router.post(
     verificarAdmin,
     async (req, res, next) => {
 
-        const client = await pool.connect();
+        const cliente = await pool.connect();
 
         try {
 
@@ -290,36 +212,28 @@ router.post(
                 autobus_id
             } = req.body;
 
-
-            // =================================================
-            // VALIDAR CAMPOS
-            // =================================================
+            // -----------------------------------------
+            // VALIDAR DATOS
+            // -----------------------------------------
 
             if (
                 !chofer_id ||
                 !ruta_id ||
                 !autobus_id
             ) {
-
                 return res.status(400).json({
                     error:
                         "Chofer, ruta y autobús son obligatorios"
                 });
             }
 
+            await cliente.query("BEGIN");
 
-            // =================================================
-            // INICIAR TRANSACCIÓN
-            // =================================================
-
-            await client.query("BEGIN");
-
-
-            // =================================================
+            // -----------------------------------------
             // VERIFICAR CHOFER
-            // =================================================
+            // -----------------------------------------
 
-            const chofer = await client.query(`
+            const chofer = await cliente.query(`
                 SELECT
                     id,
                     numero_unico,
@@ -327,24 +241,23 @@ router.post(
                 FROM choferes
                 WHERE id = $1
                 AND rol = 'chofer'
+                FOR UPDATE
             `, [chofer_id]);
-
 
             if (chofer.rows.length === 0) {
 
-                await client.query("ROLLBACK");
+                await cliente.query("ROLLBACK");
 
                 return res.status(404).json({
                     error: "Chofer no encontrado"
                 });
             }
 
-
-            // =================================================
+            // -----------------------------------------
             // VERIFICAR RUTA
-            // =================================================
+            // -----------------------------------------
 
-            const ruta = await client.query(`
+            const ruta = await cliente.query(`
                 SELECT
                     id,
                     nombre,
@@ -353,77 +266,77 @@ router.post(
                 WHERE id = $1
             `, [ruta_id]);
 
-
             if (ruta.rows.length === 0) {
 
-                await client.query("ROLLBACK");
+                await cliente.query("ROLLBACK");
 
                 return res.status(404).json({
                     error: "Ruta no encontrada"
                 });
             }
 
-
-            // =================================================
+            // -----------------------------------------
             // VERIFICAR AUTOBÚS
-            // =================================================
+            // -----------------------------------------
 
-            const autobus = await client.query(`
+            const autobus = await cliente.query(`
                 SELECT
                     id,
                     numero_bus,
                     ruta_id
                 FROM autobuses
                 WHERE id = $1
+                FOR UPDATE
             `, [autobus_id]);
-
 
             if (autobus.rows.length === 0) {
 
-                await client.query("ROLLBACK");
+                await cliente.query("ROLLBACK");
 
                 return res.status(404).json({
                     error: "Autobús no encontrado"
                 });
             }
 
+            const autobusData = autobus.rows[0];
 
-            // =================================================
-            // VERIFICAR QUE AUTOBÚS PERTENEZCA A LA RUTA
-            // =================================================
+            // -----------------------------------------
+            // VERIFICAR QUE EL AUTOBÚS PERTENEZCA
+            // A LA RUTA SELECCIONADA
+            // -----------------------------------------
 
             if (
-                Number(autobus.rows[0].ruta_id) !==
+                Number(autobusData.ruta_id) !==
                 Number(ruta_id)
             ) {
 
-                await client.query("ROLLBACK");
+                await cliente.query("ROLLBACK");
 
                 return res.status(400).json({
                     error:
-                        "El autobús seleccionado no pertenece a la ruta"
+                        "El autobús seleccionado no pertenece a la ruta elegida"
                 });
             }
 
+            // -----------------------------------------
+            // VERIFICAR SI EL CHOFER YA TIENE JORNADA
+            // -----------------------------------------
 
-            // =================================================
-            // VERIFICAR SI CHOFER YA TIENE JORNADA
-            // =================================================
-
-            const jornadaChofer = await client.query(`
-                SELECT
-                    id,
-                    autobus_id
-                FROM jornadas_activas
-                WHERE chofer_id = $1
-                AND activa = true
-                FOR UPDATE
-            `, [chofer_id]);
-
+            const jornadaChofer =
+                await cliente.query(`
+                    SELECT
+                        id,
+                        autobus_id,
+                        fecha_inicio
+                    FROM jornadas_activas
+                    WHERE chofer_id = $1
+                    AND activa = true
+                    FOR UPDATE
+                `, [chofer_id]);
 
             if (jornadaChofer.rows.length > 0) {
 
-                await client.query("ROLLBACK");
+                await cliente.query("ROLLBACK");
 
                 return res.status(409).json({
                     error:
@@ -431,25 +344,25 @@ router.post(
                 });
             }
 
+            // -----------------------------------------
+            // VERIFICAR SI EL AUTOBÚS YA ESTÁ ASIGNADO
+            // -----------------------------------------
 
-            // =================================================
-            // VERIFICAR SI AUTOBÚS YA ESTÁ OCUPADO
-            // =================================================
-
-            const jornadaAutobus = await client.query(`
-                SELECT
-                    id,
-                    chofer_id
-                FROM jornadas_activas
-                WHERE autobus_id = $1
-                AND activa = true
-                FOR UPDATE
-            `, [autobus_id]);
-
+            const jornadaAutobus =
+                await cliente.query(`
+                    SELECT
+                        id,
+                        chofer_id,
+                        fecha_inicio
+                    FROM jornadas_activas
+                    WHERE autobus_id = $1
+                    AND activa = true
+                    FOR UPDATE
+                `, [autobus_id]);
 
             if (jornadaAutobus.rows.length > 0) {
 
-                await client.query("ROLLBACK");
+                await cliente.query("ROLLBACK");
 
                 return res.status(409).json({
                     error:
@@ -457,251 +370,12 @@ router.post(
                 });
             }
 
-
-            // =================================================
-            // CREAR JORNADA
-            // =================================================
-
-            const { rows } = await client.query(`
-                INSERT INTO jornadas_activas (
-                    chofer_id,
-                    autobus_id,
-                    fecha_inicio,
-                    activa
-                )
-                VALUES (
-                    $1,
-                    $2,
-                    NOW(),
-                    true
-                )
-                RETURNING
-                    id,
-                    chofer_id,
-                    autobus_id,
-                    fecha_inicio,
-                    activa
-            `, [
-                chofer_id,
-                autobus_id
-            ]);
-
-
-            // =================================================
-            // CONFIRMAR
-            // =================================================
-
-            await client.query("COMMIT");
-
-
-            return res.status(201).json({
-                mensaje:
-                    "Chofer asignado correctamente",
-                asignacion: {
-                    jornada_id: rows[0].id,
-                    chofer_id: rows[0].chofer_id,
-                    autobus_id: rows[0].autobus_id,
-                    ruta_id: Number(ruta_id),
-                    fecha_inicio:
-                        rows[0].fecha_inicio,
-                    activa: rows[0].activa
-                }
-            });
-
-        } catch (error) {
-
-            await client.query("ROLLBACK");
-
-            console.error(
-                "Error asignando chofer:",
-                error
-            );
-
-            next(error);
-
-        } finally {
-
-            client.release();
-        }
-    }
-);
-
-
-// =====================================================
-// PUT - CAMBIAR ASIGNACIÓN
-// =====================================================
-// PUT /admin/asignaciones/:choferId
-//
-// body:
-//
-// {
-//     "ruta_id": 5,
-//     "autobus_id": 3
-// }
-// =====================================================
-
-router.put(
-    "/admin/asignaciones/:choferId",
-    verificarAdmin,
-    async (req, res, next) => {
-
-        const client = await pool.connect();
-
-        try {
-
-            const { choferId } = req.params;
-
-            const {
-                ruta_id,
-                autobus_id
-            } = req.body;
-
-
-            if (
-                !ruta_id ||
-                !autobus_id
-            ) {
-
-                return res.status(400).json({
-                    error:
-                        "Ruta y autobús son obligatorios"
-                });
-            }
-
-
-            await client.query("BEGIN");
-
-
-            // =================================================
-            // VERIFICAR CHOFER
-            // =================================================
-
-            const chofer = await client.query(`
-                SELECT id
-                FROM choferes
-                WHERE id = $1
-                AND rol = 'chofer'
-            `, [choferId]);
-
-
-            if (chofer.rows.length === 0) {
-
-                await client.query("ROLLBACK");
-
-                return res.status(404).json({
-                    error: "Chofer no encontrado"
-                });
-            }
-
-
-            // =================================================
-            // VERIFICAR RUTA
-            // =================================================
-
-            const ruta = await client.query(`
-                SELECT id
-                FROM rutas
-                WHERE id = $1
-            `, [ruta_id]);
-
-
-            if (ruta.rows.length === 0) {
-
-                await client.query("ROLLBACK");
-
-                return res.status(404).json({
-                    error: "Ruta no encontrada"
-                });
-            }
-
-
-            // =================================================
-            // VERIFICAR AUTOBÚS
-            // =================================================
-
-            const autobus = await client.query(`
-                SELECT
-                    id,
-                    ruta_id
-                FROM autobuses
-                WHERE id = $1
-            `, [autobus_id]);
-
-
-            if (autobus.rows.length === 0) {
-
-                await client.query("ROLLBACK");
-
-                return res.status(404).json({
-                    error: "Autobús no encontrado"
-                });
-            }
-
-
-            if (
-                Number(autobus.rows[0].ruta_id) !==
-                Number(ruta_id)
-            ) {
-
-                await client.query("ROLLBACK");
-
-                return res.status(400).json({
-                    error:
-                        "El autobús no pertenece a la ruta seleccionada"
-                });
-            }
-
-
-            // =================================================
-            // VERIFICAR AUTOBÚS
-            // =================================================
-
-            const autobusOcupado = await client.query(`
-                SELECT
-                    id,
-                    chofer_id
-                FROM jornadas_activas
-                WHERE autobus_id = $1
-                AND activa = true
-                AND chofer_id <> $2
-                FOR UPDATE
-            `, [
-                autobus_id,
-                choferId
-            ]);
-
-
-            if (autobusOcupado.rows.length > 0) {
-
-                await client.query("ROLLBACK");
-
-                return res.status(409).json({
-                    error:
-                        "El autobús ya está asignado a otro chofer"
-                });
-            }
-
-
-            // =================================================
-            // BUSCAR JORNADA ACTUAL
-            // =================================================
-
-            const jornada = await client.query(`
-                SELECT id
-                FROM jornadas_activas
-                WHERE chofer_id = $1
-                AND activa = true
-                FOR UPDATE
-            `, [choferId]);
-
-
-            // =================================================
-            // SI NO TIENE JORNADA → CREAR
-            // =================================================
-
-            if (jornada.rows.length === 0) {
-
-                const nueva = await client.query(`
+            // -----------------------------------------
+            // CREAR JORNADA ACTIVA
+            // -----------------------------------------
+
+            const nuevaJornada =
+                await cliente.query(`
                     INSERT INTO jornadas_activas (
                         chofer_id,
                         autobus_id,
@@ -714,57 +388,286 @@ router.put(
                         NOW(),
                         true
                     )
-                    RETURNING id
+                    RETURNING
+                        id,
+                        chofer_id,
+                        autobus_id,
+                        fecha_inicio,
+                        activa
+                `, [
+                    chofer_id,
+                    autobus_id
+                ]);
+
+            await cliente.query("COMMIT");
+
+            return res.status(201).json({
+                mensaje:
+                    "Chofer asignado correctamente",
+
+                asignacion: {
+                    ...nuevaJornada.rows[0],
+                    ruta_id:
+                        ruta.rows[0].id,
+                    ruta_nombre:
+                        ruta.rows[0].nombre,
+                    ruta_color:
+                        ruta.rows[0].color,
+                    numero_bus:
+                        autobusData.numero_bus,
+                    numero_unico:
+                        chofer.rows[0].numero_unico,
+                    nombre_completo:
+                        chofer.rows[0].nombre_completo
+                }
+            });
+
+        } catch (error) {
+
+            await cliente.query("ROLLBACK");
+
+            console.error(
+                "Error creando asignación:",
+                error
+            );
+
+            next(error);
+
+        } finally {
+
+            cliente.release();
+
+        }
+    }
+);
+
+
+// =====================================================
+// PUT
+// CAMBIAR ASIGNACIÓN DE UN CHOFER
+// =====================================================
+
+router.put(
+    "/admin/asignaciones/chofer/:choferId",
+    verificarAdmin,
+    async (req, res, next) => {
+
+        const cliente = await pool.connect();
+
+        try {
+
+            const { choferId } = req.params;
+
+            const {
+                ruta_id,
+                autobus_id
+            } = req.body;
+
+            if (
+                !ruta_id ||
+                !autobus_id
+            ) {
+                return res.status(400).json({
+                    error:
+                        "Ruta y autobús son obligatorios"
+                });
+            }
+
+            await cliente.query("BEGIN");
+
+            // -----------------------------------------
+            // VERIFICAR CHOFER
+            // -----------------------------------------
+
+            const chofer =
+                await cliente.query(`
+                    SELECT
+                        id,
+                        numero_unico,
+                        nombre_completo
+                    FROM choferes
+                    WHERE id = $1
+                    AND rol = 'chofer'
+                    FOR UPDATE
+                `, [choferId]);
+
+            if (chofer.rows.length === 0) {
+
+                await cliente.query("ROLLBACK");
+
+                return res.status(404).json({
+                    error:
+                        "Chofer no encontrado"
+                });
+            }
+
+            // -----------------------------------------
+            // VERIFICAR RUTA
+            // -----------------------------------------
+
+            const ruta =
+                await cliente.query(`
+                    SELECT
+                        id,
+                        nombre,
+                        color
+                    FROM rutas
+                    WHERE id = $1
+                `, [ruta_id]);
+
+            if (ruta.rows.length === 0) {
+
+                await cliente.query("ROLLBACK");
+
+                return res.status(404).json({
+                    error:
+                        "Ruta no encontrada"
+                });
+            }
+
+            // -----------------------------------------
+            // VERIFICAR AUTOBÚS
+            // -----------------------------------------
+
+            const autobus =
+                await cliente.query(`
+                    SELECT
+                        id,
+                        numero_bus,
+                        ruta_id
+                    FROM autobuses
+                    WHERE id = $1
+                    FOR UPDATE
+                `, [autobus_id]);
+
+            if (autobus.rows.length === 0) {
+
+                await cliente.query("ROLLBACK");
+
+                return res.status(404).json({
+                    error:
+                        "Autobús no encontrado"
+                });
+            }
+
+            const autobusData =
+                autobus.rows[0];
+
+            // -----------------------------------------
+            // AUTOBÚS PERTENECE A RUTA
+            // -----------------------------------------
+
+            if (
+                Number(autobusData.ruta_id) !==
+                Number(ruta_id)
+            ) {
+
+                await cliente.query("ROLLBACK");
+
+                return res.status(400).json({
+                    error:
+                        "El autobús no pertenece a la ruta seleccionada"
+                });
+            }
+
+            // -----------------------------------------
+            // VERIFICAR QUE EL AUTOBÚS NO ESTÉ
+            // OCUPADO POR OTRO CHOFER
+            // -----------------------------------------
+
+            const autobusOcupado =
+                await cliente.query(`
+                    SELECT
+                        id,
+                        chofer_id
+                    FROM jornadas_activas
+                    WHERE autobus_id = $1
+                    AND activa = true
+                    AND chofer_id <> $2
+                    FOR UPDATE
+                `, [
+                    autobus_id,
+                    choferId
+                ]);
+
+            if (autobusOcupado.rows.length > 0) {
+
+                await cliente.query("ROLLBACK");
+
+                return res.status(409).json({
+                    error:
+                        "El autobús ya está asignado a otro chofer"
+                });
+            }
+
+            // -----------------------------------------
+            // DESACTIVAR ASIGNACIÓN ANTERIOR
+            // -----------------------------------------
+
+            await cliente.query(`
+                UPDATE jornadas_activas
+
+                SET activa = false
+
+                WHERE chofer_id = $1
+                AND activa = true
+            `, [choferId]);
+
+            // -----------------------------------------
+            // CREAR NUEVA ASIGNACIÓN
+            // -----------------------------------------
+
+            const nuevaJornada =
+                await cliente.query(`
+                    INSERT INTO jornadas_activas (
+                        chofer_id,
+                        autobus_id,
+                        fecha_inicio,
+                        activa
+                    )
+                    VALUES (
+                        $1,
+                        $2,
+                        NOW(),
+                        true
+                    )
+                    RETURNING
+                        id,
+                        chofer_id,
+                        autobus_id,
+                        fecha_inicio,
+                        activa
                 `, [
                     choferId,
                     autobus_id
                 ]);
 
-                await client.query("COMMIT");
-
-                return res.status(201).json({
-                    mensaje:
-                        "Asignación creada correctamente",
-                    jornada_id:
-                        nueva.rows[0].id
-                });
-            }
-
-
-            // =================================================
-            // ACTUALIZAR JORNADA
-            // =================================================
-
-            const actualizada = await client.query(`
-                UPDATE jornadas_activas
-                SET
-                    autobus_id = $1
-                WHERE id = $2
-                RETURNING
-                    id,
-                    chofer_id,
-                    autobus_id,
-                    fecha_inicio,
-                    activa
-            `, [
-                autobus_id,
-                jornada.rows[0].id
-            ]);
-
-
-            await client.query("COMMIT");
-
+            await cliente.query("COMMIT");
 
             return res.status(200).json({
                 mensaje:
                     "Asignación actualizada correctamente",
-                asignacion:
-                    actualizada.rows[0]
+
+                asignacion: {
+                    ...nuevaJornada.rows[0],
+                    ruta_id:
+                        ruta.rows[0].id,
+                    ruta_nombre:
+                        ruta.rows[0].nombre,
+                    ruta_color:
+                        ruta.rows[0].color,
+                    numero_bus:
+                        autobusData.numero_bus,
+                    numero_unico:
+                        chofer.rows[0].numero_unico,
+                    nombre_completo:
+                        chofer.rows[0].nombre_completo
+                }
             });
 
         } catch (error) {
 
-            await client.query("ROLLBACK");
+            await cliente.query("ROLLBACK");
 
             console.error(
                 "Error actualizando asignación:",
@@ -775,23 +678,20 @@ router.put(
 
         } finally {
 
-            client.release();
+            cliente.release();
+
         }
     }
 );
 
 
 // =====================================================
-// DELETE - LIBERAR CHOFER
-// =====================================================
-// DELETE /admin/asignaciones/:choferId
-//
-// No elimina al chofer.
-// Solamente termina su jornada activa.
+// DELETE
+// QUITAR ASIGNACIÓN DEL CHOFER
 // =====================================================
 
 router.delete(
-    "/admin/asignaciones/:choferId",
+    "/admin/asignaciones/chofer/:choferId",
     verificarAdmin,
     async (req, res, next) => {
 
@@ -801,33 +701,32 @@ router.delete(
 
             const { rows } = await pool.query(`
                 UPDATE jornadas_activas
-                SET
-                    activa = false,
-                    fecha_fin = NOW()
+
+                SET activa = false
+
                 WHERE chofer_id = $1
                 AND activa = true
+
                 RETURNING
                     id,
                     chofer_id,
                     autobus_id,
                     fecha_inicio,
-                    fecha_fin,
                     activa
             `, [choferId]);
-
 
             if (rows.length === 0) {
 
                 return res.status(404).json({
                     error:
-                        "El chofer no tiene una jornada activa"
+                        "El chofer no tiene una asignación activa"
                 });
             }
 
-
             return res.status(200).json({
                 mensaje:
-                    "Asignación liberada correctamente",
+                    "Asignación eliminada correctamente",
+
                 asignacion:
                     rows[0]
             });
@@ -835,7 +734,7 @@ router.delete(
         } catch (error) {
 
             console.error(
-                "Error liberando asignación:",
+                "Error eliminando asignación:",
                 error
             );
 
@@ -843,24 +742,6 @@ router.delete(
         }
     }
 );
-
-
-// =====================================================
-// MANEJO DE ERRORES
-// =====================================================
-
-router.use((error, req, res, next) => {
-
-    console.error(
-        "Error en adminasignaciones.route:",
-        error
-    );
-
-    return res.status(500).json({
-        error:
-            "Error interno del servidor"
-    });
-});
 
 
 module.exports = router;
