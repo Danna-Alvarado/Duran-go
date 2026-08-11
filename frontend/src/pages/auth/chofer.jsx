@@ -5,7 +5,6 @@ import { useState } from "react";
 const AUTH_URL = import.meta.env.VITE_AUTH_URL;
 
 function Choferes() {
-
     const navigate = useNavigate();
 
     const [numeroUnico, setNumeroUnico] = useState("");
@@ -13,14 +12,12 @@ function Choferes() {
     const [mensaje, setMensaje] = useState("");
 
     const iniciarSesion = async () => {
-
         if (!numeroUnico || !contrasena) {
             setMensaje("Complete todos los campos");
             return;
         }
 
         try {
-
             const respuesta = await fetch(
                 `${AUTH_URL}/auth/chofer/login`,
                 {
@@ -37,47 +34,41 @@ function Choferes() {
 
             const data = await respuesta.json();
 
-            if (respuesta.ok) {
-
-                // Guardar token del administrador
-                localStorage.setItem(
-                    "tokenAdmin",
-                    data.token
-                );
-
-                // Guardar información del administrador
-                localStorage.setItem(
-                    "admin",
-                    JSON.stringify(data.usuario)
-                );
-
-                // Ir al panel administrativo
-                navigate("/adminchofer");
-
-            } else {
-
+            if (!respuesta.ok) {
                 setMensaje(
                     data.error || "No se pudo iniciar sesión"
                 );
-
+                return;
             }
 
-        } catch (error) {
+            // Guardar token EXCLUSIVO del administrador
+            localStorage.setItem(
+                "adminToken",
+                data.token
+            );
 
-            console.error(error);
+            // Guardar información del administrador
+            localStorage.setItem(
+                "admin",
+                JSON.stringify(data.usuario)
+            );
+
+            setMensaje("");
+
+            // Ir al panel administrativo
+            navigate("/adminchofer");
+
+        } catch (error) {
+            console.error("Error iniciando sesión:", error);
 
             setMensaje(
                 "Error al conectar con el servidor"
             );
-
         }
-
     };
 
     return (
-
         <div className="chofer-container">
-
             <div className="chofer-card">
 
                 <h1>Acceso administrativo</h1>
@@ -113,6 +104,7 @@ function Choferes() {
                 />
 
                 <button
+                    type="button"
                     className="chofer-btn"
                     onClick={iniciarSesion}
                 >
@@ -120,6 +112,7 @@ function Choferes() {
                 </button>
 
                 <button
+                    type="button"
                     className="volver-btn"
                     onClick={() => navigate("/")}
                 >
@@ -127,10 +120,9 @@ function Choferes() {
                 </button>
 
             </div>
-
         </div>
-
     );
 }
 
 export default Choferes;
+

@@ -10,6 +10,7 @@ import GuiaViaje from "./pages/rutas/guia_viaje";
 
 import AdminChofer from "./pages/ubicacion/adminchofer";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminProtectedRoute from "./components/adminProtectedRoute";
 
 function App() {
   return (
@@ -68,7 +69,9 @@ function App() {
           path="/adminchofer"
           element={
            
+              <AdminProtectedRoute>
               <AdminChofer />
+            </AdminProtectedRoute>
            
           }
         />
