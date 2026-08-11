@@ -1,521 +1,577 @@
 
-.guia-container {
-    min-height: 100vh;
 
-    background: #f7f5f7;
-
-    padding-bottom: 100px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-.guia-contenido {
-    width: 90%;
+
+
+.guia-page {
+    min-height: 100vh;
+    background: #f7f6f8;
+}
+
+
+
+.guia-container {
+    min-height: calc(100vh - 75px);
+    padding: 45px 20px 100px;
+}
+
+
+.contenido-guia {
+    width: 100%;
     max-width: 850px;
-    margin: 0 auto;
-    padding: 100px 0 40px;
+    margin: auto;
 }
 
 
 .guia-header {
-    margin-bottom: 25px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+
+.guia-mini-titulo {
+    display: inline-block;
+    color: #75176e;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
 }
 
 
 .guia-header h1 {
+    color: #272027;
+    font-size: 38px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    margin-top: 40px;
+}
 
-    margin: 50px;
-    color: #75176E;
-    font-size: 40px;
+
+.guia-descripcion {
+    max-width: 600px;
+    margin: auto;
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+
+.cantidad-camiones {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 22px;
+    padding: 11px 20px;
+    background: white;
+    border: 1px solid #e8e2e8;
+    border-radius: 30px;
+    box-shadow: 0 5px 18px rgba(70, 35, 70, 0.07);
+    color: #75176e;
+
+}
+
+
+.cantidad-camiones svg {
+    font-size: 17px;
+}
+
+
+.cantidad-camiones strong {
+    font-size: 20px;
+}
+
+
+.cantidad-camiones span {
+    color: #555;
+    font-size: 14px;
+}
+
+.conexion {
+
+    position: relative;
+
+    height: 85px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+.conexion-linea {
+
+    position: absolute;
+
+    top: 0;
+    bottom: 0;
+
+    width: 2px;
+
+    background: #d8c8d7;
+
+}
+
+
+.conexion-icono {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #f7f6f8;
+
+    border: 2px solid #d8c8d7;
+
+    color: #75176e;
+
+}
+
+
+.conexion span {
+
+    position: absolute;
+
+    left: calc(50% + 30px);
+
+    color: #888;
+
+    font-size: 12px;
+
     font-weight: 700;
 
 }
 
 
-.guia-header p {
-    margin-top: 8px;
-    color: #666;
-    font-size: 16px;
-}
+/* =========================================
+   TARJETA RUTA
+========================================= */
 
+.tarjeta-ruta {
 
-.aviso-transbordo {
-    display: flex;
-
-    align-items: flex-start;
-
-    gap: 15px;
-
-    background: #f3e4f1;
-
-    border-left: 5px solid #75176E;
-
-    padding: 18px;
-
-    margin-bottom: 25px;
-
-    border-radius: 10px;
-}
-
-
-.aviso-transbordo > svg {
-    color: #75176E;
-
-    font-size: 24px;
-
-    margin-top: 3px;
-}
-
-
-.aviso-transbordo strong {
-    display: block;
-    color: #75176E;
-    font-size: 17px;
-}
-
-
-.aviso-transbordo p {
-    margin: 5px 0 0;
-    color: #555;
-    line-height: 1.5;
-}
-
-.lista-rutas {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
-.ruta-guia {
     background: white;
-    border-radius: 18px;
-    padding: 25px;
+
+    border: 1px solid #e8e1e8;
+
+    border-radius: 22px;
+
+    overflow: hidden;
+
     box-shadow:
-        0 4px 15px rgba(0, 0, 0, 0.08);
-    border: 1px solid #eee;
+        0 12px 35px rgba(70, 35, 70, 0.08);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
 }
 
+
+.tarjeta-ruta:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 16px 40px rgba(70, 35, 70, 0.12);
+
+}
+
+
+/* =========================================
+   HEADER RUTA
+========================================= */
 
 .ruta-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 18px;
-}
 
-.ruta-header h2 {
-    margin: 5px 0 0;
-    font-size: 25px;
-    color: #222;
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 24px 25px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #75176e,
+            #8d287f
+        );
+
+    color: white;
+
 }
 
 
 .numero-ruta {
-    display: inline-block;
-    color: #75176E;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+
+    display: block;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.5px;
+
+    opacity: 0.8;
+
+    margin-bottom: 5px;
+
 }
 
 
-.btn-guardar {
-    width: 45px;
-    height: 45px;
-    border: none;
-    border-radius: 50%;
-    background: #f5e6f3;
-    color: #75176E;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    cursor: pointer;
-    transition:
-        transform 0.2s ease,
-        background 0.2s ease;
-}
+.ruta-header h2 {
 
+    font-size: 23px;
 
-.btn-guardar:hover {
-    background: #ead1e7;
-    transform: scale(1.08);
-}
+    font-weight: 800;
 
-
-.btn-guardar:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-
-.ruta-color {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    margin-bottom: 25px;
-    color: #000000;
-    font-size: 14px;
-}
-.color-r{
-    display: flex;
-    margin-top: 8px;
-    color: #000000;
-    font-size: 17px;
 }
 
 
 .color-ruta {
-    width: 14px;
-    height: 14px;
-    display: inline-block;
-    border-radius: 50%;
+
+    padding: 7px 13px;
+
+    border-radius: 20px;
+
+    background: white !important;
+
+    color: #75176e;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================
+   PASOS
+========================================= */
+
+.paso-ruta {
+
+    padding: 25px;
+
 }
 
 
 .paso {
+
     display: flex;
+
     align-items: center;
+
     gap: 15px;
-    margin: 20px 0;
+
 }
 
 
 .paso-icono {
-    width: 42px;
-    height: 42px;
+
     flex-shrink: 0;
-    border-radius: 50%;
+
+    width: 43px;
+    height: 43px;
+
     display: flex;
+
     align-items: center;
     justify-content: center;
-    background: #f3e4f1;
-    color: #75176E;
-    font-size: 18px;
+
+    border-radius: 50%;
+
 }
 
 
-.paso-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+.paso-icono.caminar {
+
+    background: #f1e9f0;
+
+    color: #75176e;
+
 }
 
 
-.paso-info small {
-    color: #75176E;
-    font-size: 11px;
-    font-weight: 700;
+.paso-icono.bus {
+
+    background: #e9f1eb;
+
+    color: #2d7540;
+
 }
 
 
-.paso-info strong {
-    color: #222;
-    font-size: 16px;
+.paso-icono.bajar {
+
+    background: #f7eaea;
+
+    color: #a13d3d;
+
 }
 
 
 .paso-info span {
-    color: #777;
-    font-size: 14px;
+
+    display: block;
+
+    color: #888;
+
+    font-size: 12px;
+
+    margin-bottom: 4px;
+
 }
 
-.parada {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin: 18px 0;
-    padding-left: 5px;
+
+.paso-info strong {
+
+    display: block;
+
+    color: #282328;
+
+    font-size: 16px;
+
+    line-height: 1.35;
+
 }
 
 
-.parada-icono {
-    width: 42px;
-    height: 42px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: #75176E;
-    color: white;
+/* =========================================
+   LÍNEA ENTRE PASOS
+========================================= */
+
+.linea-paso {
+
+    width: 2px;
+
+    height: 25px;
+
+    margin-left: 20px;
+
+    background: #ddd3dc;
+
+}
+
+
+
+/* =========================================
+   BOTÓN
+========================================= */
+
+.btn-nueva-ruta {
+
     display: flex;
+
     align-items: center;
     justify-content: center;
-    font-size: 17px;
-}
 
-
-.parada-info {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 4px;
-}
-
-
-.parada-info small {
-    color: #75176E;
-
-    font-size: 11px;
-
-    font-weight: 700;
-}
-
-
-.parada-info strong {
-    color: #222;
-
-    font-size: 16px;
-}
-
-
-/* =====================================================
-   CAMIÓN
-===================================================== */
-
-.paso-camion {
-    display: flex;
-
-    align-items: center;
-
-    gap: 15px;
-
-    margin: 20px 0;
-
-    padding: 15px 18px;
-
-    background: #75176E;
-
-    color: white;
-
-    border-radius: 12px;
-}
-
-
-.paso-camion > svg {
-    font-size: 25px;
-}
-
-
-.paso-camion div {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 3px;
-}
-
-
-.paso-camion small {
-    font-size: 10px;
-
-    opacity: 0.85;
-
-    font-weight: 700;
-}
-
-
-.paso-camion strong {
-    font-size: 17px;
-}
-
-
-/* =====================================================
-   TRANSBORDO
-===================================================== */
-
-.transbordo {
-    display: flex;
-
-    gap: 15px;
-
-    margin: 25px 0;
-
-    padding: 18px;
-
-    background: #fff7e6;
-
-    border-left: 5px solid #e0a100;
-
-    border-radius: 10px;
-}
-
-
-.transbordo > svg {
-    color: #d08f00;
-
-    font-size: 22px;
-
-    margin-top: 2px;
-}
-
-
-.transbordo strong {
-    color: #8b6200;
-
-    font-size: 16px;
-}
-
-
-.transbordo p {
-    margin: 5px 0 0;
-
-    color: #666;
-
-    font-size: 14px;
-
-    line-height: 1.5;
-}
-
-
-/* =====================================================
-   MENSAJE ÉXITO
-===================================================== */
-
-.mensaje-exito {
-    margin-top: 20px;
-
-    padding: 14px 18px;
-
-    background: #e8f7ed;
-
-    border: 1px solid #b7e2c3;
-
-    color: #287a3d;
-
-    border-radius: 10px;
-
-    font-weight: 600;
-
-    text-align: center;
-}
-
-
-/* =====================================================
-   SIN RUTAS
-===================================================== */
-
-.sin-rutas {
-    background: white;
-
-    border-radius: 18px;
-
-    padding: 50px 30px;
-
-    text-align: center;
-
-    box-shadow:
-        0 4px 15px rgba(0, 0, 0, 0.08);
-}
-
-
-.sin-rutas > svg {
-    font-size: 45px;
-
-    color: #75176E;
-
-    margin-bottom: 15px;
-}
-
-
-.sin-rutas h1 {
-    color: #222;
-
-    margin: 0 0 10px;
-}
-
-
-.sin-rutas p {
-    color: #666;
-
-    margin-bottom: 25px;
-}
-
-
-/* =====================================================
-   BOTÓN REGRESAR
-===================================================== */
-
-.btn-regresar {
-    display: block;
+    gap: 10px;
 
     width: 100%;
 
-    max-width: 300px;
+    max-width: 400px;
 
-    margin: 30px auto 0;
+    margin: 35px auto 0;
 
-    padding: 14px 20px;
+    padding: 15px 22px;
 
     border: none;
 
-    border-radius: 10px;
+    border-radius: 14px;
 
-    background: #75176E;
+    background: white;
 
-    color: white;
+    color: #75176e;
 
-    font-size: 16px;
+    border: 2px solid #75176e;
 
-    font-weight: 600;
+    font-size: 15px;
+
+    font-weight: 800;
 
     cursor: pointer;
 
     transition:
         background 0.2s ease,
+        color 0.2s ease,
         transform 0.2s ease;
+
 }
 
 
-.btn-regresar:hover {
-    background: #5f1259;
+.btn-nueva-ruta:hover {
+
+    background: #75176e;
+
+    color: white;
 
     transform: translateY(-2px);
+
 }
 
 
-/* =====================================================
+/* =========================================
+   SIN RUTA
+========================================= */
+
+.guia-vacia {
+
+    max-width: 500px;
+
+    margin: 80px auto;
+
+    padding: 40px 30px;
+
+    text-align: center;
+
+    background: white;
+
+    border-radius: 22px;
+
+    box-shadow:
+        0 12px 35px rgba(70, 35, 70, 0.08);
+
+}
+
+
+.guia-vacia-icon {
+
+    width: 65px;
+    height: 65px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 20px;
+
+    border-radius: 50%;
+
+    background: #f1e5f0;
+
+    color: #75176e;
+
+    font-size: 25px;
+
+}
+
+
+.guia-vacia h2 {
+
+    color: #292329;
+
+    margin-bottom: 10px;
+
+}
+
+
+.guia-vacia p {
+
+    color: #777;
+
+    line-height: 1.5;
+
+}
+
+
+/* =========================================
    RESPONSIVE
-===================================================== */
+========================================= */
 
 @media (max-width: 600px) {
 
-    .guia-contenido {
-        width: 92%;
+    .guia-container {
 
-        padding: 40px 0 25px;
+        padding:
+            30px 14px 80px;
+
     }
 
 
     .guia-header h1 {
-        font-size: 27px;
+
+        font-size: 30px;
+
     }
 
 
-    .guia-header p {
-        font-size: 15px;
+    .guia-descripcion {
+
+        font-size: 14px;
+
     }
 
 
-    .ruta-guia {
+    .ruta-header {
+
         padding: 20px;
+
     }
 
 
     .ruta-header h2 {
-        font-size: 22px;
+
+        font-size: 19px;
+
     }
 
 
-    .paso-camion {
-        padding: 13px;
+    .color-ruta {
+
+        padding:
+            6px 10px;
+
+        font-size: 11px;
+
     }
 
 
-    .parada {
-        gap: 12px;
+    .paso-ruta {
+
+        padding: 20px;
+
     }
 
 
-    .parada-info strong {
+    .paso-info strong {
+
         font-size: 15px;
+
+    }
+
+
+
+    .conexion span {
+
+        display: none;
+
     }
 
 }
