@@ -1,6 +1,7 @@
 import "./login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import logo from "../../assets/logo.png";
 const AUTH_URL = import.meta.env.VITE_AUTH_URL;
 
@@ -8,126 +9,132 @@ console.log("AUTH:", AUTH_URL);
 
 function Login() {
 
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [mostrarPassword, setMostrarPassword] = useState(false);
 
-  const [error, setError] = useState("");
-  
-
-
-  const login = async () => {
-
-    setError("");
-
-    if (!email || !password) {
-      setError("Completa todos los campos.");
-      return;
-    }
+const [error, setError] = useState("");
 
 
-    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!correoValido.test(email)) {
-      setError("Ingresa un correo electrónico válido.");
-      return;
-    }
+const login = async () => {
+
+  setError("");
+
+  if (!email || !password) {
+    setError("Completa todos los campos.");
+    return;
+  }
 
 
-    try {
+  const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      const respuesta = await fetch(
-        `${AUTH_URL}/auth/login`,
-        {
-          method: "POST",
+  if (!correoValido.test(email)) {
+    setError("Ingresa un correo electrónico válido.");
+    return;
+  }
 
-          headers: {
-            "Content-Type": "application/json",
-          },
 
-          body: JSON.stringify({
-            correo: email,
-            contrasena: password,
-          }),
-        }
-      );
+  try {
 
-      const texto = await respuesta.text();
+    const respuesta = await fetch(
+      `${AUTH_URL}/auth/login`,
+      {
+        method: "POST",
 
-console.log(texto);
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-const data = JSON.parse(texto);
-
-      if (!respuesta.ok) {
-        setError(data.error);
-        return;
+        body: JSON.stringify({
+          correo: email,
+          contrasena: password,
+        }),
       }
+    );
 
-      // Guardar sesión
-      localStorage.setItem(
-        "token",
-        data.token
-      );
+    const texto = await respuesta.text();
 
+    console.log(texto);
 
-      localStorage.setItem(
-        "usuario",
-        JSON.stringify(data.usuario)
-      );
+    const data = JSON.parse(texto);
 
 
-      navigate("/home");
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      setError(
-        "No se pudo conectar con el servidor."
-      );
-
+    if (!respuesta.ok) {
+      setError(data.error);
+      return;
     }
 
-  };
+    localStorage.setItem(
+      "token",
+      data.token
+    );
 
 
-  return (
-
-    <div className="container">
-
-
-      <div className="left-side"></div>
+    localStorage.setItem(
+      "usuario",
+      JSON.stringify(data.usuario)
+    );
 
 
+    navigate("/home");
 
-      <div className="right-side">
+
+  } catch (error) {
+
+    console.error(error);
+
+    setError(
+      "No se pudo conectar con el servidor."
+    );
+
+  }
+
+};
+
+return (
+
+  <div className="container">
 
 
-        <img
-          src={logo}
-          alt="logo"
-          className="logo"
-        />
+    <div className="left-side"></div>
 
+
+
+    <div className="right-side">
+
+
+      <img
+        src={logo}
+        alt="logo"
+        className="logo"
+      />
+
+
+      <input
+        type="email"
+        placeholder="Correo electrónico"
+        className="input"
+
+        value={email}
+
+        onChange={(e) =>
+          setEmail(e.target.value)
+        }
+
+        autoComplete="username"
+      />
+
+      <div className="password-container">
 
         <input
-          type="email"
-          placeholder="Correo electrónico"
-          className="input"
-
-          value={email}
-
-          onChange={(e) =>
-            setEmail(e.target.value)
+          type={
+            mostrarPassword
+              ? "text"
+              : "password"
           }
-
-          autoComplete="username"
-        />
-
-        <input
-          type="password"
           placeholder="Contraseña"
           className="input"
           value={password}
@@ -138,48 +145,61 @@ const data = JSON.parse(texto);
           autoComplete="current-password"
         />
 
-        {
-          error && (
-            <p className="mensaje-error">
-              {error}
-            </p>
-          )
-        }
-
         <button
-          className="btn-login"
-          onClick={login}
-        >
-          Entrar
-        </button>
-
-        <Link
-          to="/register"
-          className="crear-cuenta"
-        >
-          Crear cuenta
-        </Link>
-
-        <button
-          className="btn-chofer"
-
+          type="button"
+          className="password-toggle"
           onClick={() =>
-            navigate("/chofer")
+            setMostrarPassword(!mostrarPassword)
           }
         >
-          Chofer
+          {mostrarPassword
+            ? <FaEyeSlash />
+            : <FaEye />
+          }
         </button>
-
-
 
       </div>
 
+    {
+      error && (
+        <p className="mensaje-error">
+          {error}
+        </p>
+      )
+    }
 
-    </div>
+    <button
+      className="btn-login"
+      onClick={login}
+    >
+      Entrar
+    </button>
 
-  );
+    <Link
+      to="/register"
+      className="crear-cuenta"
+    >
+      Crear cuenta
+    </Link>
+
+    <button
+      className="btn-chofer"
+
+      onClick={() =>
+        navigate("/chofer")
+      }
+    >
+      Administrador
+    </button>
+
+
+
+  </div>
+
+
+</div>
+);
 
 }
-
 
 export default Login;
