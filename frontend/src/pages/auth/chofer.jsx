@@ -52,7 +52,7 @@ function Choferes() {
                 );
 
                 // Ir al panel administrativo
-                navigate("/home");
+                navigate("/adminchofer");
 
             } else {
 
