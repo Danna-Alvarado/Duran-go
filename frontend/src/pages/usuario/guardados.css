@@ -1,7 +1,3 @@
-/* =====================================================
-   RESET
-===================================================== */
-
 * {
     margin: 0;
     padding: 0;
@@ -9,524 +5,429 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-
-/* =====================================================
-   PÁGINA
-===================================================== */
-
 .guardados-page {
     min-height: 100vh;
     background: #f7f6f8;
 }
 
-
-/* =====================================================
-   CONTENEDOR PRINCIPAL
-===================================================== */
-
 .guardados {
-    min-height: calc(100vh - 110px);
-
-    padding: 45px 20px 110px;
+    min-height: calc(100vh - 75px);
+    padding: 45px 20px 100px;
 }
 
+/* =========================================
+   ENCABEZADO
+========================================= */
 
-/* =====================================================
-   TÍTULO
-===================================================== */
-
-.titulo {
+.guardados-header {
+    max-width: 650px;
+    margin: 0 auto 38px;
     text-align: center;
-
-    max-width: 700px;
-
-    margin: 0 auto 40px;
 }
 
-
-.titulo-icono {
+.guardados-icono {
     width: 60px;
     height: 60px;
-
-    margin: 0 auto 15px;
-
-    border-radius: 50%;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
-    background: #f3dff1;
-
-    color: #75176E;
-
-    font-size: 25px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    background: #f1e5f0;
+    color: #75176e;
+    font-size: 24px;
 }
 
-
-.titulo h1 {
-    color: #75176E;
-
-    font-size: 38px;
-
-    font-weight: 700;
-}
-
-
-.titulo p {
-    margin-top: 10px;
-
+.guardados-header p {
     color: #777;
-
-    font-size: 17px;
-
+    font-size: 16px;
     line-height: 1.5;
 }
 
+/* =========================================
+   LISTA
+========================================= */
 
-/* =====================================================
-   CONTENEDOR
-===================================================== */
-
-.contenedor {
+.lista-guardados {
     width: 100%;
-
     max-width: 850px;
-
-    margin: 0 auto;
-
+    margin: auto;
     display: flex;
-
     flex-direction: column;
-
-    gap: 22px;
+    gap: 20px;
 }
 
-
-/* =====================================================
+/* =========================================
    TARJETA
-===================================================== */
+========================================= */
 
-.ruta-card {
-    display: flex;
-
-    gap: 22px;
-
+.guardado-card {
     background: white;
-
-    border-radius: 24px;
-
-    padding: 25px;
-
-    border: 1px solid #eee;
-
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.07);
-
+    border: 1px solid #e8e1e8;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(70, 35, 70, 0.07);
     transition:
         transform 0.2s ease,
         box-shadow 0.2s ease;
 }
 
-
-.ruta-card:hover {
-    transform: translateY(-3px);
-
-    box-shadow:
-        0 12px 30px rgba(117, 23, 110, 0.13);
+.guardado-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(70, 35, 70, 0.11);
 }
 
+.guardado-contenido {
+    width: 100%;
+    padding: 22px 24px 20px;
+}
 
-/* =====================================================
-   ICONO DE BUS
-===================================================== */
+/* =========================================
+   PARTE SUPERIOR
+========================================= */
 
-.icono-ruta {
-    width: 68px;
-    height: 68px;
+.guardado-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 13px;
+}
 
-    flex-shrink: 0;
-
-    border-radius: 18px;
-
-    background: #f3dff1;
-
-    color: #75176E;
-
+.guardado-icono-bus {
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    font-size: 31px;
+    border-radius: 13px;
+    background: #f1e5f0;
+    color: #75176e;
+    font-size: 19px;
 }
 
-
-/* =====================================================
-   CONTENIDO
-===================================================== */
-
-.ruta-contenido {
-    flex: 1;
-
-    min-width: 0;
-}
-
-
-/* =====================================================
-   CABECERA
-===================================================== */
-
-.ruta-cabecera {
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: flex-start;
-
-    gap: 15px;
-}
-
-
-.favorita {
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    color: #75176E;
-
-    font-size: 11px;
-
-    font-weight: bold;
-
-    letter-spacing: 1px;
-}
-
-
-.ruta-cabecera h2 {
-    margin-top: 6px;
-
-    color: #222;
-
-    font-size: 25px;
-
-    line-height: 1.2;
-}
-
-
-/* =====================================================
+/* =========================================
    ELIMINAR
-===================================================== */
+========================================= */
 
 .btn-eliminar {
-    width: 42px;
-    height: 42px;
-
-    flex-shrink: 0;
-
-    border: none;
-
-    background: #f8f1f7;
-
-    color: #75176E;
-
-    border-radius: 12px;
-
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-
+    border: none;
+    border-radius: 11px;
+    background: #faf5f9;
+    color: #8b7088;
+    font-size: 14px;
     cursor: pointer;
-
-    font-size: 16px;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease;
+    transition: all 0.2s ease;
 }
 
-
 .btn-eliminar:hover {
-    background: #75176E;
-
+    background: #75176e;
     color: white;
-
     transform: scale(1.05);
 }
 
+/* =========================================
+   ETIQUETA
+========================================= */
 
-/* =====================================================
-   NOMBRE DE RUTA
-===================================================== */
-
-.nombre-ruta {
+.guardado-label {
     display: flex;
-
     align-items: center;
+    gap: 6px;
+    color: #75176e;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
 
-    gap: 13px;
+.guardado-label svg {
+    font-size: 10px;
+}
 
-    margin-top: 25px;
+/* =========================================
+   NOMBRE PERSONALIZADO
+========================================= */
 
-    padding: 14px;
+.guardado-contenido h2 {
+    margin-top: 6px;
+    color: #292329;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.25;
+}
 
+/* =========================================
+   RUTA REAL
+========================================= */
+
+.ruta-real {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+    padding: 13px 14px;
     background: #faf8fa;
-
+    border: 1px solid #eee8ee;
     border-radius: 13px;
 }
 
-
-.nombre-ruta-icono {
-    width: 38px;
-    height: 38px;
-
-    border-radius: 10px;
-
-    background: #f3dff1;
-
-    color: #75176E;
-
+.ruta-real-icono {
+    width: 37px;
+    height: 37px;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-
-.nombre-ruta-texto {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 3px;
-}
-
-
-.nombre-ruta-texto span {
-    color: #888;
-
-    font-size: 10px;
-
-    font-weight: 700;
-
-    letter-spacing: 0.8px;
-}
-
-
-.nombre-ruta-texto strong {
-    color: #222;
-
-    font-size: 16px;
-}
-
-
-/* =====================================================
-   COLOR
-===================================================== */
-
-.color-ruta-info {
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    margin-top: 14px;
-
-    padding: 4px 5px;
-}
-
-
-.punto-ruta {
-    width: 13px;
-    height: 13px;
-
     flex-shrink: 0;
-
-    border-radius: 50%;
+    border-radius: 10px;
+    background: #f1e5f0;
+    color: #75176e;
+    font-size: 15px;
 }
 
+.ruta-real span {
+    display: block;
+    color: #999;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
 
-.color-ruta-info div {
+.ruta-real strong {
+    display: block;
+    margin-top: 3px;
+    color: #302b30;
+    font-size: 15px;
+}
+
+/* =========================================
+   COLOR
+========================================= */
+
+.guardado-footer {
     display: flex;
-
-    flex-direction: column;
-
-    gap: 2px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 17px;
 }
 
-
-.color-ruta-info span {
-    color: #888;
-
-    font-size: 10px;
-
-    font-weight: 700;
-
-    letter-spacing: 0.8px;
+.color-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-
-.color-ruta-info strong {
-    color: #444;
-
+.color-icono {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #f1e5f0;
+    color: #75176e;
     font-size: 14px;
 }
 
-
-.btn-ver-ruta {
-    width: 100%;
-    margin-top: 20px;
-    padding: 14px 18px;
-    border: none;
-    border-radius: 12px;
-    background: #75176E;
-    color: white;
-    font-size: 15px;
-    font-weight: bold;
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 10px;
-
-    cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease;
+.color-info span {
+    display: block;
+    color: #999;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
 }
 
+.color-info strong {
+    display: block;
+    margin-top: 2px;
+    color: #555;
+    font-size: 13px;
+    font-weight: 700;
+}
 
-.btn-ver-ruta:hover {
-    background: #641261;
+/* =========================================
+   VER RUTA
+========================================= */
 
+.btn-ver {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 11px 17px;
+    border: none;
+    border-radius: 11px;
+    background: #75176e;
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-ver:hover {
+    background: #5f1259;
     transform: translateY(-1px);
 }
 
-
-.btn-ver-ruta svg {
-    font-size: 13px;
+.btn-ver svg {
+    font-size: 11px;
 }
 
+/* =========================================
+   CARGANDO
+========================================= */
 
-
-
-.sinGuardados {
-    max-width: 550px;
-
-    margin: 70px auto;
-    background: white;
-    border-radius: 25px;
-    padding: 50px 30px;
+.guardados-cargando {
+    max-width: 500px;
+    margin: 80px auto;
+    padding: 40px 30px;
     text-align: center;
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.07);
+    background: white;
+    border-radius: 22px;
+    box-shadow: 0 12px 35px rgba(70, 35, 70, 0.08);
 }
 
-
-.icono-sin {
-    width: 80px;
-    height: 80px;
-    margin: auto;
-    border-radius: 50%;
-    background: #f3dff1;
-    color: #75176E;
+.guardados-cargando-icono {
+    width: 65px;
+    height: 65px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: #f1e5f0;
+    color: #75176e;
+    font-size: 25px;
 }
 
-
-.sinGuardados h2 {
-    margin-top: 20px;
-    color: #75176E;
-    font-size: 24px;
+.guardados-cargando h2 {
+    color: #292329;
+    font-size: 22px;
 }
 
-
-.sinGuardados p {
-    margin-top: 10px;
+.guardados-cargando p {
+    margin-top: 8px;
     color: #777;
+}
+
+/* =========================================
+   SIN GUARDADOS
+========================================= */
+
+.sin-guardados {
+    max-width: 520px;
+    margin: 65px auto;
+    padding: 45px 30px;
+    text-align: center;
+    background: white;
+    border-radius: 22px;
+    box-shadow: 0 12px 35px rgba(70, 35, 70, 0.08);
+}
+
+.sin-guardados-icono {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: #f1e5f0;
+    color: #75176e;
+    font-size: 27px;
+}
+
+.sin-guardados h2 {
+    color: #292329;
+    font-size: 23px;
+}
+
+.sin-guardados p {
+    max-width: 390px;
+    margin: 10px auto 0;
+    color: #777;
+    font-size: 15px;
     line-height: 1.6;
 }
 
+.btn-buscar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    max-width: 260px;
+    margin: 25px auto 0;
+    padding: 14px 18px;
+    border: 2px solid #75176e;
+    border-radius: 12px;
+    background: white;
+    color: #75176e;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
 
+.btn-buscar:hover {
+    background: #75176e;
+    color: white;
+    transform: translateY(-1px);
+}
 
+/* =========================================
+   RESPONSIVE
+========================================= */
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
 
     .guardados {
-        padding: 30px 15px 110px;
+        padding: 30px 14px 80px;
     }
 
-
-    .titulo {
+    .guardados-header {
         margin-bottom: 30px;
     }
 
-
-    .titulo h1 {
-        font-size: 30px;
+    .guardados-header p {
+        font-size: 14px;
     }
 
-
-    .titulo p {
-        font-size: 15px;
-    }
-
-
-    .ruta-card {
+    .guardado-contenido {
         padding: 20px;
-
-        gap: 15px;
     }
 
-
-    .icono-ruta {
-        width: 55px;
-        height: 55px;
-
-        font-size: 25px;
-    }
-
-
-    .ruta-cabecera h2 {
+    .guardado-contenido h2 {
         font-size: 21px;
     }
 
-
-    .nombre-ruta {
-        margin-top: 20px;
-    }
-
-}
-
-
-@media (max-width: 480px) {
-
-    .ruta-card {
+    .guardado-footer {
+        align-items: stretch;
         flex-direction: column;
     }
 
+    .btn-ver {
+        width: 100%;
+    }
+}
 
-    .icono-ruta {
-        width: 58px;
-        height: 58px;
+@media (max-width: 400px) {
+
+    .guardado-contenido {
+        padding: 17px;
     }
 
-
-    .ruta-cabecera h2 {
-        font-size: 20px;
+    .guardado-icono-bus {
+        width: 42px;
+        height: 42px;
     }
 
-
-    .titulo h1 {
-        font-size: 27px;
+    .ruta-real {
+        padding: 11px;
     }
-
 }

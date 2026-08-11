@@ -1,242 +1,525 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
 
-body{
-    background:linear-gradient(to bottom,#f8f6fb,#f2edf7);
-    font-family:'Poppins',sans-serif;
-}
-
-/* CONTENEDOR */
-
-.horarios-container{
-    width:100%;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:100px 20px 50px;
-}
-
-/* TITULO */
-
-h1{
-    color:#75176E;
-    font-size:42px;
-    margin-bottom:10px;
-    font-weight:700;
-}
-
-.descripcion{
-    color:#666;
-    font-size:18px;
-    margin-bottom:35px;
-    text-align:center;
-}
-
-/* AGRUPA LOS DOS SELECT */
-
-.filtros{
-    width:700px;
-    max-width:95%;
-    background:white;
-    border-radius:25px;
-    padding:25px;
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-    box-shadow:0 15px 35px rgba(0,0,0,.08);
-    animation:fade .5s ease;
-}
-
-/* SELECT */
-
-.select-container{
-    width:95%;
-    height:65px;
-    background:#ffffffcd;
-    border:2px solid transparent;
-    border-radius:18px;
-    display:flex;
-    align-items:center;
-    padding:0 20px;
-    transition:.3s;
-    margin: 10px;
-}
-
-.select-container:hover{
-    border-color:#75176E;
-    transform:translateY(-2px);
-}
-
-.select-container:focus-within{
-    border-color:#75176E;
-    box-shadow:4 4 4 4px rgba(117,113,110,112);
-}
-
-.iconBus{
-    font-size:24px;
-    color:#75176E;
-    margin-right:15px;
-}
-
-select{
-    width:100%;
-    border:none;
-    outline:none;
-    background:none;
-    font-size:17px;
-    color:#302e2e;
-    cursor:pointer;
-}
-
-/* CARD */
-
-.card{
-    margin-top:35px;
-    width:90%;
-    max-width:95%;
-    background:white;
-    border-radius:28px;
-    padding:40px;
-    box-shadow:0 18px 40px rgba(0,0,0,.08);
-    animation:fade .6s ease;
-}
-
-.card h2{
-    color:#75176E;
-    text-align:center;
-    font-size:38px;
-    margin-bottom:35px;
-}
-
-/* HORARIOS */
-
-.listaHoras{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-    gap:20px;
-}
-
-.hora{
-    background:#faf7fc;
-    border:2px solid #eddcf7;
-    border-radius:18px;
-    padding:18px;
-    display:flex;
-    align-items:center;
-    gap:15px;
-    cursor:pointer;
-    transition:.3s;
-    box-shadow:0 6px 18px rgba(0,0,0,.05);
-}
-
-.hora:hover{
-    background:#75176E;
-    border-color:#75176E;
-    color:white;
-    transform:translateY(-6px);
-}
-
-.clock{
-    font-size:25px;
-}
-
-.hora span{
-    display:block;
-    font-size:24px;
-    font-weight:700;
-}
-
-.hora small{
-    display:block;
-    margin-top:4px;
-    font-size:13px;
-    opacity:.8;
-}
-
-.sinHorarios{
-    text-align:center;
-    color:#777;
-    font-size:18px;
-    padding:30px 0;
-}
-
-/* INFO */
-
-.infohorarios{
-    margin-top:5%;
-    width:700px;
-    max-width:95%;
-    background:#f4e9fb;
-    border-left:6px solid #75176E;
-    border-radius:18px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:12px 18px;
-    min-height:0;
-    height:auto;
-    color:#5b1e84;
-    font-size:16px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+
+.horarios-container {
+    min-height: calc(100vh - 75px);
+    background: #f7f6f8;
+    padding: 40px 20px 100px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
 
-/* ANIMACION */
+/* =========================================
+   TÍTULO
+========================================= */
 
-@keyframes fade{
+.titulo-horarios {
+    width: 100%;
+    max-width: 700px;
 
-    from{
-        opacity:0;
-        transform:translateY(20px);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    margin-bottom: 25px;
+}
+
+.titulo-horarios > svg {
+    font-size: 32px;
+    color: #75176e;
+}
+
+.titulo-horarios h1 {
+    color: #75176e;
+    font-size: 30px;
+    margin-bottom: 4px;
+}
+
+.titulo-horarios p {
+    color: #777;
+    font-size: 14px;
+}
+
+
+/* =========================================
+   BUSCADOR
+========================================= */
+
+.buscador-rutas {
+    width: 100%;
+    max-width: 700px;
+
+    height: 55px;
+
+    background: white;
+    border: 2px solid #e5e1e6;
+    border-radius: 15px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 18px;
+
+    transition: all 0.25s ease;
+
+    margin-bottom: 8px;
+}
+
+.buscador-rutas:focus-within {
+    border-color: #75176e;
+    box-shadow: 0 0 0 4px rgba(117, 23, 110, 0.08);
+}
+
+.iconSearch {
+    color: #75176e;
+    font-size: 19px;
+    margin-right: 12px;
+}
+
+.buscador-rutas input {
+    width: 100%;
+    height: 100%;
+
+    border: none;
+    outline: none;
+
+    font-size: 16px;
+    color: #333;
+
+    background: transparent;
+}
+
+.buscador-rutas input::placeholder {
+    color: #aaa;
+}
+
+
+/* =========================================
+   RESULTADOS DEL BUSCADOR
+========================================= */
+
+.resultados-rutas {
+    width: 100%;
+    max-width: 700px;
+
+    background: white;
+
+    border: 1px solid #e8e4e9;
+    border-radius: 15px;
+
+    padding: 8px;
+
+    margin-bottom: 18px;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+
+    overflow: hidden;
+
+    animation: aparecerResultados 0.2s ease;
+}
+
+@keyframes aparecerResultados {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
     }
 
-    to{
-        opacity:1;
-        transform:translateY(0);
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-/* RESPONSIVE */
 
-@media(max-width:768px){
+/* =========================================
+   CADA RESULTADO
+========================================= */
 
-    .horarios-container{
-        padding:90px 15px 40px;
+.resultado-ruta {
+    width: 100%;
+
+    border: none;
+    background: transparent;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 13px 14px;
+
+    border-radius: 11px;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition: all 0.2s ease;
+}
+
+.resultado-ruta:hover {
+    background: #f8eef7;
+}
+
+.resultado-ruta:active {
+    transform: scale(0.99);
+}
+
+
+/* Icono del resultado */
+
+.resultado-ruta > svg {
+    min-width: 40px;
+    height: 40px;
+
+    padding: 10px;
+
+    border-radius: 10px;
+
+    background: #f4e6f2;
+    color: #75176e;
+
+    font-size: 20px;
+}
+
+
+/* Información de la ruta */
+
+.resultado-ruta div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.resultado-ruta strong {
+    color: #333;
+
+    font-size: 15px;
+
+    font-weight: 600;
+}
+
+.resultado-ruta span {
+    color: #999;
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   SIN RESULTADOS
+========================================= */
+
+.sin-resultados {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 18px;
+
+    color: #888;
+}
+
+.sin-resultados svg {
+    color: #75176e;
+    font-size: 20px;
+}
+
+.sin-resultados p {
+    font-size: 14px;
+}
+
+
+/* =========================================
+   SELECTS
+========================================= */
+
+.select-container {
+    width: 100%;
+    max-width: 700px;
+
+    height: 55px;
+
+    position: relative;
+
+    background: white;
+
+    border: 2px solid #e5e1e6;
+
+    border-radius: 15px;
+
+    display: flex;
+    align-items: center;
+
+    margin-bottom: 15px;
+
+    transition: all 0.25s ease;
+}
+
+.select-container:focus-within {
+    border-color: #75176e;
+
+    box-shadow:
+        0 0 0 4px rgba(117, 23, 110, 0.08);
+}
+
+.iconBus {
+    color: #75176e;
+
+    font-size: 19px;
+
+    margin-left: 18px;
+    margin-right: 12px;
+
+    flex-shrink: 0;
+}
+
+.select-container select {
+    width: 100%;
+    height: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: #333;
+
+    font-size: 15px;
+
+    cursor: pointer;
+
+    padding-right: 15px;
+}
+
+.select-container select:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   CARD DE HORARIOS
+========================================= */
+
+.card {
+    width: 100%;
+    max-width: 700px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 25px;
+
+    margin-top: 10px;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.06);
+}
+
+.card h2 {
+    color: #333;
+
+    font-size: 20px;
+
+    margin-bottom: 20px;
+}
+
+
+/* =========================================
+   LISTA DE HORAS
+========================================= */
+
+.listaHoras {
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(130px, 1fr)
+    );
+
+    gap: 12px;
+}
+
+.hora {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    padding: 13px;
+
+    background: #f8eef7;
+
+    border-radius: 11px;
+
+    color: #75176e;
+
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+}
+
+.hora:hover {
+    background: #f1dff0;
+
+    transform: translateY(-2px);
+}
+
+.clock {
+    font-size: 16px;
+}
+
+
+/* =========================================
+   SIN HORARIOS
+========================================= */
+
+.sinHorarios {
+    color: #999;
+
+    font-size: 14px;
+
+    text-align: center;
+
+    padding: 20px;
+}
+
+
+/* =========================================
+   INFORMACIÓN
+========================================= */
+
+.infohorarios {
+    width: 100%;
+    max-width: 700px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 18px;
+
+    padding: 14px 16px;
+
+    background: #f1edf2;
+
+    border-radius: 12px;
+
+    color: #777;
+}
+
+.infohorarios svg {
+    color: #75176e;
+
+    font-size: 17px;
+
+    flex-shrink: 0;
+}
+
+.infohorarios p {
+    font-size: 13px;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================
+   RESPONSIVE - CELULAR
+========================================= */
+
+@media (max-width: 600px) {
+
+    .horarios-container {
+        padding: 30px 15px 90px;
     }
 
-    h1{
-        font-size:32px;
+    .titulo-horarios h1 {
+        font-size: 25px;
     }
 
-    .descripcion{
-        font-size:16px;
+    .titulo-horarios > svg {
+        font-size: 27px;
     }
 
-    .card{
-        padding:25px;
+    .buscador-rutas,
+    .select-container {
+        height: 52px;
     }
 
-    .card h2{
-        font-size:30px;
+    .resultado-ruta {
+        padding: 12px;
     }
 
-    .hora{
-        padding:16px;
+    .resultado-ruta > svg {
+        min-width: 37px;
+        height: 37px;
+        padding: 9px;
     }
 
-    .hora span{
-        font-size:20px;
+    .resultado-ruta strong {
+        font-size: 14px;
     }
 
-    .info{
-        padding:18px;
-        font-size:15px;
+    .resultado-ruta span {
+        font-size: 12px;
     }
 
+    .card {
+        padding: 20px 16px;
+    }
+
+    .card h2 {
+        font-size: 18px;
+    }
+
+    .listaHoras {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .infohorarios {
+        align-items: flex-start;
+    }
+}
+
+
+/* =========================================
+   CELULARES MUY PEQUEÑOS
+========================================= */
+
+@media (max-width: 380px) {
+
+    .listaHoras {
+        grid-template-columns: 1fr;
+    }
+
+    .titulo-horarios {
+        gap: 10px;
+    }
+
+    .titulo-horarios h1 {
+        font-size: 23px;
+    }
+
+    .titulo-horarios p {
+        font-size: 13px;
+    }
 }

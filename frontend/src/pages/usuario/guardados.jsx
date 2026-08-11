@@ -11,22 +11,18 @@ import {
 
 import { useNavigate } from "react-router-dom";
 
-
 const USUARIO_URL =
     import.meta.env.VITE_USUARIO_URL;
-
 
 function Guardados() {
 
     const navigate = useNavigate();
 
-    const [guardados, setGuardados] = useState([]);
-    const [cargando, setCargando] = useState(true);
+    const [guardados, setGuardados] =
+        useState([]);
 
-
-    // =====================================================
-    // CARGAR RUTAS GUARDADAS
-    // =====================================================
+    const [cargando, setCargando] =
+        useState(true);
 
     useEffect(() => {
 
@@ -37,21 +33,18 @@ function Guardados() {
                 const token =
                     localStorage.getItem("token");
 
-
                 if (!token) {
 
                     setGuardados([]);
+
                     return;
 
                 }
-
 
                 const respuesta =
                     await fetch(
                         `${USUARIO_URL}/guardados`,
                         {
-                            method: "GET",
-
                             headers: {
                                 Authorization:
                                     `Bearer ${token}`
@@ -59,16 +52,13 @@ function Guardados() {
                         }
                     );
 
-
                 const datos =
                     await respuesta.json();
-
 
                 console.log(
                     "Guardados:",
                     datos
                 );
-
 
                 if (!respuesta.ok) {
 
@@ -80,15 +70,12 @@ function Guardados() {
 
                 }
 
-
                 const lista =
                     Array.isArray(datos)
                         ? datos
                         : datos.guardados || [];
 
-
                 setGuardados(lista);
-
 
             } catch (error) {
 
@@ -99,7 +86,6 @@ function Guardados() {
 
                 setGuardados([]);
 
-
             } finally {
 
                 setCargando(false);
@@ -108,174 +94,130 @@ function Guardados() {
 
         };
 
-
         cargarGuardados();
 
     }, []);
 
+    const eliminarGuardado =
+        async (id) => {
 
-    // =====================================================
-    // ELIMINAR
-    // =====================================================
+            const confirmar =
+                window.confirm(
+                    "¿Quieres eliminar esta ruta de tus guardados?"
+                );
 
-    const eliminarGuardado = async (id) => {
-
-        const confirmar =
-            window.confirm(
-                "¿Quieres eliminar esta ruta de tus guardados?"
-            );
-
-
-        if (!confirmar) {
-            return;
-        }
-
-
-        try {
-
-            const token =
-                localStorage.getItem("token");
-
-
-            if (!token) {
+            if (!confirmar) {
                 return;
             }
 
+            try {
 
-            const respuesta =
-                await fetch(
-                    `${USUARIO_URL}/guardados/${id}`,
-                    {
-                        method: "DELETE",
+                const token =
+                    localStorage.getItem("token");
 
-                        headers: {
-                            Authorization:
-                                `Bearer ${token}`
+                if (!token) {
+                    return;
+                }
+
+                const respuesta =
+                    await fetch(
+                        `${USUARIO_URL}/guardados/${id}`,
+                        {
+                            method: "DELETE",
+
+                            headers: {
+                                Authorization:
+                                    `Bearer ${token}`
+                            }
                         }
-                    }
+                    );
+
+                const datos =
+                    await respuesta.json();
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        datos?.mensaje ||
+                        datos?.error ||
+                        "No se pudo eliminar la ruta."
+                    );
+
+                }
+
+                setGuardados(
+                    anteriores =>
+                        anteriores.filter(
+                            ruta =>
+                                ruta.id !== id
+                        )
                 );
 
+            } catch (error) {
 
-            const datos =
-                await respuesta.json();
+                console.error(
+                    "Error eliminando ruta:",
+                    error
+                );
 
-
-            if (!respuesta.ok) {
-
-                throw new Error(
-                    datos?.mensaje ||
-                    datos?.error ||
-                    "No se pudo eliminar la ruta."
+                alert(
+                    error.message
                 );
 
             }
 
+        };
 
-            setGuardados(
-                anteriores =>
-                    anteriores.filter(
-                        ruta => ruta.id !== id
-                    )
-            );
+    const verRuta =
+        (ruta) => {
 
+            navigate(
+                "/guia_viaje",
+                {
+                    state: {
 
-        } catch (error) {
+                        rutas: {
 
-            console.error(
-                "Error eliminando ruta:",
-                error
-            );
+                            tipo: "DIRECTA",
 
+                            cantidad_camiones: 1,
 
-            alert(
-                error.message
-            );
+                            rutas: [
 
-        }
+                                {
+                                    ruta_id:
+                                        ruta.ruta_id,
 
-    };
+                                    ruta:
+                                        ruta.nombre ||
+                                        "Ruta",
 
+                                    nombre:
+                                        ruta.nombre ||
+                                        "Ruta",
 
-    // =====================================================
-    // VER RUTA
-    // =====================================================
+                                    color:
+                                        ruta.color ||
+                                        "#75176E",
 
-    const verRuta = (ruta) => {
+                                    parada_subida:
+                                        null,
 
-        console.log(
-            "Ruta guardada seleccionada:",
-            ruta
-        );
+                                    parada_bajada:
+                                        null
 
+                                }
 
-        /*
-         * IMPORTANTE:
-         *
-         * Actualmente /guardados solamente devuelve:
-         *
-         * id
-         * nombre_personalizado
-         * ruta_id
-         * nombre
-         * color
-         *
-         * Por eso todavía NO tenemos
-         * parada_subida y parada_bajada.
-         */
+                            ]
 
-
-        navigate(
-            "/guia_viaje",
-            {
-                state: {
-
-                    rutas: {
-
-                        tipo: "DIRECTA",
-
-                        cantidad_camiones: 1,
-
-                        rutas: [
-
-                            {
-                                ruta_id:
-                                    ruta.ruta_id,
-
-                                ruta:
-                                    ruta.nombre ||
-                                    "Ruta",
-
-                                nombre:
-                                    ruta.nombre ||
-                                    "Ruta",
-
-                                color:
-                                    ruta.color ||
-                                    "#75176E",
-
-                                parada_subida:
-                                    null,
-
-                                parada_bajada:
-                                    null
-
-                            }
-
-                        ]
+                        }
 
                     }
 
                 }
+            );
 
-            }
-        );
-
-    };
-
-
-    // =====================================================
-    // CARGANDO
-    // =====================================================
+        };
 
     if (cargando) {
 
@@ -287,9 +229,9 @@ function Guardados() {
 
                 <main className="guardados">
 
-                    <div className="sinGuardados">
+                    <div className="guardados-cargando">
 
-                        <div className="icono-sin">
+                        <div className="guardados-cargando-icono">
                             <FaBus />
                         </div>
 
@@ -311,154 +253,74 @@ function Guardados() {
 
     }
 
-
-    // =====================================================
-    // PANTALLA
-    // =====================================================
-
     return (
 
         <div className="guardados-page">
 
             <Navar />
 
-
             <main className="guardados">
 
+                <header className="guardados-header">
 
-                {/* =========================================
-                    TÍTULO
-                ========================================= */}
-
-                <div className="titulo">
-
-                    <div className="titulo-icono">
-
+                    <div className="guardados-icono">
                         <FaHeart />
-
                     </div>
 
-
-                    <h1>
-                        Mis rutas guardadas
-                    </h1>
-
-
-                    <p>
-                        Guarda tus rutas favoritas
-                        para encontrarlas fácilmente.
-                    </p>
-
-                </div>
-
-
-                {/* =========================================
-                    SIN GUARDADOS
-                ========================================= */}
+                </header>
 
                 {guardados.length === 0 ? (
 
-                    <div className="sinGuardados">
+                    <section className="sin-guardados">
 
-                        <div className="icono-sin">
-
+                        <div className="sin-guardados-icono">
                             <FaHeart />
-
                         </div>
 
-
                         <h2>
-                            No tienes rutas guardadas
+                            Aún no tienes rutas guardadas
                         </h2>
 
-
                         <p>
-                            Cuando encuentres una ruta
-                            que quieras conservar,
-                            guárdala usando el corazón.
+                            Cuando encuentres una ruta que
+                            quieras conservar, presiona el
+                            corazón para guardarla.
                         </p>
 
-
                         <button
-                            className="btn-ver-ruta"
+                            className="btn-buscar"
                             onClick={() =>
                                 navigate("/")
                             }
                         >
-
                             Buscar una ruta
-
                             <FaArrowRight />
-
                         </button>
 
-                    </div>
+                    </section>
 
                 ) : (
 
-
-                    /* =====================================
-                       LISTA
-                    ===================================== */
-
-                    <div className="contenedor">
+                    <section className="lista-guardados">
 
                         {guardados.map(
                             (ruta, index) => (
 
                                 <article
-                                    className="ruta-card"
+                                    className="guardado-card"
                                     key={
                                         ruta.id ||
                                         index
                                     }
                                 >
 
+                                    <div className="guardado-contenido">
 
-                                    {/* =====================
-                                        ICONO
-                                    ===================== */}
+                                        <div className="guardado-top">
 
-                                    <div className="icono-ruta">
-
-                                        <FaBus />
-
-                                    </div>
-
-
-                                    {/* =====================
-                                        CONTENIDO
-                                    ===================== */}
-
-                                    <div className="ruta-contenido">
-
-
-                                        {/* CABECERA */}
-
-                                        <div className="ruta-cabecera">
-
-                                            <div>
-
-                                                <span className="favorita">
-
-                                                    <FaHeart />
-
-                                                    GUARDADA
-
-                                                </span>
-
-
-                                                <h2>
-
-                                                    {
-                                                        ruta.nombre_personalizado ||
-                                                        "Ruta guardada"
-                                                    }
-
-                                                </h2>
-
+                                            <div className="guardado-icono-bus">
+                                                <FaBus />
                                             </div>
-
 
                                             <button
                                                 className="btn-eliminar"
@@ -469,33 +331,34 @@ function Guardados() {
                                                     )
                                                 }
                                             >
-
                                                 <FaTrash />
-
                                             </button>
 
                                         </div>
 
+                                        <span className="guardado-label">
+                                            <FaHeart />
+                                            GUARDADA
+                                        </span>
 
-                                        {/* =====================
-                                            RUTA
-                                        ===================== */}
+                                        <h2>
+                                            {
+                                                ruta.nombre_personalizado ||
+                                                "Ruta guardada"
+                                            }
+                                        </h2>
 
-                                        <div className="nombre-ruta">
+                                        <div className="ruta-real">
 
-                                            <div className="nombre-ruta-icono">
-
+                                            <div className="ruta-real-icono">
                                                 <FaBus />
-
                                             </div>
 
-
-                                            <div className="nombre-ruta-texto">
+                                            <div>
 
                                                 <span>
                                                     RUTA
                                                 </span>
-
 
                                                 <strong>
                                                     {
@@ -508,55 +371,44 @@ function Guardados() {
 
                                         </div>
 
+                                        <div className="guardado-footer">
 
-                                        {/* =====================
-                                            COLOR
-                                        ===================== */}
+                                            <div className="color-info">
 
-                                        <div className="color-ruta-info">
+                                                <div className="color-icono">
+                                                    <FaBus />
+                                                </div>
 
-                                            <span
-                                                className="punto-ruta"
-                                                style={{
-                                                    backgroundColor:
-                                                        ruta.color ||
-                                                        "#75176E"
-                                                }}
-                                            />
+                                                <div>
 
+                                                    <span>
+                                                        COLOR DE LA RUTA
+                                                    </span>
 
-                                            <div>
+                                                    <strong>
+                                                        {
+                                                            ruta.color ||
+                                                            "No disponible"
+                                                        }
+                                                    </strong>
 
-                                                <span>
-                                                    COLOR DE LA RUTA
-                                                </span>
-
-
-                                                <strong>
-                                                    {
-                                                        ruta.color ||
-                                                        "No disponible"
-                                                    }
-                                                </strong>
+                                                </div>
 
                                             </div>
 
+                                            <button
+                                                className="btn-ver"
+                                                onClick={() =>
+                                                    verRuta(
+                                                        ruta
+                                                    )
+                                                }
+                                            >
+                                                Ver ruta
+                                                <FaArrowRight />
+                                            </button>
+
                                         </div>
-
-
-                                        <button
-                                            className="btn-ver-ruta"
-                                            onClick={() =>
-                                                verRuta(
-                                                    ruta
-                                                )
-                                            }
-                                        >
-                                            Ver ruta
-                                            <FaArrowRight />
-
-                                        </button>
-
 
                                     </div>
 
@@ -565,7 +417,7 @@ function Guardados() {
                             )
                         )}
 
-                    </div>
+                    </section>
 
                 )}
 
@@ -576,6 +428,5 @@ function Guardados() {
     );
 
 }
-
 
 export default Guardados;

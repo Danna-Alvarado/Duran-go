@@ -344,12 +344,6 @@ router.post("/buscar-ruta", async (req, res) => {
                         continue;
                     }
 
-                    /*
-                    --------------------------------------
-                    BUSCAR TODAS LAS PARADAS DE LA
-                    SIGUIENTE RUTA CERCA DEL TRANSBORDO
-                    --------------------------------------
-                    */
 
                     for (
                         let j = 0;
@@ -374,12 +368,7 @@ router.post("/buscar-ruta", async (req, res) => {
                             continue;
                         }
 
-                        /*
-                        ----------------------------------
-                        EVITAR SUBIR Y BAJAR EN EL MISMO
-                        PUNTO SI NO ES NECESARIO
-                        ----------------------------------
-                        */
+      
 
                         if (
                             siguienteParada.parada_id ===
@@ -388,12 +377,7 @@ router.post("/buscar-ruta", async (req, res) => {
                             continue;
                         }
 
-                        /*
-                        ----------------------------------
-                        CONTINUAR BUSCANDO
-                        ----------------------------------
-                        */
-
+             
                         buscarDesde(
                             siguienteRuta,
 
@@ -437,12 +421,6 @@ router.post("/buscar-ruta", async (req, res) => {
             }
 
         }
-
-        /*
-        ==================================================
-        INICIAR DESDE CADA PARADA CERCANA AL ORIGEN
-        ==================================================
-        */
 
         for (const inicio of paradasOrigen) {
 
@@ -488,11 +466,7 @@ router.post("/buscar-ruta", async (req, res) => {
 
         }
 
-        /*
-        ==================================================
-        NO SE ENCONTRARON RUTAS
-        ==================================================
-        */
+
 
         if (candidatas.length === 0) {
 
@@ -514,11 +488,7 @@ router.post("/buscar-ruta", async (req, res) => {
 
         }
 
-        /*
-        ==================================================
-        ELIMINAR DUPLICADOS
-        ==================================================
-        */
+
 
         const rutasUnicas = new Map();
 
@@ -616,9 +586,7 @@ router.post("/buscar-ruta", async (req, res) => {
             error
         );
 
-        console.error(
-            "================================="
-        );
+       
 
         return res.status(500).json({
 
