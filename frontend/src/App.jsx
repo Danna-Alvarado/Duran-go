@@ -7,8 +7,8 @@ import Guardados from "./pages/usuario/guardados";
 import Perfil from "./pages/usuario/perfil";
 import Chofer from "./pages/auth/chofer";
 import GuiaViaje from "./pages/rutas/guia_viaje";
+import AdminChofer from "./pages/admin/adminchofer";
 
-import AdminChofer from "./pages/ubicacion/adminchofer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminProtectedRoute from "./components/adminProtectedRoute";
 
