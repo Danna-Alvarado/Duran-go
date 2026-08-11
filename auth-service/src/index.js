@@ -9,39 +9,21 @@ app.use(cors());
 app.use(express.json());
 
 
-// ==========================================
-// AUTENTICACIÓN USUARIOS
-// ==========================================
+// Cargar rutas
+const authRoutes = require("./auth.routes");
+const authChoferRoutes = require("./auth.chofer");
+const adminChoferRoutes = require("./admin.choferes");
 
-app.use(
-    "/auth",
-    require("./auth.routes")
-);
-
-
-// ==========================================
-// AUTENTICACIÓN CHOFER
-// ==========================================
-
-app.use(
-    "/auth/chofer",
-    require("./auth.chofer")
-);
+console.log("authRoutes:", typeof authRoutes);
+console.log("authChoferRoutes:", typeof authChoferRoutes);
+console.log("adminChoferRoutes:", typeof adminChoferRoutes);
 
 
-// ==========================================
-// ADMINISTRACIÓN DE CHOFERES
-// ==========================================
+// Registrar rutas
+app.use("/auth", authRoutes);
+app.use("/auth/chofer", authChoferRoutes);
+app.use("/admin", adminChoferRoutes);
 
-app.use(
-    "/admin",
-    require("./admin.choferes")
-);
-
-
-// ==========================================
-// PUERTO
-// ==========================================
 
 const PORT = process.env.PORT || 3001;
 
