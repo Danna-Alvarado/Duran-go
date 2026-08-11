@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./adminchofer.css";
 
-const UBICACION_URL = import.meta.env.VITE_UBICACION_URL;
+const AUTH_URL = import.meta.env.VITE_AUTH_URL;
 
 function AdminChofer() {
 
@@ -28,76 +28,44 @@ function AdminChofer() {
 
 
     // =====================================================
-    // CARGAR CHOFERES
+    // VERIFICAR TOKEN
     // =====================================================
 
-    const cargarChoferes = async () => {
+    const obtenerToken = () => {
 
-        try {
+        const token = localStorage.getItem("tokenAdmin");
 
-            const token = localStorage.getItem("tokenAdmin");
-
-            if (!token) {
-                navigate("/");
-                return;
-            }
-
-            const respuesta = await fetch(
-                `${UBICACION_URL}/admin/choferes`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
-            const data = await respuesta.json();
-
-            // Token inválido o usuario sin permisos
-            if (
-                respuesta.status === 401 ||
-                respuesta.status === 403
-            ) {
-
-                localStorage.removeItem("tokenAdmin");
-                localStorage.removeItem("admin");
-
-                navigate("/");
-                return;
-            }
-
-            if (!respuesta.ok) {
-
-                throw new Error(
-                    data.error ||
-                    "No se pudieron cargar los choferes"
-                );
-
-            }
-
-            setChoferes(data.choferes || []);
-
-        } catch (error) {
-
-            console.error("Error cargando choferes:", error);
-
-            setError(
-                error.message ||
-                "Error al cargar los choferes"
-            );
-
-        } finally {
-
-            setCargando(false);
-
+        if (!token) {
+            navigate("/");
+            return null;
         }
 
+        return token;
     };
 
 
     // =====================================================
-    // CARGAR AL ENTRAR
+    // MANEJAR RESPUESTA DEL SERVIDOR
+    // ====================================================
+
+
+    const obtenerRespuesta = async (respuesta) => {
+
+    const texto = await respuesta.text();
+
+    try {
+        return texto ? JSON.parse(texto) : {};
+    } catch {
+        throw new Error(
+            `El servidor respondió con ${respuesta.status} y no devolvió JSON`
+        );
+    }
+
+};
+
+
+    // =====================================================
+    // CARGAR CHOFERES AL ENTRAR
     // =====================================================
 
     useEffect(() => {
@@ -108,15 +76,14 @@ function AdminChofer() {
 
             try {
 
-                const token = localStorage.getItem("tokenAdmin");
+                const token = obtenerToken();
 
                 if (!token) {
-                    navigate("/");
                     return;
                 }
 
                 const respuesta = await fetch(
-                    `${UBICACION_URL}/admin/choferes`,
+                    `${AUTH_URL}/admin/choferes`,
                     {
                         method: "GET",
                         headers: {
@@ -125,8 +92,9 @@ function AdminChofer() {
                     }
                 );
 
-                const data = await respuesta.json();
+                const data = await obtenerRespuesta(respuesta);
 
+                // Token inválido
                 if (
                     respuesta.status === 401 ||
                     respuesta.status === 403
@@ -143,13 +111,20 @@ function AdminChofer() {
 
                     throw new Error(
                         data.error ||
+                        data.mensaje ||
                         "No se pudieron cargar los choferes"
                     );
 
                 }
 
                 if (componenteActivo) {
-                    setChoferes(data.choferes || []);
+
+                    setChoferes(
+                        Array.isArray(data.choferes)
+                            ? data.choferes
+                            : []
+                    );
+
                 }
 
             } catch (error) {
@@ -185,6 +160,80 @@ function AdminChofer() {
         };
 
     }, [navigate]);
+
+
+    // =====================================================
+    // CARGAR CHOFERES DESPUÉS DE CREAR / EDITAR / ELIMINAR
+    // =====================================================
+
+    const cargarChoferes = async () => {
+
+        try {
+
+            setError("");
+
+            const token = obtenerToken();
+
+            if (!token) {
+                return;
+            }
+
+            const respuesta = await fetch(
+                `${AUTH_URL}/admin/choferes`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            const data = await obtenerRespuesta(respuesta);
+
+            // Token inválido
+            if (
+                respuesta.status === 401 ||
+                respuesta.status === 403
+            ) {
+
+                localStorage.removeItem("tokenAdmin");
+                localStorage.removeItem("admin");
+
+                navigate("/");
+                return;
+            }
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    data.error ||
+                    data.mensaje ||
+                    "No se pudieron cargar los choferes"
+                );
+
+            }
+
+            setChoferes(
+                Array.isArray(data.choferes)
+                    ? data.choferes
+                    : []
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Error cargando choferes:",
+                error
+            );
+
+            setError(
+                error.message ||
+                "Error al cargar los choferes"
+            );
+
+        }
+
+    };
 
 
     // =====================================================
@@ -286,30 +335,30 @@ function AdminChofer() {
             setMensaje("");
             setError("");
 
-            const token = localStorage.getItem("tokenAdmin");
+            const token = obtenerToken();
 
             if (!token) {
-                navigate("/");
                 return;
             }
 
             const url = modoEdicion
-                ? `${UBICACION_URL}/admin/choferes/${choferEditando.id}`
-                : `${UBICACION_URL}/admin/choferes`;
+                ? `${AUTH_URL}/admin/choferes/${choferEditando.id}`
+                : `${AUTH_URL}/admin/choferes`;
 
             const metodo = modoEdicion
                 ? "PUT"
                 : "POST";
 
             const cuerpo = {
-                numero_unico: formulario.numero_unico,
-                nombre_completo: formulario.nombre_completo,
-                correo: formulario.correo,
-                telefono: formulario.telefono
+                numero_unico: formulario.numero_unico.trim(),
+                nombre_completo: formulario.nombre_completo.trim(),
+                correo: formulario.correo.trim(),
+                telefono: formulario.telefono.trim()
             };
 
-            // En edición solamente se manda
-            // si el administrador escribió una nueva contraseña
+            // Solo enviar contraseña cuando:
+            // - estamos creando
+            // - o estamos editando y escribió una nueva
             if (formulario.contrasena.trim() !== "") {
                 cuerpo.contrasena = formulario.contrasena;
             }
@@ -326,7 +375,7 @@ function AdminChofer() {
                 }
             );
 
-            const data = await respuesta.json();
+            const data = await obtenerRespuesta(respuesta);
 
             // Token inválido
             if (
@@ -345,6 +394,7 @@ function AdminChofer() {
 
                 setError(
                     data.error ||
+                    data.mensaje ||
                     "No se pudo guardar el chofer"
                 );
 
@@ -369,6 +419,7 @@ function AdminChofer() {
             );
 
             setError(
+                error.message ||
                 "Error al conectar con el servidor"
             );
 
@@ -396,15 +447,14 @@ function AdminChofer() {
             setError("");
             setMensaje("");
 
-            const token = localStorage.getItem("tokenAdmin");
+            const token = obtenerToken();
 
             if (!token) {
-                navigate("/");
                 return;
             }
 
             const respuesta = await fetch(
-                `${UBICACION_URL}/admin/choferes/${id}`,
+                `${AUTH_URL}/admin/choferes/${id}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -413,7 +463,7 @@ function AdminChofer() {
                 }
             );
 
-            const data = await respuesta.json();
+            const data = await obtenerRespuesta(respuesta);
 
             // Token inválido
             if (
@@ -432,6 +482,7 @@ function AdminChofer() {
 
                 setError(
                     data.error ||
+                    data.mensaje ||
                     "No se pudo eliminar el chofer"
                 );
 
@@ -452,6 +503,7 @@ function AdminChofer() {
             );
 
             setError(
+                error.message ||
                 "Error al conectar con el servidor"
             );
 
@@ -467,7 +519,6 @@ function AdminChofer() {
     return (
 
         <div className="admin-chofer-page">
-
 
             {/* =================================================
                 ENCABEZADO
@@ -487,7 +538,6 @@ function AdminChofer() {
 
                 </div>
 
-
                 <button
                     className="btn-agregar"
                     onClick={abrirCrear}
@@ -503,20 +553,15 @@ function AdminChofer() {
             ================================================= */}
 
             {mensaje && (
-
                 <div className="mensaje-exito">
                     {mensaje}
                 </div>
-
             )}
 
-
             {error && (
-
                 <div className="mensaje-error">
                     {error}
                 </div>
-
             )}
 
 
@@ -538,13 +583,7 @@ function AdminChofer() {
 
                 </div>
 
-
             ) : choferes.length === 0 ? (
-
-
-                /* =================================================
-                   SIN CHOFERES
-                ================================================= */
 
                 <div className="estado">
 
@@ -558,9 +597,7 @@ function AdminChofer() {
 
                 </div>
 
-
             ) : (
-
 
                 /* =================================================
                    LISTA DE CHOFERES
@@ -575,7 +612,6 @@ function AdminChofer() {
                             key={chofer.id}
                         >
 
-
                             {/* HEADER */}
 
                             <div className="chofer-card-header">
@@ -587,7 +623,6 @@ function AdminChofer() {
                                         .toUpperCase()}
 
                                 </div>
-
 
                                 <div>
 
@@ -628,7 +663,6 @@ function AdminChofer() {
                             {/* DATOS */}
 
                             <div className="datos-chofer">
-
 
                                 <div>
 
@@ -722,7 +756,6 @@ function AdminChofer() {
 
                     <div className="modal-chofer">
 
-
                         {/* HEADER MODAL */}
 
                         <div className="modal-header">
@@ -743,7 +776,6 @@ function AdminChofer() {
 
                             </div>
 
-
                             <button
                                 type="button"
                                 className="cerrar-modal"
@@ -758,7 +790,6 @@ function AdminChofer() {
                         {/* FORMULARIO */}
 
                         <form onSubmit={guardarChofer}>
-
 
                             <label>
                                 Código único
@@ -871,7 +902,6 @@ function AdminChofer() {
         </div>
 
     );
-
 }
 
 export default AdminChofer;
