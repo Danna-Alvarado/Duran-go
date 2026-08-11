@@ -8,15 +8,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
-// AUTH
 app.use("/auth", require("./auth.routes"));
 app.use("/auth/chofer", require("./auth.chofer"));
 
-
-// ADMIN
 app.use("/admin", require("./admin.choferes"));
 
+app.get("/prueba-admin", (req, res) => {
+    res.json({
+        mensaje: "ESTOY EJECUTANDO EL SERVER.JS NUEVO"
+    });
+});
 
 const PORT = process.env.PORT || 3001;
 
