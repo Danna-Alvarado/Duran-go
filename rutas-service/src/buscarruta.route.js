@@ -2,11 +2,21 @@ const express = require("express");
 const router = express.Router();
 const pool = require("./db");
 
+/*
+====================================================
+DISTANCIA ENTRE DOS COORDENADAS
+====================================================
+*/
+
 function distancia(lat1, lng1, lat2, lng2) {
+
     const R = 6371000;
 
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const dLat =
+        (lat2 - lat1) * Math.PI / 180;
+
+    const dLng =
+        (lng2 - lng1) * Math.PI / 180;
 
     const a =
         Math.sin(dLat / 2) ** 2 +
@@ -14,11 +24,35 @@ function distancia(lat1, lng1, lat2, lng2) {
         Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLng / 2) ** 2;
 
-    return R * 2 * Math.atan2(
-        Math.sqrt(a),
-        Math.sqrt(1 - a)
+    return (
+        R *
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        )
     );
 }
+
+
+/*
+====================================================
+CONFIGURACIÓN
+====================================================
+*/
+
+const RADIO = 800;
+
+// Máximo de camiones que puede recomendar.
+// Si después quieres 5, simplemente cambia esto.
+const MAX_CAMIONES = 4;
+
+
+/*
+====================================================
+BUSCAR RUTA
+====================================================
+*/
 
 router.post("/buscar-ruta", async (req, res) => {
 
@@ -31,26 +65,32 @@ router.post("/buscar-ruta", async (req, res) => {
             destinoLng
         } = req.body;
 
+
+        /*
+        ================================================
+        VALIDACIÓN
+        ================================================
+        */
+
         if (
             origenLat == null ||
             origenLng == null ||
             destinoLat == null ||
             destinoLng == null
         ) {
-            return res.status(400).json({
-                error: "Faltan coordenadas"
-            });
-        }
 
-        const RADIO_ORIGEN = 1000;
-        const RADIO_DESTINO = 1000;
-        const RADIO_TRANSBORDO = 600;
+            return res.status(400).json({
+                error:
+                    "Se requieren las coordenadas de origen y destino"
+            });
+
+        }
 
 
         /*
-        ============================================
-        PARADAS
-        ============================================
+        ================================================
+        OBTENER PARADAS
+        ================================================
         */
 
         const paradasResult = await pool.query(`
@@ -62,43 +102,66 @@ router.post("/buscar-ruta", async (req, res) => {
             FROM paradas
         `);
 
-        const paradas = paradasResult.rows.map(p => ({
-            id: Number(p.id),
-            nombre: p.nombre_parada,
-            latitud: Number(p.latitud),
-            longitud: Number(p.longitud)
-        }));
+
+        const paradas =
+            paradasResult.rows.map(p => ({
+
+                id:
+                    Number(p.id),
+
+                nombre:
+                    p.nombre_parada,
+
+                latitud:
+                    Number(p.latitud),
+
+                longitud:
+                    Number(p.longitud)
+
+            }));
 
 
         /*
-        ============================================
-        DISTANCIAS
-        ============================================
+        ================================================
+        DISTANCIAS ORIGEN / DESTINO
+        ================================================
         */
 
-        const paradasCalculadas = paradas.map(p => ({
-            ...p,
+        const paradasCalculadas =
+            paradas.map(p => ({
 
-            distanciaOrigen: distancia(
-                origenLat,
-                origenLng,
-                p.latitud,
-                p.longitud
-            ),
+                ...p,
 
-            distanciaDestino: distancia(
-                destinoLat,
-                destinoLng,
-                p.latitud,
-                p.longitud
-            )
-        }));
+                distanciaOrigen:
+                    distancia(
+                        origenLat,
+                        origenLng,
+                        p.latitud,
+                        p.longitud
+                    ),
 
+                distanciaDestino:
+                    distancia(
+                        destinoLat,
+                        destinoLng,
+                        p.latitud,
+                        p.longitud
+                    )
+
+            }));
+
+
+        /*
+        ================================================
+        PARADAS CERCA DEL ORIGEN
+        ================================================
+        */
 
         const paradasOrigen =
             paradasCalculadas
-                .filter(p =>
-                    p.distanciaOrigen <= RADIO_ORIGEN
+                .filter(
+                    p =>
+                        p.distanciaOrigen <= RADIO
                 )
                 .sort(
                     (a, b) =>
@@ -107,10 +170,17 @@ router.post("/buscar-ruta", async (req, res) => {
                 );
 
 
+        /*
+        ================================================
+        PARADAS CERCA DEL DESTINO
+        ================================================
+        */
+
         const paradasDestino =
             paradasCalculadas
-                .filter(p =>
-                    p.distanciaDestino <= RADIO_DESTINO
+                .filter(
+                    p =>
+                        p.distanciaDestino <= RADIO
                 )
                 .sort(
                     (a, b) =>
@@ -120,43 +190,44 @@ router.post("/buscar-ruta", async (req, res) => {
 
 
         console.log(
-            "=============================="
+            "================================"
         );
 
         console.log(
-            "PARADAS ORIGEN:"
-        );
-
-        console.table(
-            paradasOrigen
+            "PARADAS CERCA DEL ORIGEN:",
+            paradasOrigen.length
         );
 
         console.log(
-            "PARADAS DESTINO:"
+            "PARADAS CERCA DEL DESTINO:",
+            paradasDestino.length
         );
 
-        console.table(
-            paradasDestino
-        );
 
+        /*
+        ================================================
+        SI NO HAY PARADA CERCA
+        ================================================
+        */
 
         if (
             paradasOrigen.length === 0 ||
             paradasDestino.length === 0
         ) {
 
-            return res.status(404).json({
+            return res.json({
+
+                tipo:
+                    "SIN_RUTA",
+
+                cantidad_camiones:
+                    0,
 
                 mensaje:
-                    "No existen paradas cercanas.",
+                    "No hay paradas dentro de 800 metros del origen o destino.",
 
-                paradas_cercanas_origen:
-                    paradasOrigen.length,
-
-                paradas_cercanas_destino:
-                    paradasDestino.length,
-
-                rutas: []
+                rutas:
+                    []
 
             });
 
@@ -164,166 +235,606 @@ router.post("/buscar-ruta", async (req, res) => {
 
 
         /*
-        ============================================
-        RUTAS Y PARADAS
-        ============================================
+        ================================================
+        OBTENER RUTAS Y PARADAS
+        ================================================
         */
 
-        const result = await pool.query(`
-            SELECT
-                r.id AS ruta_id,
-                r.nombre AS ruta_nombre,
-                r.color AS ruta_color,
+        const relacionesResult =
+            await pool.query(`
 
-                rp.parada_id,
-                rp.orden,
+                SELECT
 
-                p.nombre_parada,
-                p.latitud,
-                p.longitud
+                    r.id AS ruta_id,
 
-            FROM rutas r
+                    r.nombre AS ruta_nombre,
 
-            INNER JOIN ruta_paradas rp
-                ON rp.ruta_id = r.id
+                    r.color AS ruta_color,
 
-            INNER JOIN paradas p
-                ON p.id = rp.parada_id
+                    rp.parada_id,
 
-            ORDER BY
-                r.id,
-                rp.orden
-        `);
+                    rp.orden,
+
+                    p.nombre_parada,
+
+                    p.latitud,
+
+                    p.longitud
+
+                FROM rutas r
+
+                INNER JOIN ruta_paradas rp
+                    ON rp.ruta_id = r.id
+
+                INNER JOIN paradas p
+                    ON p.id = rp.parada_id
+
+                ORDER BY
+                    r.id,
+                    rp.orden
+
+            `);
 
 
         /*
-        ============================================
+        ================================================
         AGRUPAR RUTAS
-        ============================================
+        ================================================
         */
 
-        const rutas = new Map();
+        const rutas =
+            new Map();
 
 
-        for (const row of result.rows) {
+        for (
+            const row
+            of relacionesResult.rows
+        ) {
 
             const rutaId =
                 Number(row.ruta_id);
 
 
-            if (!rutas.has(rutaId)) {
+            if (
+                !rutas.has(rutaId)
+            ) {
 
-                rutas.set(rutaId, {
+                rutas.set(
+                    rutaId,
+                    {
 
-                    id: rutaId,
+                        id:
+                            rutaId,
 
-                    nombre:
-                        row.ruta_nombre,
+                        nombre:
+                            row.ruta_nombre,
 
-                    color:
-                        row.ruta_color,
+                        color:
+                            row.ruta_color,
 
-                    paradas: []
+                        paradas:
+                            []
 
-                });
+                    }
+                );
 
             }
 
 
-            rutas.get(rutaId).paradas.push({
+            rutas
+                .get(rutaId)
+                .paradas
+                .push({
 
-                id:
-                    Number(row.parada_id),
+                    id:
+                        Number(row.parada_id),
 
-                nombre:
-                    row.nombre_parada,
+                    nombre:
+                        row.nombre_parada,
 
-                latitud:
-                    Number(row.latitud),
+                    latitud:
+                        Number(row.latitud),
 
-                longitud:
-                    Number(row.longitud),
+                    longitud:
+                        Number(row.longitud),
 
-                orden:
-                    Number(row.orden)
+                    orden:
+                        Number(row.orden)
 
-            });
+                });
 
         }
 
 
         console.log(
-            "RUTAS CARGADAS:",
+            "RUTAS DISPONIBLES:",
             rutas.size
         );
 
 
         /*
-        ============================================
-        RUTA DIRECTA
-        ============================================
+        =================================================
+        FUNCIONES AUXILIARES
+        =================================================
         */
 
-        const directas = [];
+
+        // ¿La parada está cerca del origen?
+        function cercaOrigen(parada) {
+
+            return paradasOrigen.some(
+                p =>
+                    p.id === parada.id
+            );
+
+        }
 
 
-        for (const ruta of rutas.values()) {
+        // ¿La parada está cerca del destino?
+        function cercaDestino(parada) {
 
-            const subidas =
-                ruta.paradas.filter(p =>
-                    paradasOrigen.some(
-                        o => o.id === p.id
-                    )
-                );
+            return paradasDestino.some(
+                p =>
+                    p.id === parada.id
+            );
 
-
-            const bajadas =
-                ruta.paradas.filter(p =>
-                    paradasDestino.some(
-                        d => d.id === p.id
-                    )
-                );
+        }
 
 
-            for (const subida of subidas) {
+        /*
+        =================================================
+        BUSCAR CONEXIONES ENTRE RUTAS
+        =================================================
+        */
 
-                for (const bajada of bajadas) {
+        function conexiones(
+            paradaActual,
+            rutaActualId
+        ) {
+
+            const resultado = [];
+
+
+            for (
+                const ruta
+                of rutas.values()
+            ) {
+
+                if (
+                    ruta.id ===
+                    rutaActualId
+                ) {
+                    continue;
+                }
+
+
+                for (
+                    const parada
+                    of ruta.paradas
+                ) {
+
+                    const d =
+                        distancia(
+                            paradaActual.latitud,
+                            paradaActual.longitud,
+                            parada.latitud,
+                            parada.longitud
+                        );
+
 
                     if (
-                        subida.orden >=
-                        bajada.orden
+                        d <= RADIO
+                    ) {
+
+                        resultado.push({
+
+                            ruta,
+
+                            parada,
+
+                            distancia:
+                                d
+
+                        });
+
+                    }
+
+                }
+
+            }
+
+
+            return resultado;
+
+        }
+
+
+        /*
+        =================================================
+        ESTADO INICIAL
+        =================================================
+
+        Desde el origen podemos subir a cualquier ruta
+        que tenga una parada a <= 800 metros.
+        =================================================
+        */
+
+        const estadosIniciales = [];
+
+
+        for (
+            const ruta
+            of rutas.values()
+        ) {
+
+            for (
+                const parada
+                of ruta.paradas
+            ) {
+
+                const origen =
+                    paradasOrigen.find(
+                        p =>
+                            p.id ===
+                            parada.id
+                    );
+
+
+                if (!origen) {
+                    continue;
+                }
+
+
+                estadosIniciales.push({
+
+                    ruta,
+
+                    parada,
+
+                    costo:
+                        origen.distanciaOrigen,
+
+                    caminataInicial:
+                        origen.distanciaOrigen,
+
+                    caminataTransbordos:
+                        0,
+
+                    camiones:
+                        1,
+
+                    recorrido: [
+
+                        {
+
+                            ruta,
+
+                            paradaSubida:
+                                parada,
+
+                            paradaBajada:
+                                null
+
+                        }
+
+                    ]
+
+                });
+
+            }
+
+        }
+
+
+        /*
+        =================================================
+        ORDENAR INICIALES
+        =================================================
+        */
+
+        estadosIniciales.sort(
+            (a, b) =>
+                a.costo -
+                b.costo
+        );
+
+
+        /*
+        =================================================
+        BÚSQUEDA
+        =================================================
+
+        Es una búsqueda tipo BFS/Dijkstra sencilla.
+
+        Cada estado representa:
+
+        RUTA ACTUAL
+        +
+        PARADA ACTUAL
+        +
+        RECORRIDO
+        =================================================
+        */
+
+        const cola =
+            [...estadosIniciales];
+
+
+        const visitados =
+            new Set();
+
+
+        let mejorRuta =
+            null;
+
+
+        while (
+            cola.length > 0
+        ) {
+
+            /*
+            ---------------------------------------------
+            SACAR ESTADO MÁS BARATO
+            ---------------------------------------------
+            */
+
+            cola.sort(
+                (a, b) =>
+                    a.costo -
+                    b.costo
+            );
+
+
+            const estado =
+                cola.shift();
+
+
+            /*
+            ---------------------------------------------
+            CLAVE PARA EVITAR CICLOS
+            ---------------------------------------------
+            */
+
+            const clave =
+                `${estado.ruta.id}-${estado.parada.id}-${estado.camiones}`;
+
+
+            if (
+                visitados.has(clave)
+            ) {
+                continue;
+            }
+
+
+            visitados.add(clave);
+
+
+            /*
+            ---------------------------------------------
+            ¿YA LLEGAMOS AL DESTINO?
+            ---------------------------------------------
+            */
+
+            if (
+                cercaDestino(
+                    estado.parada
+                )
+            ) {
+
+                const destino =
+                    paradasDestino.find(
+                        p =>
+                            p.id ===
+                            estado.parada.id
+                    );
+
+
+                const costoFinal =
+                    estado.costo +
+                    (
+                        destino
+                            ? destino.distanciaDestino
+                            : 0
+                    );
+
+
+                mejorRuta = {
+
+                    ...estado,
+
+                    costo:
+                        costoFinal
+
+                };
+
+
+                break;
+
+            }
+
+
+            /*
+            ---------------------------------------------
+            RECORRER LA RUTA HACIA ADELANTE
+            ---------------------------------------------
+
+            MUY IMPORTANTE:
+
+            solamente podemos avanzar a una parada
+            cuyo orden sea mayor.
+            ---------------------------------------------
+            */
+
+            const siguientes =
+                estado.ruta.paradas.filter(
+                    p =>
+                        p.orden >
+                        estado.parada.orden
+                );
+
+
+            for (
+                const siguiente
+                of siguientes
+            ) {
+
+                /*
+                -----------------------------------------
+                CONTINUAR EN EL MISMO CAMIÓN
+                -----------------------------------------
+                */
+
+                const recorridoNuevo =
+                    estado.recorrido.map(
+                        r =>
+                            ({
+                                ...r
+                            })
+                    );
+
+
+                recorridoNuevo[
+                    recorridoNuevo.length - 1
+                ] = {
+
+                    ...recorridoNuevo[
+                        recorridoNuevo.length - 1
+                    ],
+
+                    paradaBajada:
+                        siguiente
+
+                };
+
+
+                cola.push({
+
+                    ruta:
+                        estado.ruta,
+
+                    parada:
+                        siguiente,
+
+                    costo:
+                        estado.costo,
+
+                    caminataInicial:
+                        estado.caminataInicial,
+
+                    caminataTransbordos:
+                        estado.caminataTransbordos,
+
+                    camiones:
+                        estado.camiones,
+
+                    recorrido:
+                        recorridoNuevo
+
+                });
+
+
+                /*
+                -----------------------------------------
+                SI DESDE AQUÍ PODEMOS CAMBIAR
+                DE CAMIÓN
+                -----------------------------------------
+                */
+
+                if (
+                    estado.camiones >=
+                    MAX_CAMIONES
+                ) {
+                    continue;
+                }
+
+
+                const cambios =
+                    conexiones(
+                        siguiente,
+                        estado.ruta.id
+                    );
+
+
+                for (
+                    const cambio
+                    of cambios
+                ) {
+
+                    /*
+                    -------------------------------------
+                    NO CAMBIAR A UNA RUTA SI NO PUEDE
+                    AVANZAR DESDE ESA PARADA
+                    -------------------------------------
+                    */
+
+                    const puedeContinuar =
+                        cambio.ruta.paradas.some(
+                            p =>
+                                p.orden >
+                                cambio.parada.orden
+                        );
+
+
+                    if (
+                        !puedeContinuar
                     ) {
                         continue;
                     }
 
 
-                    const origen =
-                        paradasOrigen.find(
-                            o =>
-                                o.id ===
-                                subida.id
+                    /*
+                    -------------------------------------
+                    CREAR NUEVO TRAMO
+                    -------------------------------------
+                    */
+
+                    const nuevoRecorrido =
+                        recorridoNuevo.map(
+                            r =>
+                                ({
+                                    ...r
+                                })
                         );
 
 
-                    const destino =
-                        paradasDestino.find(
-                            d =>
-                                d.id ===
-                                bajada.id
-                        );
+                    nuevoRecorrido.push({
+
+                        ruta:
+                            cambio.ruta,
+
+                        paradaSubida:
+                            cambio.parada,
+
+                        paradaBajada:
+                            null
+
+                    });
 
 
-                    directas.push({
+                    cola.push({
 
-                        ruta,
+                        ruta:
+                            cambio.ruta,
 
-                        subida,
-
-                        bajada,
+                        parada:
+                            cambio.parada,
 
                         costo:
-                            origen.distanciaOrigen +
-                            destino.distanciaDestino
+                            estado.costo +
+                            cambio.distancia,
+
+                        caminataInicial:
+                            estado.caminataInicial,
+
+                        caminataTransbordos:
+                            estado.caminataTransbordos +
+                            cambio.distancia,
+
+                        camiones:
+                            estado.camiones + 1,
+
+                        recorrido:
+                            nuevoRecorrido
 
                     });
 
@@ -334,264 +845,26 @@ router.post("/buscar-ruta", async (req, res) => {
         }
 
 
-        console.log(
-            "RUTAS DIRECTAS ENCONTRADAS:",
-            directas.length
-        );
+        /*
+        =================================================
+        NO ENCONTRAMOS RUTA
+        =================================================
+        */
 
-
-        if (directas.length > 0) {
-
-            directas.sort(
-                (a, b) =>
-                    a.costo -
-                    b.costo
-            );
-
-
-            const mejor =
-                directas[0];
-
+        if (
+            !mejorRuta
+        ) {
 
             return res.json({
 
                 tipo:
-                    "DIRECTA",
+                    "SIN_RUTA",
 
                 cantidad_camiones:
-                    1,
-
-                rutas: [
-
-                    {
-
-                        numero:
-                            1,
-
-                        ruta_id:
-                            mejor.ruta.id,
-
-                        ruta:
-                            mejor.ruta.nombre,
-
-                        color:
-                            mejor.ruta.color,
-
-                        parada_subida: {
-
-                            id:
-                                mejor.subida.id,
-
-                            nombre:
-                                mejor.subida.nombre,
-
-                            latitud:
-                                mejor.subida.latitud,
-
-                            longitud:
-                                mejor.subida.longitud
-
-                        },
-
-                        parada_bajada: {
-
-                            id:
-                                mejor.bajada.id,
-
-                            nombre:
-                                mejor.bajada.nombre,
-
-                            latitud:
-                                mejor.bajada.latitud,
-
-                            longitud:
-                                mejor.bajada.longitud
-
-                        }
-
-                    }
-
-                ]
-
-            });
-
-        }
-
-
-        /*
-        ============================================
-        TRANSBORDOS
-        ============================================
-        */
-
-        const transbordos = [];
-
-
-        for (const ruta1 of rutas.values()) {
-
-            const subidas =
-                ruta1.paradas.filter(p =>
-                    paradasOrigen.some(
-                        o => o.id === p.id
-                    )
-                );
-
-
-            for (const subida of subidas) {
-
-                const paradasPosteriores =
-                    ruta1.paradas.filter(
-                        p =>
-                            p.orden >
-                            subida.orden
-                    );
-
-
-                for (
-                    const bajada1
-                    of paradasPosteriores
-                ) {
-
-
-                    for (
-                        const ruta2
-                        of rutas.values()
-                    ) {
-
-                        if (
-                            ruta1.id ===
-                            ruta2.id
-                        ) {
-                            continue;
-                        }
-
-
-                        const subidas2 =
-                            ruta2.paradas.filter(
-                                p =>
-
-                                    p.orden <
-                                    ruta2.paradas.length
-                            );
-
-
-                        for (
-                            const subida2
-                            of subidas2
-                        ) {
-
-
-                            const distanciaCambio =
-                                distancia(
-
-                                    bajada1.latitud,
-
-                                    bajada1.longitud,
-
-                                    subida2.latitud,
-
-                                    subida2.longitud
-
-                                );
-
-
-                            if (
-                                distanciaCambio >
-                                RADIO_TRANSBORDO
-                            ) {
-                                continue;
-                            }
-
-
-                            const bajadas2 =
-                                ruta2.paradas.filter(
-                                    p =>
-
-                                        p.orden >
-                                        subida2.orden &&
-
-                                        paradasDestino.some(
-                                            d =>
-                                                d.id ===
-                                                p.id
-                                        )
-                                );
-
-
-                            for (
-                                const bajada2
-                                of bajadas2
-                            ) {
-
-                                const origen =
-                                    paradasOrigen.find(
-                                        o =>
-                                            o.id ===
-                                            subida.id
-                                    );
-
-
-                                const destino =
-                                    paradasDestino.find(
-                                        d =>
-                                            d.id ===
-                                            bajada2.id
-                                    );
-
-
-                                transbordos.push({
-
-                                    ruta1,
-
-                                    subida,
-
-                                    bajada1,
-
-                                    ruta2,
-
-                                    subida2,
-
-                                    bajada2,
-
-                                    distanciaCambio,
-
-                                    costo:
-
-                                        origen.distanciaOrigen +
-
-                                        distanciaCambio +
-
-                                        destino.distanciaDestino
-
-                                });
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
-
-
-        console.log(
-            "TRANSBORDOS ENCONTRADOS:",
-            transbordos.length
-        );
-
-
-        if (
-            transbordos.length === 0
-        ) {
-
-            return res.status(404).json({
+                    0,
 
                 mensaje:
-                    "No se encontró una ruta directa ni una combinación de dos camiones.",
+                    "No se encontró una ruta dentro del radio de 800 metros.",
 
                 paradas_cercanas_origen:
                     paradasOrigen.length,
@@ -599,142 +872,132 @@ router.post("/buscar-ruta", async (req, res) => {
                 paradas_cercanas_destino:
                     paradasDestino.length,
 
-                rutas: []
+                rutas:
+                    []
 
             });
 
         }
 
 
-        transbordos.sort(
-            (a, b) =>
-                a.costo -
-                b.costo
+        /*
+        =================================================
+        CONSTRUIR RESPUESTA
+        =================================================
+        */
+
+        const rutasRespuesta =
+            mejorRuta.recorrido.map(
+                (tramo, index) => ({
+
+                    numero:
+                        index + 1,
+
+                    ruta_id:
+                        tramo.ruta.id,
+
+                    ruta:
+                        tramo.ruta.nombre,
+
+                    color:
+                        tramo.ruta.color,
+
+
+                    parada_subida: {
+
+                        id:
+                            tramo.paradaSubida.id,
+
+                        nombre:
+                            tramo.paradaSubida.nombre,
+
+                        latitud:
+                            tramo.paradaSubida.latitud,
+
+                        longitud:
+                            tramo.paradaSubida.longitud
+
+                    },
+
+
+                    parada_bajada:
+                        tramo.paradaBajada
+                            ? {
+
+                                id:
+                                    tramo.paradaBajada.id,
+
+                                nombre:
+                                    tramo.paradaBajada.nombre,
+
+                                latitud:
+                                    tramo.paradaBajada.latitud,
+
+                                longitud:
+                                    tramo.paradaBajada.longitud
+
+                            }
+                            : null
+
+                })
+            );
+
+
+        /*
+        =================================================
+        RESULTADO FINAL
+        =================================================
+        */
+
+        console.log(
+            "================================"
         );
 
+        console.log(
+            "RUTA ENCONTRADA"
+        );
 
-        const mejor =
-            transbordos[0];
+        console.log(
+            "CAMIONES:",
+            rutasRespuesta.length
+        );
+
+        console.log(
+            rutasRespuesta
+        );
 
 
         return res.json({
 
             tipo:
-                "TRANSBORDO",
+                rutasRespuesta.length === 1
+                    ? "DIRECTA"
+                    : "TRANSBORDO",
 
             cantidad_camiones:
-                2,
+                rutasRespuesta.length,
 
-            rutas: [
+            radio_busqueda_metros:
+                RADIO,
 
-                {
-
-                    numero:
-                        1,
-
-                    ruta_id:
-                        mejor.ruta1.id,
-
-                    ruta:
-                        mejor.ruta1.nombre,
-
-                    color:
-                        mejor.ruta1.color,
-
-                    parada_subida: {
-
-                        id:
-                            mejor.subida.id,
-
-                        nombre:
-                            mejor.subida.nombre,
-
-                        latitud:
-                            mejor.subida.latitud,
-
-                        longitud:
-                            mejor.subida.longitud
-
-                    },
-
-                    parada_bajada: {
-
-                        id:
-                            mejor.bajada1.id,
-
-                        nombre:
-                            mejor.bajada1.nombre,
-
-                        latitud:
-                            mejor.bajada1.latitud,
-
-                        longitud:
-                            mejor.bajada1.longitud
-
-                    }
-
-                },
-
-
-                {
-
-                    numero:
-                        2,
-
-                    ruta_id:
-                        mejor.ruta2.id,
-
-                    ruta:
-                        mejor.ruta2.nombre,
-
-                    color:
-                        mejor.ruta2.color,
-
-                    parada_subida: {
-
-                        id:
-                            mejor.subida2.id,
-
-                        nombre:
-                            mejor.subida2.nombre,
-
-                        latitud:
-                            mejor.subida2.latitud,
-
-                        longitud:
-                            mejor.subida2.longitud
-
-                    },
-
-                    parada_bajada: {
-
-                        id:
-                            mejor.bajada2.id,
-
-                        nombre:
-                            mejor.bajada2.nombre,
-
-                        latitud:
-                            mejor.bajada2.latitud,
-
-                        longitud:
-                            mejor.bajada2.longitud
-
-                    }
-
-                }
-
-            ]
+            rutas:
+                rutasRespuesta
 
         });
+
 
     } catch (error) {
 
         console.error(
-            "ERROR BUSCANDO RUTA:"
+            "================================"
+        );
+
+        console.error(
+            "ERROR BUSCANDO RUTA"
         );
 
         console.error(error);
+
 
         return res.status(500).json({
 
@@ -750,48 +1013,5 @@ router.post("/buscar-ruta", async (req, res) => {
 
 });
 
-router.get("/debug-rutas", async (req, res) => {
-
-    try {
-
-        const resultado = await pool.query(`
-            SELECT
-                r.id AS ruta_id,
-                r.nombre AS ruta,
-                r.color,
-
-                rp.orden,
-
-                p.id AS parada_id,
-                p.nombre_parada,
-                p.latitud,
-                p.longitud
-
-            FROM rutas r
-
-            INNER JOIN ruta_paradas rp
-                ON rp.ruta_id = r.id
-
-            INNER JOIN paradas p
-                ON p.id = rp.parada_id
-
-            ORDER BY
-                r.id,
-                rp.orden
-        `);
-
-        res.json(resultado.rows);
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-            error: error.message
-        });
-
-    }
-
-});
 
 module.exports = router;
