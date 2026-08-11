@@ -5,46 +5,18 @@ const cors = require("cors");
 
 const app = express();
 
-
-// ==========================================
-// CORS
-// ==========================================
-
 app.use(cors());
-
-
-// ==========================================
-// JSON
-// ==========================================
-
 app.use(express.json());
 
 
-// ==========================================
-// RUTAS DE AUTENTICACIÓN
-// ==========================================
-
+// AUTH
 app.use("/auth", require("./auth.routes"));
-
-app.use(
-    "/auth/chofer",
-    require("./auth.chofer")
-);
+app.use("/auth/chofer", require("./auth.chofer"));
 
 
-// ==========================================
-// RUTAS DE ADMINISTRADOR
-// ==========================================
+// ADMIN
+app.use("/admin", require("./admin.choferes"));
 
-app.use(
-    "/admin",
-    require("./admin.choferes")
-);
-
-
-// ==========================================
-// PUERTO
-// ==========================================
 
 const PORT = process.env.PORT || 3001;
 
