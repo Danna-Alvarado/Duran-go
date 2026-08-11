@@ -1,721 +1,607 @@
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .admin-chofer-page {
     min-height: 100vh;
     background: #f7f5f8;
-    padding: 35px 45px 70px;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #29232b;
+    padding: 40px 25px 80px;
 }
 
+.admin-chofer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
 
-/* =====================================================
-   HEADER
-===================================================== */
-
-.admin-chofer-header {
-    max-width: 1250px;
-    margin: 0 auto 30px;
-
+.admin-chofer-top {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 25px;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
 }
 
-.admin-chofer-header h1 {
+.admin-etiqueta {
+    display: inline-block;
     color: #75176e;
-    font-size: 32px;
+    font-size: 12px;
     font-weight: 700;
+    letter-spacing: 1.5px;
     margin-bottom: 8px;
 }
 
-.admin-chofer-header p {
-    color: #77717a;
+.admin-chofer-top h1 {
+    color: #29242a;
+    font-size: 34px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+
+.admin-chofer-top p {
+    color: #777078;
     font-size: 15px;
 }
 
+.admin-acciones-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-/* =====================================================
-   BOTÓN AGREGAR
-===================================================== */
+.btn-agregar,
+.btn-cerrar-sesion {
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 13px 18px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
 
 .btn-agregar {
-    border: none;
     background: #75176e;
     color: white;
-
-    padding: 13px 20px;
-    border-radius: 10px;
-
-    font-size: 14px;
-    font-weight: 700;
-
-    cursor: pointer;
-
-    box-shadow: 0 5px 15px rgba(117, 23, 110, 0.20);
-
-    transition:
-        transform 0.2s ease,
-        background 0.2s ease,
-        box-shadow 0.2s ease;
+    box-shadow: 0 7px 18px rgba(117, 23, 110, 0.18);
 }
 
 .btn-agregar:hover {
-    background: #61125b;
+    background: #62125d;
     transform: translateY(-2px);
-
-    box-shadow:
-        0 8px 20px rgba(117, 23, 110, 0.25);
 }
 
+.btn-cerrar-sesion {
+    background: white;
+    color: #665f66;
+    border: 1px solid #ddd7df;
+}
 
-/* =====================================================
-   MENSAJES
-===================================================== */
+.btn-cerrar-sesion:hover {
+    background: #f8f4f8;
+    color: #75176e;
+    border-color: #cdbdcd;
+}
 
-.mensaje-exito,
-.mensaje-error {
-    max-width: 1250px;
-    margin: 0 auto 20px;
+.btn-agregar svg,
+.btn-cerrar-sesion svg,
+.btn-recargar svg,
+.btn-agregar-secundario svg,
+.btn-editar svg,
+.btn-eliminar svg,
+.btn-cerrar svg {
+    font-size: 13px;
+}
 
-    padding: 13px 17px;
-
+.alerta {
+    padding: 14px 18px;
     border-radius: 10px;
-
+    margin-bottom: 20px;
     font-size: 14px;
     font-weight: 600;
 }
 
-.mensaje-exito {
-    background: #e9f8ef;
-    color: #18713d;
-    border: 1px solid #bde8cb;
+.alerta-exito {
+    background: #eaf7ef;
+    color: #257343;
+    border: 1px solid #c9ead5;
 }
 
-.mensaje-error {
+.alerta-error {
     background: #fff0f0;
-    color: #a32929;
-    border: 1px solid #f1c4c4;
+    color: #b52e2e;
+    border: 1px solid #f0cccc;
 }
 
-
-/* =====================================================
-   ESTADO VACÍO / CARGANDO
-===================================================== */
-
-.estado {
-    max-width: 700px;
-    margin: 70px auto;
-
-    text-align: center;
-
+.choferes-panel {
     background: white;
-
-    border: 1px solid #ece6ed;
     border-radius: 18px;
-
-    padding: 45px 25px;
-
-    box-shadow:
-        0 8px 25px rgba(45, 25, 45, 0.06);
+    border: 1px solid #ebe6ec;
+    box-shadow: 0 8px 30px rgba(40, 30, 40, 0.06);
+    overflow: hidden;
 }
 
-.estado h2,
-.estado h3 {
-    color: #75176e;
-    margin-bottom: 10px;
-}
-
-.estado p {
-    color: #77717a;
-    line-height: 1.6;
-}
-
-
-/* =====================================================
-   GRID DE CHOFERES
-===================================================== */
-
-.choferes-grid {
-    max-width: 1250px;
-    margin: 0 auto;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(auto-fit, minmax(320px, 1fr));
-
-    gap: 22px;
-}
-
-
-/* =====================================================
-   TARJETA
-===================================================== */
-
-.chofer-card-admin {
-    background: white;
-
-    border: 1px solid #ebe4ec;
-    border-radius: 18px;
-
-    padding: 23px;
-
-    box-shadow:
-        0 7px 24px rgba(40, 20, 40, 0.06);
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.chofer-card-admin:hover {
-    transform: translateY(-3px);
-
-    box-shadow:
-        0 12px 30px rgba(40, 20, 40, 0.10);
-}
-
-
-/* =====================================================
-   HEADER CARD
-===================================================== */
-
-.chofer-card-header {
+.panel-header {
+    padding: 24px 27px;
     display: flex;
     align-items: center;
-
-    gap: 14px;
-
-    margin-bottom: 18px;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid #eee9ef;
 }
 
-.avatar-chofer {
-    width: 52px;
-    height: 52px;
-
-    flex-shrink: 0;
-
-    border-radius: 50%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #f1dff0;
-    color: #75176e;
-
-    font-size: 21px;
-    font-weight: 700;
-}
-
-.chofer-card-header h2 {
-    font-size: 18px;
-    color: #302a31;
-
+.panel-header h2 {
+    color: #302a30;
+    font-size: 19px;
     margin-bottom: 5px;
 }
 
-.chofer-card-header span {
-    display: inline-block;
-
-    background: #f5eef5;
-    color: #75176e;
-
-    padding: 4px 9px;
-
-    border-radius: 6px;
-
-    font-size: 12px;
-    font-weight: 700;
+.panel-header p {
+    color: #928b92;
+    font-size: 13px;
 }
 
-
-/* =====================================================
-   ESTADO DEL CHOFER
-===================================================== */
-
-.estado-chofer {
-    display: flex;
-    align-items: center;
-
-    gap: 7px;
-
-    padding: 10px 12px;
-
-    margin-bottom: 18px;
-
-    background: #faf8fa;
-
+.btn-recargar {
+    border: 1px solid #ded8df;
+    background: white;
+    color: #5d565e;
+    padding: 9px 15px;
     border-radius: 9px;
-
-    color: #615b62;
-
     font-size: 13px;
     font-weight: 600;
-}
-
-.estado-activo {
-    color: #20a45a;
-}
-
-.estado-inactivo {
-    color: #b8b1b8;
-}
-
-
-/* =====================================================
-   DATOS
-===================================================== */
-
-.datos-chofer {
-    display: flex;
-    flex-direction: column;
-
-    gap: 12px;
-
-    padding-bottom: 18px;
-
-    border-bottom: 1px solid #eee8ef;
-}
-
-.datos-chofer > div {
-    display: flex;
-    flex-direction: column;
-
-    gap: 4px;
-}
-
-.datos-chofer strong {
-    color: #88818a;
-
-    font-size: 11px;
-    text-transform: uppercase;
-
-    letter-spacing: 0.5px;
-}
-
-.datos-chofer span {
-    color: #383238;
-
-    font-size: 14px;
-
-    overflow-wrap: anywhere;
-}
-
-
-/* =====================================================
-   ACCIONES
-===================================================== */
-
-.acciones-chofer {
-    display: flex;
-    flex-wrap: wrap;
-
-    gap: 8px;
-
-    padding-top: 18px;
-}
-
-.acciones-chofer button {
-    border: none;
-
-    padding: 9px 12px;
-
-    border-radius: 8px;
-
-    font-size: 12px;
-    font-weight: 700;
-
     cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        opacity 0.2s ease,
-        background 0.2s ease;
-}
-
-.acciones-chofer button:hover {
-    transform: translateY(-1px);
-    opacity: 0.9;
-}
-
-
-/* =====================================================
-   ASIGNAR
-===================================================== */
-
-.btn-asignar {
-    background: #75176e;
-    color: white;
-
-    flex: 1 1 100%;
-}
-
-.btn-asignar:hover {
-    background: #61125b;
-}
-
-
-/* =====================================================
-   UBICACIÓN
-===================================================== */
-
-.btn-ubicacion {
-    background: #eee4f0;
-    color: #75176e;
-}
-
-
-/* =====================================================
-   EDITAR
-===================================================== */
-
-.btn-editar {
-    background: #f1edf2;
-    color: #4d464f;
-}
-
-
-/* =====================================================
-   ELIMINAR
-===================================================== */
-
-.btn-eliminar {
-    background: #fdeaea;
-    color: #b52c2c;
-}
-
-
-/* =====================================================
-   MODAL FONDO
-===================================================== */
-
-.modal-fondo {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 9999;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
-    padding: 20px;
-
-    background: rgba(31, 20, 31, 0.55);
-
-    backdrop-filter: blur(3px);
+    gap: 8px;
+    transition: 0.2s ease;
 }
 
+.btn-recargar:hover {
+    border-color: #75176e;
+    color: #75176e;
+    background: #fcf8fc;
+}
 
-/* =====================================================
-   MODAL
-===================================================== */
+.btn-recargar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
-.modal-chofer {
+.tabla-contenedor {
     width: 100%;
-    max-width: 520px;
+    overflow-x: auto;
+}
 
+.tabla-contenedor table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-contenedor thead {
+    background: #faf8fa;
+}
+
+.tabla-contenedor th {
+    color: #777078;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid #eee9ef;
+    white-space: nowrap;
+}
+
+.tabla-contenedor td {
+    padding: 17px 20px;
+    color: #4f484f;
+    font-size: 13px;
+    border-bottom: 1px solid #f0edf1;
+    vertical-align: middle;
+}
+
+.tabla-contenedor tbody tr {
+    transition: 0.2s ease;
+}
+
+.tabla-contenedor tbody tr:hover {
+    background: #fcf9fc;
+}
+
+.tabla-contenedor tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.chofer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 190px;
+}
+
+.chofer-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background: #f0e4ef;
+    color: #75176e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.chofer-info div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.chofer-info strong {
+    color: #332d33;
+    font-size: 13px;
+}
+
+.chofer-info span {
+    color: #a19aa1;
+    font-size: 11px;
+}
+
+.numero-badge {
+    display: inline-block;
+    background: #f5edf5;
+    color: #75176e;
+    padding: 6px 9px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.acciones {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+
+.btn-editar,
+.btn-eliminar {
+    border: none;
+    padding: 9px 13px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: 0.2s ease;
+}
+
+.btn-editar {
+    background: #f3edf5;
+    color: #75176e;
+}
+
+.btn-editar:hover {
+    background: #e9ddea;
+    transform: translateY(-1px);
+}
+
+.btn-eliminar {
+    background: #fff0f0;
+    color: #b83232;
+}
+
+.btn-eliminar:hover {
+    background: #ffe1e1;
+    transform: translateY(-1px);
+}
+
+.sin-choferes {
+    padding: 70px 25px;
+    text-align: center;
+}
+
+.sin-choferes-icono {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: #f5edf5;
+    color: #75176e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.sin-choferes h3 {
+    color: #332d33;
+    font-size: 18px;
+    margin-bottom: 7px;
+}
+
+.sin-choferes p {
+    color: #918a91;
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+.btn-agregar-secundario {
+    border: none;
+    background: #75176e;
+    color: white;
+    padding: 11px 18px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s ease;
+}
+
+.btn-agregar-secundario:hover {
+    background: #62125d;
+    transform: translateY(-1px);
+}
+
+.modal-fondo {
+    position: fixed;
+    inset: 0;
+    background: rgba(31, 24, 31, 0.55);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.modal {
+    width: 100%;
+    max-width: 600px;
     max-height: 90vh;
-
     overflow-y: auto;
-
     background: white;
-
     border-radius: 20px;
-
-    padding: 27px;
-
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.20);
-
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
     animation: aparecerModal 0.2s ease;
 }
 
 @keyframes aparecerModal {
-
     from {
         opacity: 0;
-        transform: translateY(12px) scale(0.98);
+        transform: translateY(10px) scale(0.98);
     }
 
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
-
 }
 
-
-/* =====================================================
-   HEADER MODAL
-===================================================== */
-
-.modal-header {
+.modal-top {
+    padding: 25px 27px 20px;
     display: flex;
-
     justify-content: space-between;
     align-items: flex-start;
-
-    gap: 20px;
-
-    margin-bottom: 25px;
+    border-bottom: 1px solid #eee9ef;
 }
 
-.modal-header h2 {
+.modal-etiqueta {
     color: #75176e;
-
-    font-size: 23px;
-
-    margin-bottom: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
 }
 
-.modal-header p {
-    color: #77717a;
-
-    font-size: 13px;
-
-    line-height: 1.5;
+.modal-top h2 {
+    color: #302a30;
+    font-size: 22px;
+    margin-top: 5px;
 }
 
-.modal-header strong {
-    color: #75176e;
-}
-
-
-/* =====================================================
-   CERRAR MODAL
-===================================================== */
-
-.cerrar-modal {
-    width: 35px;
-    height: 35px;
-
+.btn-cerrar {
+    width: 34px;
+    height: 34px;
     border: none;
-
     border-radius: 50%;
-
-    background: #f4eff5;
-
-    color: #625a63;
-
-    font-size: 24px;
-    line-height: 1;
-
+    background: #f5f2f5;
+    color: #6d666d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease;
+    transition: 0.2s ease;
 }
 
-.cerrar-modal:hover {
-    background: #eadfea;
+.btn-cerrar:hover {
+    background: #eee8ef;
     color: #75176e;
 }
 
+.modal form {
+    padding: 25px 27px 27px;
+}
 
-/* =====================================================
-   FORMULARIO
-===================================================== */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
 
-.modal-chofer form {
+.campo {
     display: flex;
     flex-direction: column;
+    gap: 7px;
 }
 
-.modal-chofer label {
-    margin-bottom: 7px;
+.campo-completo {
+    grid-column: 1 / -1;
+}
 
-    color: #4b444c;
-
-    font-size: 13px;
+.campo label {
+    color: #504950;
+    font-size: 12px;
     font-weight: 700;
 }
 
-.modal-chofer input,
-.modal-chofer select {
+.campo input {
     width: 100%;
-
+    border: 1px solid #ddd7df;
+    background: #fcfbfc;
+    color: #383238;
     padding: 12px 13px;
-
-    margin-bottom: 17px;
-
-    border: 1px solid #ddd5df;
-
     border-radius: 9px;
-
-    background: #fff;
-
-    color: #302a31;
-
-    font-size: 14px;
-
     outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    font-size: 13px;
+    transition: 0.2s ease;
 }
 
-.modal-chofer input:focus,
-.modal-chofer select:focus {
+.campo input::placeholder {
+    color: #aaa4aa;
+}
+
+.campo input:focus {
     border-color: #75176e;
-
-    box-shadow:
-        0 0 0 3px rgba(117, 23, 110, 0.10);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(117, 23, 110, 0.08);
 }
-
-.modal-chofer input::placeholder {
-    color: #aaa3ab;
-}
-
-
-/* =====================================================
-   BOTONES MODAL
-===================================================== */
 
 .modal-acciones {
     display: flex;
-
     justify-content: flex-end;
-
     gap: 10px;
-
-    margin-top: 8px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee9ef;
 }
 
-.modal-acciones button {
-    border: none;
-
-    padding: 11px 17px;
-
+.btn-cancelar,
+.btn-guardar {
+    padding: 11px 18px;
     border-radius: 9px;
-
     font-size: 13px;
     font-weight: 700;
-
     cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        background 0.2s ease;
-}
-
-.modal-acciones button:hover {
-    transform: translateY(-1px);
+    transition: 0.2s ease;
 }
 
 .btn-cancelar {
-    background: #eee9ef;
-    color: #514a52;
+    border: 1px solid #ddd7df;
+    background: white;
+    color: #665f66;
 }
 
 .btn-cancelar:hover {
-    background: #e3dde4;
+    background: #f7f4f7;
 }
 
 .btn-guardar {
+    border: none;
     background: #75176e;
     color: white;
+    box-shadow: 0 5px 14px rgba(117, 23, 110, 0.16);
 }
 
 .btn-guardar:hover {
-    background: #61125b;
+    background: #62125d;
+    transform: translateY(-1px);
 }
 
-
-/* =====================================================
-   MODAL ASIGNAR
-===================================================== */
-
-.modal-chofer .estado {
-    max-width: none;
-
-    margin: 10px 0 20px;
-
-    padding: 25px 20px;
-
-    box-shadow: none;
-
-    background: #faf8fa;
-}
-
-.modal-chofer .estado h3 {
-    font-size: 18px;
-}
-
-.modal-chofer .estado p {
-    font-size: 13px;
-    margin-bottom: 8px;
-}
-
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media (max-width: 800px) {
-
+@media (max-width: 850px) {
     .admin-chofer-page {
-        padding: 25px 18px 60px;
+        padding: 30px 16px 60px;
     }
 
-    .admin-chofer-header {
+    .admin-chofer-top {
         align-items: flex-start;
         flex-direction: column;
     }
 
-    .admin-chofer-header h1 {
-        font-size: 26px;
-    }
-
-    .btn-agregar {
+    .admin-acciones-top {
         width: 100%;
     }
 
-}
-
-
-@media (max-width: 500px) {
-
-    .choferes-grid {
-        grid-template-columns: 1fr;
+    .btn-agregar,
+    .btn-cerrar-sesion {
+        flex: 1;
     }
 
-    .chofer-card-admin {
-        padding: 18px;
-    }
-
-    .acciones-chofer {
+    .panel-header {
+        align-items: flex-start;
         flex-direction: column;
     }
 
-    .acciones-chofer button {
+    .btn-recargar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-chofer-top h1 {
+        font-size: 28px;
+    }
+
+    .admin-acciones-top {
+        flex-direction: column;
+    }
+
+    .btn-agregar,
+    .btn-cerrar-sesion {
         width: 100%;
     }
 
-    .modal-chofer {
-        padding: 21px;
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
 
-        border-radius: 16px;
+    .campo-completo {
+        grid-column: auto;
+    }
+
+    .modal {
+        border-radius: 15px;
+    }
+
+    .modal-top,
+    .modal form {
+        padding-left: 20px;
+        padding-right: 20px;
     }
 
     .modal-acciones {
         flex-direction: column-reverse;
     }
 
-    .modal-acciones button {
+    .btn-cancelar,
+    .btn-guardar {
         width: 100%;
     }
 
-}
+    .acciones {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
 
+    .btn-editar,
+    .btn-eliminar {
+        width: 100%;
+    }
+}

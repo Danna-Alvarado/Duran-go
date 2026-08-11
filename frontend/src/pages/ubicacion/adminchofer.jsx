@@ -1,17 +1,26 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    FaPlus,
+    FaSignOutAlt,
+    FaEdit,
+    FaTrash,
+    FaSyncAlt,
+    FaUserTie,
+    FaTimes
+} from "react-icons/fa";
 import "./adminchofer.css";
 
 const ADMIN_URL = import.meta.env.VITE_ADMIN_URL;
 
 function AdminChofer() {
+    const navigate = useNavigate();
+
     const [choferes, setChoferes] = useState([]);
     const [cargando, setCargando] = useState(false);
-
     const [mostrarModal, setMostrarModal] = useState(false);
     const [modoEdicion, setModoEdicion] = useState(false);
-
     const [choferEditando, setChoferEditando] = useState(null);
-
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
 
@@ -23,14 +32,46 @@ function AdminChofer() {
         contrasena: ""
     });
 
+    const obtenerToken = () => {
+        return localStorage.getItem("adminToken");
+    };
+
+    const manejarSesion = (respuesta) => {
+        if (respuesta.status === 401 || respuesta.status === 403) {
+            localStorage.removeItem("adminToken");
+            navigate("/", { replace: true });
+            return false;
+        }
+
+        return true;
+    };
+
     const cargarChoferes = async () => {
         try {
             setCargando(true);
             setError("");
+            setMensaje("");
+
+            const token = obtenerToken();
+
+            if (!token) {
+                navigate("/", { replace: true });
+                return;
+            }
 
             const respuesta = await fetch(
-                `${ADMIN_URL}/choferes`
+                `${ADMIN_URL}/choferes`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
+
+            if (!manejarSesion(respuesta)) {
+                return;
+            }
 
             const data = await respuesta.json();
 
@@ -42,6 +83,7 @@ function AdminChofer() {
             }
 
             setChoferes(data.choferes || []);
+
         } catch (err) {
             setError(err.message);
         } finally {
@@ -85,6 +127,14 @@ function AdminChofer() {
         setMostrarModal(false);
         setChoferEditando(null);
         setModoEdicion(false);
+
+        setFormulario({
+            numero_unico: "",
+            nombre_completo: "",
+            correo: "",
+            telefono: "",
+            contrasena: ""
+        });
     };
 
     const cambiarCampo = (e) => {
@@ -103,6 +153,13 @@ function AdminChofer() {
         setError("");
 
         try {
+            const token = obtenerToken();
+
+            if (!token) {
+                navigate("/", { replace: true });
+                return;
+            }
+
             const url = modoEdicion
                 ? `${ADMIN_URL}/choferes/${choferEditando.id}`
                 : `${ADMIN_URL}/choferes`;
@@ -110,10 +167,15 @@ function AdminChofer() {
             const respuesta = await fetch(url, {
                 method: modoEdicion ? "PUT" : "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify(formulario)
             });
+
+            if (!manejarSesion(respuesta)) {
+                return;
+            }
 
             const data = await respuesta.json();
 
@@ -124,13 +186,14 @@ function AdminChofer() {
                 );
             }
 
+            cerrarModal();
+
             setMensaje(
                 modoEdicion
                     ? "Chofer actualizado correctamente"
                     : "Chofer agregado correctamente"
             );
 
-            cerrarModal();
             await cargarChoferes();
 
         } catch (err) {
@@ -151,12 +214,26 @@ function AdminChofer() {
             setError("");
             setMensaje("");
 
+            const token = obtenerToken();
+
+            if (!token) {
+                navigate("/", { replace: true });
+                return;
+            }
+
             const respuesta = await fetch(
                 `${ADMIN_URL}/choferes/${chofer.id}`,
                 {
-                    method: "DELETE"
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
             );
+
+            if (!manejarSesion(respuesta)) {
+                return;
+            }
 
             const data = await respuesta.json();
 
@@ -174,6 +251,11 @@ function AdminChofer() {
         } catch (err) {
             setError(err.message);
         }
+    };
+
+    const cerrarSesion = () => {
+        localStorage.removeItem("adminToken");
+        navigate("/", { replace: true });
     };
 
     return (
@@ -196,19 +278,31 @@ function AdminChofer() {
                         </p>
                     </div>
 
-                    <button
-                        className="btn-agregar"
-                        onClick={abrirAgregar}
-                    >
-                        <span>+</span>
-                        Agregar chofer
-                    </button>
+                    <div className="admin-acciones-top">
+
+                        <button
+                            className="btn-cerrar-sesion"
+                            onClick={cerrarSesion}
+                        >
+                            <FaSignOutAlt />
+                            Cerrar sesión
+                        </button>
+
+                        <button
+                            className="btn-agregar"
+                            onClick={abrirAgregar}
+                        >
+                            <FaPlus />
+                            Agregar chofer
+                        </button>
+
+                    </div>
 
                 </div>
 
                 {mensaje && (
                     <div className="alerta alerta-exito">
-                        ✓ {mensaje}
+                        {mensaje}
                     </div>
                 )}
 
@@ -235,7 +329,10 @@ function AdminChofer() {
                             onClick={cargarChoferes}
                             disabled={cargando}
                         >
-                            {cargando ? "Cargando..." : "↻ Actualizar"}
+                            <FaSyncAlt />
+                            {cargando
+                                ? "Cargando..."
+                                : "Actualizar"}
                         </button>
 
                     </div>
@@ -245,10 +342,12 @@ function AdminChofer() {
                         <div className="sin-choferes">
 
                             <div className="sin-choferes-icono">
-                                👨‍✈️
+                                <FaUserTie />
                             </div>
 
-                            <h3>No hay choferes registrados</h3>
+                            <h3>
+                                No hay choferes registrados
+                            </h3>
 
                             <p>
                                 Agrega el primer chofer para comenzar.
@@ -258,7 +357,8 @@ function AdminChofer() {
                                 className="btn-agregar-secundario"
                                 onClick={abrirAgregar}
                             >
-                                + Agregar chofer
+                                <FaPlus />
+                                Agregar chofer
                             </button>
 
                         </div>
@@ -322,7 +422,6 @@ function AdminChofer() {
                                             </td>
 
                                             <td>
-
                                                 <div className="acciones">
 
                                                     <button
@@ -331,22 +430,21 @@ function AdminChofer() {
                                                             abrirEditar(chofer)
                                                         }
                                                     >
-                                                        ✏️ Editar
+                                                        <FaEdit />
+                                                        Editar
                                                     </button>
 
                                                     <button
                                                         className="btn-eliminar"
                                                         onClick={() =>
-                                                            eliminarChofer(
-                                                                chofer
-                                                            )
+                                                            eliminarChofer(chofer)
                                                         }
                                                     >
-                                                        🗑️ Eliminar
+                                                        <FaTrash />
+                                                        Eliminar
                                                     </button>
 
                                                 </div>
-
                                             </td>
 
                                         </tr>
@@ -399,7 +497,7 @@ function AdminChofer() {
                                 className="btn-cerrar"
                                 onClick={cerrarModal}
                             >
-                                ×
+                                <FaTimes />
                             </button>
 
                         </div>
@@ -542,4 +640,3 @@ function AdminChofer() {
 }
 
 export default AdminChofer;
-
