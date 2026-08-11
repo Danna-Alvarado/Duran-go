@@ -1,34 +1,19 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import "./adminchofer.css";
 
-import {
-    obtenerChoferes,
-    crearChofer,
-    actualizarChofer,
-    eliminarChofer
-} from "./adminChofer.api";
+const ADMIN_URL = import.meta.env.VITE_ADMIN_URL;
 
 function AdminChofer() {
-
-    const navigate = useNavigate();
-
-    // =====================================================
-    // ESTADOS
-    // =====================================================
-
     const [choferes, setChoferes] = useState([]);
-    const [cargando, setCargando] = useState(true);
+    const [cargando, setCargando] = useState(false);
+
+    const [mostrarModal, setMostrarModal] = useState(false);
+    const [modoEdicion, setModoEdicion] = useState(false);
+
+    const [choferEditando, setChoferEditando] = useState(null);
 
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
-
-    const [modal, setModal] = useState(false);
-    const [modoEdicion, setModoEdicion] = useState(false);
-    const [choferEditando, setChoferEditando] = useState(null);
-
-    const [modalAsignar, setModalAsignar] = useState(false);
-    const [choferAsignando, setChoferAsignando] = useState(null);
 
     const [formulario, setFormulario] = useState({
         numero_unico: "",
@@ -38,341 +23,124 @@ function AdminChofer() {
         contrasena: ""
     });
 
-    // =====================================================
-    // CARGAR CHOFERES
-    // =====================================================
-
-    useEffect(() => {
-
-        let activo = true;
-
-        const cargar = async () => {
-
-            try {
-
-                setCargando(true);
-                setError("");
-
-                const token = localStorage.getItem("tokenAdmin");
-
-                if (!token) {
-                    navigate("/");
-                    return;
-                }
-
-                const resultado = await obtenerChoferes(token);
-
-                if (!activo) {
-                    return;
-                }
-
-                setChoferes(
-                    Array.isArray(resultado)
-                        ? resultado
-                        : []
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Error cargando choferes:",
-                    error
-                );
-
-                if (!activo) {
-                    return;
-                }
-
-                if (
-                    error.status === 401 ||
-                    error.status === 403
-                ) {
-
-                    localStorage.removeItem("tokenAdmin");
-                    localStorage.removeItem("admin");
-
-                    navigate("/");
-                    return;
-                }
-
-                setError(
-                    error.message ||
-                    "No se pudieron cargar los choferes"
-                );
-
-            } finally {
-
-                if (activo) {
-                    setCargando(false);
-                }
-
-            }
-
-        };
-
-        cargar();
-
-        return () => {
-            activo = false;
-        };
-
-    }, [navigate]);
-
-    // =====================================================
-    // RECARGAR CHOFERES
-    // =====================================================
-
     const cargarChoferes = async () => {
-
         try {
-
+            setCargando(true);
             setError("");
 
-            const token = localStorage.getItem("tokenAdmin");
+            const respuesta = await fetch(
+                `${ADMIN_URL}/choferes`
+            );
 
-            if (!token) {
-                navigate("/");
-                return;
+            const data = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(
+                    data.mensaje ||
+                    "No se pudieron obtener los choferes"
+                );
             }
 
-            const resultado = await obtenerChoferes(token);
-
-            setChoferes(
-                Array.isArray(resultado)
-                    ? resultado
-                    : []
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Error recargando choferes:",
-                error
-            );
-
-            if (
-                error.status === 401 ||
-                error.status === 403
-            ) {
-
-                localStorage.removeItem("tokenAdmin");
-                localStorage.removeItem("admin");
-
-                navigate("/");
-                return;
-            }
-
-            setError(
-                error.message ||
-                "No se pudieron cargar los choferes"
-            );
-
+            setChoferes(data.choferes || []);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setCargando(false);
         }
-
     };
 
-    // =====================================================
-    // CAMBIAR FORMULARIO
-    // =====================================================
-
-    const manejarCambio = (e) => {
-
-        const {
-            name,
-            value
-        } = e.target;
-
-        setFormulario((anterior) => ({
-            ...anterior,
-            [name]: value
-        }));
-
-    };
-
-    // =====================================================
-    // ABRIR CREAR
-    // =====================================================
-
-    const abrirCrear = () => {
+    const abrirAgregar = () => {
+        setFormulario({
+            numero_unico: "",
+            nombre_completo: "",
+            correo: "",
+            telefono: "",
+            contrasena: ""
+        });
 
         setModoEdicion(false);
         setChoferEditando(null);
-
-        setFormulario({
-            numero_unico: "",
-            nombre_completo: "",
-            correo: "",
-            telefono: "",
-            contrasena: ""
-        });
-
         setMensaje("");
         setError("");
-
-        setModal(true);
-
+        setMostrarModal(true);
     };
 
-    // =====================================================
-    // ABRIR EDITAR
-    // =====================================================
-
     const abrirEditar = (chofer) => {
+        setFormulario({
+            numero_unico: chofer.numero_unico || "",
+            nombre_completo: chofer.nombre_completo || "",
+            correo: chofer.correo || "",
+            telefono: chofer.telefono || "",
+            contrasena: ""
+        });
 
         setModoEdicion(true);
         setChoferEditando(chofer);
+        setMensaje("");
+        setError("");
+        setMostrarModal(true);
+    };
 
-        setFormulario({
-            numero_unico:
-                chofer.numero_unico || "",
+    const cerrarModal = () => {
+        setMostrarModal(false);
+        setChoferEditando(null);
+        setModoEdicion(false);
+    };
 
-            nombre_completo:
-                chofer.nombre_completo || "",
+    const cambiarCampo = (e) => {
+        const { name, value } = e.target;
 
-            correo:
-                chofer.correo || "",
+        setFormulario((actual) => ({
+            ...actual,
+            [name]: value
+        }));
+    };
 
-            telefono:
-                chofer.telefono || "",
-
-            contrasena: ""
-        });
+    const guardarChofer = async (e) => {
+        e.preventDefault();
 
         setMensaje("");
         setError("");
 
-        setModal(true);
-
-    };
-
-    // =====================================================
-    // CERRAR MODAL
-    // =====================================================
-
-    const cerrarModal = () => {
-
-        setModal(false);
-        setChoferEditando(null);
-
-        setFormulario({
-            numero_unico: "",
-            nombre_completo: "",
-            correo: "",
-            telefono: "",
-            contrasena: ""
-        });
-
-    };
-
-    // =====================================================
-    // GUARDAR CHOFER
-    // =====================================================
-
-    const guardarChofer = async (e) => {
-
-        e.preventDefault();
-
         try {
+            const url = modoEdicion
+                ? `${ADMIN_URL}/choferes/${choferEditando.id}`
+                : `${ADMIN_URL}/choferes`;
 
-            setMensaje("");
-            setError("");
+            const respuesta = await fetch(url, {
+                method: modoEdicion ? "PUT" : "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formulario)
+            });
 
-            const token =
-                localStorage.getItem("tokenAdmin");
+            const data = await respuesta.json();
 
-            if (!token) {
-                navigate("/");
-                return;
+            if (!respuesta.ok) {
+                throw new Error(
+                    data.mensaje ||
+                    "No se pudo guardar el chofer"
+                );
             }
 
-            const datos = {
-                numero_unico:
-                    formulario.numero_unico.trim(),
-
-                nombre_completo:
-                    formulario.nombre_completo.trim(),
-
-                correo:
-                    formulario.correo.trim(),
-
-                telefono:
-                    formulario.telefono.trim()
-            };
-
-            if (
-                formulario.contrasena.trim() !== ""
-            ) {
-
-                datos.contrasena =
-                    formulario.contrasena;
-
-            }
-
-            if (modoEdicion) {
-
-                await actualizarChofer(
-                    token,
-                    choferEditando.id,
-                    datos
-                );
-
-                setMensaje(
-                    "Chofer actualizado correctamente"
-                );
-
-            } else {
-
-                await crearChofer(
-                    token,
-                    datos
-                );
-
-                setMensaje(
-                    "Chofer creado correctamente"
-                );
-
-            }
+            setMensaje(
+                modoEdicion
+                    ? "Chofer actualizado correctamente"
+                    : "Chofer agregado correctamente"
+            );
 
             cerrarModal();
-
             await cargarChoferes();
 
-        } catch (error) {
-
-            console.error(
-                "Error guardando chofer:",
-                error
-            );
-
-            if (
-                error.status === 401 ||
-                error.status === 403
-            ) {
-
-                localStorage.removeItem("tokenAdmin");
-                localStorage.removeItem("admin");
-
-                navigate("/");
-                return;
-            }
-
-            setError(
-                error.message ||
-                "No se pudo guardar el chofer"
-            );
-
+        } catch (err) {
+            setError(err.message);
         }
-
     };
 
-    // =====================================================
-    // ELIMINAR
-    // =====================================================
-
-    const eliminar = async (id) => {
-
+    const eliminarChofer = async (chofer) => {
         const confirmar = window.confirm(
-            "¿Seguro que deseas eliminar este chofer?"
+            `¿Seguro que quieres eliminar a ${chofer.nombre_completo}?`
         );
 
         if (!confirmar) {
@@ -380,394 +148,255 @@ function AdminChofer() {
         }
 
         try {
-
-            setMensaje("");
             setError("");
+            setMensaje("");
 
-            const token =
-                localStorage.getItem("tokenAdmin");
+            const respuesta = await fetch(
+                `${ADMIN_URL}/choferes/${chofer.id}`,
+                {
+                    method: "DELETE"
+                }
+            );
 
-            if (!token) {
-                navigate("/");
-                return;
+            const data = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(
+                    data.mensaje ||
+                    "No se pudo eliminar el chofer"
+                );
             }
 
-            await eliminarChofer(
-                token,
-                id
-            );
-
-            setMensaje(
-                "Chofer eliminado correctamente"
-            );
+            setMensaje("Chofer eliminado correctamente");
 
             await cargarChoferes();
 
-        } catch (error) {
-
-            console.error(
-                "Error eliminando chofer:",
-                error
-            );
-
-            if (
-                error.status === 401 ||
-                error.status === 403
-            ) {
-
-                localStorage.removeItem("tokenAdmin");
-                localStorage.removeItem("admin");
-
-                navigate("/");
-                return;
-            }
-
-            setError(
-                error.message ||
-                "No se pudo eliminar el chofer"
-            );
-
+        } catch (err) {
+            setError(err.message);
         }
-
     };
-
-    // =====================================================
-    // ASIGNAR RUTA
-    // =====================================================
-
-    const abrirAsignar = (chofer) => {
-
-        setChoferAsignando(chofer);
-        setMensaje("");
-        setError("");
-        setModalAsignar(true);
-
-    };
-
-    // =====================================================
-    // VER UBICACIÓN
-    // =====================================================
-
-    const verUbicacion = (chofer) => {
-
-        if (
-            chofer.latitud === null ||
-            chofer.longitud === null
-        ) {
-            return;
-        }
-
-        navigate(
-            "/admin/monitoreo",
-            {
-                state: {
-                    choferId: chofer.id
-                }
-            }
-        );
-
-    };
-
-    // =====================================================
-    // RENDER
-    // =====================================================
 
     return (
-
         <div className="admin-chofer-page">
 
-            {/* HEADER */}
+            <div className="admin-chofer-container">
 
-            <div className="admin-chofer-header">
+                <div className="admin-chofer-top">
 
-                <div>
+                    <div>
+                        <span className="admin-etiqueta">
+                            ADMINISTRACIÓN
+                        </span>
 
-                    <h1>
-                        Administración de choferes
-                    </h1>
+                        <h1>Choferes</h1>
 
-                    <p>
-                        Gestiona y supervisa los choferes de DURAN-GO
-                    </p>
+                        <p>
+                            Administra los conductores registrados
+                            en DURAN-GO.
+                        </p>
+                    </div>
 
-                </div>
-
-                <button
-                    className="btn-agregar"
-                    onClick={abrirCrear}
-                >
-                    + Agregar chofer
-                </button>
-
-            </div>
-
-
-            {/* MENSAJES */}
-
-            {mensaje && (
-
-                <div className="mensaje-exito">
-                    {mensaje}
-                </div>
-
-            )}
-
-            {error && (
-
-                <div className="mensaje-error">
-                    {error}
-                </div>
-
-            )}
-
-
-            {/* CARGANDO */}
-
-            {cargando ? (
-
-                <div className="estado">
-
-                    <h2>
-                        Cargando choferes...
-                    </h2>
-
-                    <p>
-                        Estamos obteniendo la información.
-                    </p>
+                    <button
+                        className="btn-agregar"
+                        onClick={abrirAgregar}
+                    >
+                        <span>+</span>
+                        Agregar chofer
+                    </button>
 
                 </div>
 
-            ) : choferes.length === 0 ? (
+                {mensaje && (
+                    <div className="alerta alerta-exito">
+                        ✓ {mensaje}
+                    </div>
+                )}
 
-                <div className="estado">
+                {error && (
+                    <div className="alerta alerta-error">
+                        {error}
+                    </div>
+                )}
 
-                    <h2>
-                        No hay choferes registrados
-                    </h2>
+                <div className="choferes-panel">
 
-                    <p>
-                        Agrega el primer chofer para comenzar.
-                    </p>
+                    <div className="panel-header">
 
-                </div>
+                        <div>
+                            <h2>Lista de choferes</h2>
 
-            ) : (
+                            <p>
+                                {choferes.length} choferes registrados
+                            </p>
+                        </div>
 
-                <div className="choferes-grid">
-
-                    {choferes.map((chofer) => (
-
-                        <div
-                            className="chofer-card-admin"
-                            key={chofer.id}
+                        <button
+                            className="btn-recargar"
+                            onClick={cargarChoferes}
+                            disabled={cargando}
                         >
+                            {cargando ? "Cargando..." : "↻ Actualizar"}
+                        </button>
 
-                            {/* HEADER CARD */}
+                    </div>
 
-                            <div className="chofer-card-header">
+                    {choferes.length === 0 && !cargando ? (
 
-                                <div className="avatar-chofer">
+                        <div className="sin-choferes">
 
-                                    {chofer.nombre_completo
-                                        ?.charAt(0)
-                                        .toUpperCase()}
-
-                                </div>
-
-                                <div>
-
-                                    <h2>
-                                        {chofer.nombre_completo}
-                                    </h2>
-
-                                    <span>
-                                        {chofer.numero_unico}
-                                    </span>
-
-                                </div>
-
+                            <div className="sin-choferes-icono">
+                                👨‍✈️
                             </div>
 
+                            <h3>No hay choferes registrados</h3>
 
-                            {/* ESTADO */}
+                            <p>
+                                Agrega el primer chofer para comenzar.
+                            </p>
 
-                            <div className="estado-chofer">
-
-                                <span
-                                    className={
-                                        chofer.activo
-                                            ? "estado-activo"
-                                            : "estado-inactivo"
-                                    }
-                                >
-                                    ●
-                                </span>
-
-                                {chofer.activo
-                                    ? "En jornada"
-                                    : "Fuera de jornada"}
-
-                            </div>
-
-
-                            {/* DATOS */}
-
-                            <div className="datos-chofer">
-
-                                <div>
-
-                                    <strong>
-                                        Ruta
-                                    </strong>
-
-                                    <span>
-                                        {chofer.ruta_nombre ||
-                                            "Sin ruta asignada"}
-                                    </span>
-
-                                </div>
-
-                                <div>
-
-                                    <strong>
-                                        Autobús
-                                    </strong>
-
-                                    <span>
-                                        {chofer.numero_bus ||
-                                            "Sin autobús"}
-                                    </span>
-
-                                </div>
-
-                                <div>
-
-                                    <strong>
-                                        Ubicación
-                                    </strong>
-
-                                    <span>
-                                        {chofer.latitud !== null &&
-                                        chofer.longitud !== null
-                                            ? "Disponible"
-                                            : "No disponible"}
-                                    </span>
-
-                                </div>
-
-                                {chofer.ultima_actualizacion && (
-
-                                    <div>
-
-                                        <strong>
-                                            Última actualización
-                                        </strong>
-
-                                        <span>
-                                            {new Date(
-                                                chofer.ultima_actualizacion
-                                            ).toLocaleString(
-                                                "es-MX"
-                                            )}
-                                        </span>
-
-                                    </div>
-
-                                )}
-
-                            </div>
-
-
-                            {/* ACCIONES */}
-
-                            <div className="acciones-chofer">
-
-                                <button
-                                    className="btn-asignar"
-                                    onClick={() =>
-                                        abrirAsignar(chofer)
-                                    }
-                                >
-                                    🚍 Asignar ruta
-                                </button>
-
-
-                                {chofer.latitud !== null &&
-                                chofer.longitud !== null && (
-
-                                    <button
-                                        className="btn-ubicacion"
-                                        onClick={() =>
-                                            verUbicacion(chofer)
-                                        }
-                                    >
-                                        📍 Ver ubicación
-                                    </button>
-
-                                )}
-
-
-                                <button
-                                    className="btn-editar"
-                                    onClick={() =>
-                                        abrirEditar(chofer)
-                                    }
-                                >
-                                    Editar
-                                </button>
-
-
-                                <button
-                                    className="btn-eliminar"
-                                    onClick={() =>
-                                        eliminar(chofer.id)
-                                    }
-                                >
-                                    Eliminar
-                                </button>
-
-                            </div>
+                            <button
+                                className="btn-agregar-secundario"
+                                onClick={abrirAgregar}
+                            >
+                                + Agregar chofer
+                            </button>
 
                         </div>
 
-                    ))}
+                    ) : (
+
+                        <div className="tabla-contenedor">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>Chofer</th>
+                                        <th>Número único</th>
+                                        <th>Correo</th>
+                                        <th>Teléfono</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {choferes.map((chofer) => (
+
+                                        <tr key={chofer.id}>
+
+                                            <td>
+                                                <div className="chofer-info">
+
+                                                    <div className="chofer-avatar">
+                                                        {chofer.nombre_completo
+                                                            ?.charAt(0)
+                                                            ?.toUpperCase()}
+                                                    </div>
+
+                                                    <div>
+                                                        <strong>
+                                                            {chofer.nombre_completo}
+                                                        </strong>
+
+                                                        <span>
+                                                            ID #{chofer.id}
+                                                        </span>
+                                                    </div>
+
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <span className="numero-badge">
+                                                    {chofer.numero_unico}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                {chofer.correo}
+                                            </td>
+
+                                            <td>
+                                                {chofer.telefono}
+                                            </td>
+
+                                            <td>
+
+                                                <div className="acciones">
+
+                                                    <button
+                                                        className="btn-editar"
+                                                        onClick={() =>
+                                                            abrirEditar(chofer)
+                                                        }
+                                                    >
+                                                        ✏️ Editar
+                                                    </button>
+
+                                                    <button
+                                                        className="btn-eliminar"
+                                                        onClick={() =>
+                                                            eliminarChofer(
+                                                                chofer
+                                                            )
+                                                        }
+                                                    >
+                                                        🗑️ Eliminar
+                                                    </button>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    )}
 
                 </div>
 
-            )}
+            </div>
 
+            {mostrarModal && (
 
-            {/* =================================================
-                MODAL CREAR / EDITAR
-            ================================================= */}
+                <div
+                    className="modal-fondo"
+                    onClick={cerrarModal}
+                >
 
-            {modal && (
+                    <div
+                        className="modal"
+                        onClick={(e) =>
+                            e.stopPropagation()
+                        }
+                    >
 
-                <div className="modal-fondo">
-
-                    <div className="modal-chofer">
-
-                        <div className="modal-header">
+                        <div className="modal-top">
 
                             <div>
+                                <span className="modal-etiqueta">
+                                    {modoEdicion
+                                        ? "EDITAR"
+                                        : "NUEVO CHOFER"}
+                                </span>
 
                                 <h2>
                                     {modoEdicion
                                         ? "Editar chofer"
-                                        : "Nuevo chofer"}
+                                        : "Agregar chofer"}
                                 </h2>
-
-                                <p>
-                                    {modoEdicion
-                                        ? "Actualiza la información del chofer"
-                                        : "Registra un nuevo chofer"}
-                                </p>
-
                             </div>
 
                             <button
-                                type="button"
-                                className="cerrar-modal"
+                                className="btn-cerrar"
                                 onClick={cerrarModal}
                             >
                                 ×
@@ -775,86 +404,109 @@ function AdminChofer() {
 
                         </div>
 
-
                         <form onSubmit={guardarChofer}>
 
-                            <label>
-                                Código único
-                            </label>
+                            <div className="form-grid">
 
-                            <input
-                                type="text"
-                                name="numero_unico"
-                                value={formulario.numero_unico}
-                                onChange={manejarCambio}
-                                placeholder="Ej. CH001"
-                                required
-                            />
+                                <div className="campo">
 
+                                    <label>
+                                        Número único
+                                    </label>
 
-                            <label>
-                                Nombre completo
-                            </label>
+                                    <input
+                                        name="numero_unico"
+                                        value={
+                                            formulario.numero_unico
+                                        }
+                                        onChange={cambiarCampo}
+                                        placeholder="Ej. CH-001"
+                                        required
+                                    />
 
-                            <input
-                                type="text"
-                                name="nombre_completo"
-                                value={formulario.nombre_completo}
-                                onChange={manejarCambio}
-                                placeholder="Nombre del chofer"
-                                required
-                            />
+                                </div>
 
+                                <div className="campo">
 
-                            <label>
-                                Correo electrónico
-                            </label>
+                                    <label>
+                                        Nombre completo
+                                    </label>
 
-                            <input
-                                type="email"
-                                name="correo"
-                                value={formulario.correo}
-                                onChange={manejarCambio}
-                                placeholder="correo@ejemplo.com"
-                                required
-                            />
+                                    <input
+                                        name="nombre_completo"
+                                        value={
+                                            formulario.nombre_completo
+                                        }
+                                        onChange={cambiarCampo}
+                                        placeholder="Nombre del chofer"
+                                        required
+                                    />
 
+                                </div>
 
-                            <label>
-                                Teléfono
-                            </label>
+                                <div className="campo">
 
-                            <input
-                                type="tel"
-                                name="telefono"
-                                value={formulario.telefono}
-                                onChange={manejarCambio}
-                                placeholder="6181234567"
-                                required
-                            />
+                                    <label>
+                                        Correo electrónico
+                                    </label>
 
+                                    <input
+                                        type="email"
+                                        name="correo"
+                                        value={
+                                            formulario.correo
+                                        }
+                                        onChange={cambiarCampo}
+                                        placeholder="correo@ejemplo.com"
+                                        required
+                                    />
 
-                            <label>
+                                </div>
 
-                                {modoEdicion
-                                    ? "Nueva contraseña (opcional)"
-                                    : "Contraseña"}
+                                <div className="campo">
 
-                            </label>
+                                    <label>
+                                        Teléfono
+                                    </label>
 
-                            <input
-                                type="password"
-                                name="contrasena"
-                                value={formulario.contrasena}
-                                onChange={manejarCambio}
-                                placeholder={
-                                    modoEdicion
-                                        ? "Dejar vacío para conservar"
-                                        : "Contraseña"
-                                }
-                                required={!modoEdicion}
-                            />
+                                    <input
+                                        name="telefono"
+                                        value={
+                                            formulario.telefono
+                                        }
+                                        onChange={cambiarCampo}
+                                        placeholder="618 000 0000"
+                                        required
+                                    />
 
+                                </div>
+
+                                <div className="campo campo-completo">
+
+                                    <label>
+                                        {modoEdicion
+                                            ? "Nueva contraseña"
+                                            : "Contraseña"}
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        name="contrasena"
+                                        value={
+                                            formulario.contrasena
+                                        }
+                                        onChange={cambiarCampo}
+                                        placeholder={
+                                            modoEdicion
+                                                ? "Dejar vacío para conservar"
+                                                : "Contraseña"
+                                        }
+                                        required={!modoEdicion}
+                                    />
+
+                                </div>
+
+                            </div>
 
                             <div className="modal-acciones">
 
@@ -885,91 +537,8 @@ function AdminChofer() {
 
             )}
 
-
-            {/* =================================================
-                MODAL ASIGNAR
-            ================================================= */}
-
-            {modalAsignar && choferAsignando && (
-
-                <div className="modal-fondo">
-
-                    <div className="modal-chofer">
-
-                        <div className="modal-header">
-
-                            <div>
-
-                                <h2>
-                                    Asignar ruta
-                                </h2>
-
-                                <p>
-                                    Chofer:{" "}
-                                    <strong>
-                                        {choferAsignando.nombre_completo}
-                                    </strong>
-                                </p>
-
-                            </div>
-
-                            <button
-                                type="button"
-                                className="cerrar-modal"
-                                onClick={() =>
-                                    setModalAsignar(false)
-                                }
-                            >
-                                ×
-                            </button>
-
-                        </div>
-
-
-                        <div className="estado">
-
-                            <h3>
-                                🚧 Asignación de ruta
-                            </h3>
-
-                            <p>
-                                Aquí seleccionaremos la ruta y el
-                                autobús que utilizará este chofer.
-                            </p>
-
-                            <p>
-                                El siguiente paso es conectar este
-                                modal con los endpoints de
-                                <strong> rutas, autobuses y jornadas activas.</strong>
-                            </p>
-
-                        </div>
-
-
-                        <div className="modal-acciones">
-
-                            <button
-                                type="button"
-                                className="btn-cancelar"
-                                onClick={() =>
-                                    setModalAsignar(false)
-                                }
-                            >
-                                Cerrar
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            )}
-
         </div>
-
     );
-
 }
 
 export default AdminChofer;

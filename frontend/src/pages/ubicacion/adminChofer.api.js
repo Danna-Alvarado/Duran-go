@@ -1,9 +1,4 @@
-const AUTH_URL = import.meta.env.VITE_AUTH_URL;
-const UBICACION_URL = import.meta.env.VITE_UBICACION_URL;
-
-// =====================================================
-// PROCESAR RESPUESTA
-// =====================================================
+const ADMIN_URL = import.meta.env.VITE_ADMIN_URL;
 
 const procesarRespuesta = async (respuesta) => {
     const texto = await respuesta.text();
@@ -33,22 +28,9 @@ const procesarRespuesta = async (respuesta) => {
     return data;
 };
 
-// =====================================================
-// OBTENER CHOFERES
-// =====================================================
-// UBICACIÓN SERVICE
-//
-// Devuelve:
-// - chofer
-// - jornada
-// - ruta
-// - autobús
-// - ubicación
-// =====================================================
-
 export const obtenerChoferes = async (token) => {
     const respuesta = await fetch(
-        `${UBICACION_URL}/admin/choferes`,
+        `${ADMIN_URL}/choferes`,
         {
             method: "GET",
             headers: {
@@ -62,15 +44,9 @@ export const obtenerChoferes = async (token) => {
     return data.choferes || [];
 };
 
-// =====================================================
-// CREAR CHOFER
-// =====================================================
-// AUTH SERVICE
-// =====================================================
-
 export const crearChofer = async (token, datos) => {
     const respuesta = await fetch(
-        `${AUTH_URL}/admin/choferes`,
+        `${ADMIN_URL}/choferes`,
         {
             method: "POST",
             headers: {
@@ -84,19 +60,13 @@ export const crearChofer = async (token, datos) => {
     return procesarRespuesta(respuesta);
 };
 
-// =====================================================
-// ACTUALIZAR CHOFER
-// =====================================================
-// AUTH SERVICE
-// =====================================================
-
 export const actualizarChofer = async (
     token,
     id,
     datos
 ) => {
     const respuesta = await fetch(
-        `${AUTH_URL}/admin/choferes/${id}`,
+        `${ADMIN_URL}/choferes/${id}`,
         {
             method: "PUT",
             headers: {
@@ -110,18 +80,12 @@ export const actualizarChofer = async (
     return procesarRespuesta(respuesta);
 };
 
-// =====================================================
-// ELIMINAR CHOFER
-// =====================================================
-// AUTH SERVICE
-// =====================================================
-
 export const eliminarChofer = async (
     token,
     id
 ) => {
     const respuesta = await fetch(
-        `${AUTH_URL}/admin/choferes/${id}`,
+        `${ADMIN_URL}/choferes/${id}`,
         {
             method: "DELETE",
             headers: {
@@ -133,55 +97,3 @@ export const eliminarChofer = async (
     return procesarRespuesta(respuesta);
 };
 
-// =====================================================
-// OBTENER RUTAS
-// =====================================================
-// UBICACIÓN SERVICE
-// =====================================================
-
-export const obtenerRutas = async (token) => {
-    const respuesta = await fetch(
-        `${UBICACION_URL}/admin/rutas`,
-        {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    );
-
-    const data = await procesarRespuesta(respuesta);
-
-    return data.rutas || [];
-};
-
-// =====================================================
-// OBTENER AUTOBUSES
-// =====================================================
-// UBICACIÓN SERVICE
-// =====================================================
-
-export const obtenerAutobuses = async (
-    token,
-    rutaId = null
-) => {
-    let url = `${UBICACION_URL}/admin/autobuses`;
-
-    if (rutaId) {
-        url += `?ruta_id=${rutaId}`;
-    }
-
-    const respuesta = await fetch(
-        url,
-        {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    );
-
-    const data = await procesarRespuesta(respuesta);
-
-    return data.autobuses || [];
-};
