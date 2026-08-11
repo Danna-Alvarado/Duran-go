@@ -13,7 +13,12 @@ const pool = new Pool({
 });
 
 pool.connect()
-    .then(() => console.log("Base de datos conectada a Neon"))
-    .catch(err => console.log("Error BD:", err));
+    .then((client) => {
+        console.log("Base de datos conectada a Neon");
+        client.release();
+    })
+    .catch((err) => {
+        console.error("Error BD:", err);
+    });
 
 module.exports = pool;
