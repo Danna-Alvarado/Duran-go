@@ -5,14 +5,9 @@ const pool = require("./db");
 const verificarToken = require("./auth.middleware");
 
 
-// =====================================================
 // OBTENER RUTAS GUARDADAS
-// =====================================================
 
-router.get(
-    "/guardados",
-    verificarToken,
-    async (req, res, next) => {
+router.get("/guardados", verificarToken, async (req, res, next) => {
 
         try {
 
@@ -82,9 +77,8 @@ router.get(
 );
 
 
-// =====================================================
+
 // GUARDAR RUTA
-// =====================================================
 
 router.post(
     "/guardados",
@@ -195,36 +189,22 @@ router.post(
     }
 );
 
-
-// =====================================================
 // ELIMINAR RUTA GUARDADA
-// =====================================================
-
 router.delete(
     "/guardados/:id",
     verificarToken,
     async (req, res, next) => {
 
         try {
-
             const usuarioId = req.usuario.id;
-
             const guardadoId = req.params.id;
-
-
             const resultado = await pool.query(
                 `
                 DELETE FROM favoritos
-
                 WHERE id = $1
                 AND usuario_id = $2
-
                 RETURNING id
-                `,
-                [
-                    guardadoId,
-                    usuarioId
-                ]
+                `,[guardadoId, usuarioId ]
             );
 
 
